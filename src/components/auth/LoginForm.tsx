@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, Dispatch, SetStateAction } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,47 +13,59 @@ import { Link } from 'react-router-dom';
 
 // Form schema with validation
 const formSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email address' }),
-  password: z.string().min(1, { message: 'Password is required' }),
+  email: z.string().email({ message: 'Veuillez entrer une adresse e-mail valide' }),
+  password: z.string().min(1, { message: 'Le mot de passe est requis' }),
   remember: z.boolean().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-const LoginForm = () => {
+interface LoginFormProps {
+  email: string;
+  setEmail: Dispatch<SetStateAction<string>>;
+  password: string;
+  setPassword: Dispatch<SetStateAction<string>>;
+  loading: boolean;
+}
+
+const LoginForm = ({ email, setEmail, password, setPassword, loading }: LoginFormProps) => {
   const [error, setError] = useState<string | null>(null);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: email,
+      password: password,
       remember: false,
     },
   });
 
   const onSubmit = async (values: FormValues) => {
     try {
+      // Update parent state
+      setEmail(values.email);
+      setPassword(values.password);
+      
       // Simulate login process
-      console.log('Login submitted:', values);
+      console.log('Connexion soumise:', values);
       
       // Simulate API call with a fake error for demo purposes
       if (values.email === 'error@example.com') {
-        throw new Error('Invalid email or password');
+        throw new Error('E-mail ou mot de passe invalide');
       }
       
       // Success - would redirect or update auth state here
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     }
   };
 
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold">Welcome Back</h1>
-        <p className="text-gray-500">Please sign in to continue</p>
+        <h1 className="text-2xl font-bold">Bienvenue</h1>
+        <p className="text-gray-500">Veuillez vous connecter pour continuer</p>
       </div>
       
       {error && (
@@ -70,16 +82,21 @@ const LoginForm = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-700">Email</FormLabel>
+                <FormLabel className="text-gray-700">E-mail</FormLabel>
                 <div className="relative">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
                     <Mail size={18} />
                   </div>
                   <FormControl>
                     <Input 
-                      placeholder="name@example.com" 
+                      placeholder="nom@exemple.com" 
                       className="pl-10" 
                       {...field} 
+                      onChange={(e) => {
+                        field.onChange(e);
+                        setEmail(e.target.value);
+                      }}
+                      disabled={loading}
                     />
                   </FormControl>
                 </div>
@@ -93,11 +110,16 @@ const LoginForm = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-700">Password</FormLabel>
+                <FormLabel className="text-gray-700">Mot de passe</FormLabel>
                 <FormControl>
                   <PasswordInput 
-                    placeholder="Enter your password" 
+                    placeholder="Entrez votre mot de passe" 
                     {...field} 
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setPassword(e.target.value);
+                    }}
+                    disabled={loading}
                   />
                 </FormControl>
                 <FormMessage />
@@ -116,26 +138,25 @@ const LoginForm = () => {
                       checked={field.value} 
                       onCheckedChange={field.onChange}
                       id="remember"
+                      disabled={loading}
                     />
                   </FormControl>
-                  <label htmlFor="remember" className="text-sm cursor-pointer">Remember me</label>
+                  <label htmlFor="remember" className="text-sm cursor-pointer">Se souvenir de moi</label>
                 </FormItem>
               )}
             />
             
             <a href="#" className="text-sm text-primary hover:text-primary/80">
-              Forgot your password?
+              Mot de passe oublié?
             </a>
           </div>
           
-          <Button type="submit" className="w-full">
-            Log In
-          </Button>
+          {/* We don't need the button here as it's handled in the parent component */}
 
           <div className="text-center text-sm">
-            Don't have an account?{' '}
+            Vous n'avez pas de compte?{' '}
             <Link to="/register" className="text-primary hover:text-primary/80 font-medium">
-              Create an account
+              Créer un compte
             </Link>
           </div>
         </form>
