@@ -26,9 +26,11 @@ interface LoginFormProps {
   password: string;
   setPassword: Dispatch<SetStateAction<string>>;
   loading: boolean;
+  remember: boolean;
+  setRemember: Dispatch<SetStateAction<boolean>>;
 }
 
-const LoginForm = ({ email, setEmail, password, setPassword, loading }: LoginFormProps) => {
+const LoginForm = ({ email, setEmail, password, setPassword, loading, remember, setRemember }: LoginFormProps) => {
   const [error, setError] = useState<string | null>(null);
   
   const form = useForm<FormValues>({
@@ -36,7 +38,7 @@ const LoginForm = ({ email, setEmail, password, setPassword, loading }: LoginFor
     defaultValues: {
       email: email,
       password: password,
-      remember: false,
+      remember: remember,
     },
   });
 
@@ -45,6 +47,7 @@ const LoginForm = ({ email, setEmail, password, setPassword, loading }: LoginFor
       // Update parent state
       setEmail(values.email);
       setPassword(values.password);
+      setRemember(values.remember || false);
       
       // Simulate login process
       console.log('Connexion soumise:', values);
@@ -136,7 +139,10 @@ const LoginForm = ({ email, setEmail, password, setPassword, loading }: LoginFor
                   <FormControl>
                     <Checkbox 
                       checked={field.value} 
-                      onCheckedChange={field.onChange}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        setRemember(!!checked);
+                      }}
                       id="remember"
                       disabled={loading}
                     />
@@ -151,7 +157,13 @@ const LoginForm = ({ email, setEmail, password, setPassword, loading }: LoginFor
             </a>
           </div>
           
-          {/* We don't need the button here as it's handled in the parent component */}
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={loading}
+          >
+            {loading ? 'Connexion en cours...' : 'Se connecter'}
+          </Button>
 
           <div className="text-center text-sm">
             Vous n'avez pas de compte?{' '}
