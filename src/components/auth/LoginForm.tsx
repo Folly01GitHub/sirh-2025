@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Mail, AlertCircle } from 'lucide-react';
 import PasswordInput from './PasswordInput';
-import { Link } from 'react-router-dom';
 
 // Form schema with validation
 const formSchema = z.object({
@@ -164,13 +163,6 @@ const LoginForm = ({ email, setEmail, password, setPassword, loading, remember, 
           >
             {loading ? 'Connexion en cours...' : 'Se connecter'}
           </Button>
-
-          <div className="text-center text-sm">
-            Vous n'avez pas de compte?{' '}
-            <Link to="/register" className="text-primary hover:text-primary/80 font-medium">
-              Créer un compte
-            </Link>
-          </div>
         </form>
       </Form>
     </div>
