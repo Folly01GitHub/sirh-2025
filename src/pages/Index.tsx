@@ -4,6 +4,8 @@ import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import WaveBackground from '@/components/ui/WaveBackground';
 import LoginForm from '@/components/auth/LoginForm';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const [email, setEmail] = useState('');
@@ -11,6 +13,7 @@ const Index = () => {
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,19 +21,22 @@ const Index = () => {
     setError(null);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call the login API
+      const response = await axios.post('http://localhost:8000/api/login', {
+        email,
+        password
+      });
       
-      // Dummy validation - replace with real authentication
-      if (email === 'admin@example.com' && password === 'password') {
+      // Handle successful login
+      if (response.data) {
         toast.success("Connexion réussie!");
-        // Redirect or set authentication state here
-      } else {
-        setError('Email ou mot de passe incorrect');
-        toast.error("Échec de connexion");
+        // Redirect to home page
+        navigate('/home');
       }
     } catch (err) {
-      setError('Une erreur est survenue lors de la connexion');
+      console.error('Login error:', err);
+      setError('Identifiants invalides');
+      toast.error("Échec de connexion");
     } finally {
       setLoading(false);
     }
