@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
+import Home from "./pages/Home";
 
 const queryClient = new QueryClient();
 
@@ -18,7 +19,14 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/register" element={<Register />} />
+          {/* Placeholder routes for HRIS pages */}
+          <Route path="/dashboard" element={<Home />} />
+          <Route path="/leave" element={<Home />} />
+          <Route path="/appraisals" element={<Home />} />
+          <Route path="/profile" element={<Home />} />
+          <Route path="/settings" element={<Home />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

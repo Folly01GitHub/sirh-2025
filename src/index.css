@@ -50,6 +50,11 @@
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* HRIS color palette */
+    --navy-blue: 215 50% 23%;
+    --off-white: 210 40% 98%;
+    --gold: 43 74% 49%;
   }
 
   .dark {
@@ -98,5 +103,37 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Additional animation utilities */
+@layer utilities {
+  .glass-effect {
+    @apply backdrop-blur-md bg-white/80 border border-white/20;
+  }
+
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  .animate-hover-float {
+    transition: transform 0.3s ease;
+  }
+  
+  .animate-hover-float:hover {
+    transform: translateY(-8px);
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 }
