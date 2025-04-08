@@ -36,10 +36,10 @@ const HRISNavbar = () => {
               <div className="relative h-8 w-8 mr-2">
                 <div className="absolute inset-0 rounded-md bg-primary"></div>
                 <div className="absolute inset-0.5 rounded-md bg-white flex items-center justify-center text-primary font-bold">
-                  HR
+                  RH
                 </div>
               </div>
-              <span className="text-lg font-bold text-gray-900">HRIS Portal</span>
+              <span className="text-lg font-bold text-gray-900">Portail RH</span>
             </Link>
           </div>
 
@@ -51,7 +51,7 @@ const HRISNavbar = () => {
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                     <Link to="/">
                       <Home className="h-4 w-4 mr-1" />
-                      <span>Home</span>
+                      <span>Accueil</span>
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
@@ -59,7 +59,7 @@ const HRISNavbar = () => {
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                     <Link to="/dashboard">
                       <LayoutDashboard className="h-4 w-4 mr-1" />
-                      <span>Dashboard</span>
+                      <span>Tableau de Bord</span>
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
@@ -67,7 +67,7 @@ const HRISNavbar = () => {
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                     <Link to="/leave">
                       <CalendarDays className="h-4 w-4 mr-1" />
-                      <span>Leave</span>
+                      <span>Congés</span>
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
@@ -75,7 +75,7 @@ const HRISNavbar = () => {
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                     <Link to="/appraisals">
                       <Award className="h-4 w-4 mr-1" />
-                      <span>Appraisals</span>
+                      <span>Évaluations</span>
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
@@ -87,7 +87,7 @@ const HRISNavbar = () => {
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="https://github.com/shadcn.png" alt="User avatar" />
+                    <AvatarImage src="https://github.com/shadcn.png" alt="Avatar utilisateur" />
                     <AvatarFallback>JD</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -96,7 +96,7 @@ const HRISNavbar = () => {
                 <div className="grid gap-4">
                   <div className="flex items-center gap-4">
                     <Avatar>
-                      <AvatarImage src="https://github.com/shadcn.png" alt="User avatar" />
+                      <AvatarImage src="https://github.com/shadcn.png" alt="Avatar utilisateur" />
                       <AvatarFallback>JD</AvatarFallback>
                     </Avatar>
                     <div className="grid gap-1">
@@ -108,19 +108,19 @@ const HRISNavbar = () => {
                     <Button variant="ghost" size="sm" className="justify-start" asChild>
                       <Link to="/profile">
                         <User className="h-4 w-4 mr-2" />
-                        <span>Profile</span>
+                        <span>Profil</span>
                       </Link>
                     </Button>
                     <Button variant="ghost" size="sm" className="justify-start" asChild>
                       <Link to="/settings">
                         <Settings className="h-4 w-4 mr-2" />
-                        <span>Settings</span>
+                        <span>Paramètres</span>
                       </Link>
                     </Button>
                     <Button variant="ghost" size="sm" className="justify-start text-red-500 hover:text-red-500 hover:bg-red-50" asChild>
                       <Link to="/">
                         <LogOut className="h-4 w-4 mr-2" />
-                        <span>Logout</span>
+                        <span>Déconnexion</span>
                       </Link>
                     </Button>
                   </div>
@@ -155,7 +155,7 @@ const HRISNavbar = () => {
             <div className="flex flex-col space-y-6">
               <div className="flex items-center gap-4 mb-4">
                 <Avatar>
-                  <AvatarImage src="https://github.com/shadcn.png" alt="User avatar" />
+                  <AvatarImage src="https://github.com/shadcn.png" alt="Avatar utilisateur" />
                   <AvatarFallback>JD</AvatarFallback>
                 </Avatar>
                 <div>
@@ -170,7 +170,7 @@ const HRISNavbar = () => {
                   onClick={toggleMobileMenu}
                 >
                   <Home className="h-5 w-5 mr-3" />
-                  <span>Home</span>
+                  <span>Accueil</span>
                 </Link>
                 <Link
                   to="/dashboard"
@@ -178,7 +178,7 @@ const HRISNavbar = () => {
                   onClick={toggleMobileMenu}
                 >
                   <LayoutDashboard className="h-5 w-5 mr-3" />
-                  <span>Dashboard</span>
+                  <span>Tableau de Bord</span>
                 </Link>
                 <Link
                   to="/leave"
@@ -186,7 +186,7 @@ const HRISNavbar = () => {
                   onClick={toggleMobileMenu}
                 >
                   <CalendarDays className="h-5 w-5 mr-3" />
-                  <span>Leave</span>
+                  <span>Congés</span>
                 </Link>
                 <Link
                   to="/appraisals"
@@ -194,7 +194,7 @@ const HRISNavbar = () => {
                   onClick={toggleMobileMenu}
                 >
                   <Award className="h-5 w-5 mr-3" />
-                  <span>Appraisals</span>
+                  <span>Évaluations</span>
                 </Link>
               </nav>
               <div className="border-t border-gray-200 pt-4 mt-4">
@@ -204,7 +204,7 @@ const HRISNavbar = () => {
                   onClick={toggleMobileMenu}
                 >
                   <User className="h-5 w-5 mr-3" />
-                  <span>Profile</span>
+                  <span>Profil</span>
                 </Link>
                 <Link
                   to="/settings"
@@ -212,7 +212,7 @@ const HRISNavbar = () => {
                   onClick={toggleMobileMenu}
                 >
                   <Settings className="h-5 w-5 mr-3" />
-                  <span>Settings</span>
+                  <span>Paramètres</span>
                 </Link>
                 <Link
                   to="/"
@@ -220,7 +220,7 @@ const HRISNavbar = () => {
                   onClick={toggleMobileMenu}
                 >
                   <LogOut className="h-5 w-5 mr-3" />
-                  <span>Logout</span>
+                  <span>Déconnexion</span>
                 </Link>
               </div>
             </div>
