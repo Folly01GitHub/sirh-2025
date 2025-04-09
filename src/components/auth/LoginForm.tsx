@@ -27,9 +27,19 @@ interface LoginFormProps {
   loading: boolean;
   remember: boolean;
   setRemember: Dispatch<SetStateAction<boolean>>;
+  onSubmit: () => void; // Added onSubmit prop to be called from parent
 }
 
-const LoginForm = ({ email, setEmail, password, setPassword, loading, remember, setRemember }: LoginFormProps) => {
+const LoginForm = ({ 
+  email, 
+  setEmail, 
+  password, 
+  setPassword, 
+  loading, 
+  remember, 
+  setRemember,
+  onSubmit 
+}: LoginFormProps) => {
   const [error, setError] = useState<string | null>(null);
   
   const form = useForm<FormValues>({
@@ -41,7 +51,7 @@ const LoginForm = ({ email, setEmail, password, setPassword, loading, remember, 
     },
   });
 
-  const onSubmit = async (values: FormValues) => {
+  const handleFormSubmit = (values: FormValues) => {
     try {
       // Update parent state
       setEmail(values.email);
@@ -50,6 +60,9 @@ const LoginForm = ({ email, setEmail, password, setPassword, loading, remember, 
       
       // Log submission for debugging
       console.log('Formulaire soumis:', { email: values.email, remember: values.remember });
+      
+      // Call the parent's onSubmit handler instead of submitting directly
+      onSubmit();
       
       setError(null);
     } catch (err) {
@@ -72,7 +85,7 @@ const LoginForm = ({ email, setEmail, password, setPassword, loading, remember, 
       )}
       
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="email"

@@ -15,17 +15,23 @@ const Index = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    // No need for e.preventDefault() as we're not in a form submit handler anymore
+    if (loading) return; // Prevent multiple submissions
+    
     setLoading(true);
     setError(null);
     
     try {
+      console.log('Attempting login with:', { email });
+      
       // Call the login API with the new endpoint
       const response = await axios.post('http://backend.local.com/api/login', {
         email,
         password
       });
+      
+      console.log('Login response:', response.data);
       
       // Handle successful login and JWT token
       if (response.data && response.data.token) {
@@ -38,8 +44,12 @@ const Index = () => {
         }
         
         toast.success("Connexion réussie!");
-        // Redirect to home page
-        navigate('/home');
+        
+        // Use setTimeout to ensure the toast is visible before redirecting
+        setTimeout(() => {
+          // Redirect to home page
+          navigate('/home');
+        }, 500);
       } else {
         throw new Error('Aucun token reçu du serveur');
       }
@@ -72,23 +82,23 @@ const Index = () => {
       <div className="z-10 w-full max-w-md">
         <Card className="backdrop-blur-sm border border-gray-100 shadow-lg animate-fade-in-down">
           <div className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="bg-red-50 text-red-600 px-4 py-2 rounded-md text-sm animate-slide-down">
-                  {error}
-                </div>
-              )}
-              
-              <LoginForm 
-                email={email} 
-                setEmail={setEmail} 
-                password={password} 
-                setPassword={setPassword} 
-                loading={loading}
-                remember={remember}
-                setRemember={setRemember}
-              />
-            </form>
+            {/* Removed the form wrapper since LoginForm has its own form */}
+            {error && (
+              <div className="bg-red-50 text-red-600 px-4 py-2 rounded-md text-sm animate-slide-down mb-4">
+                {error}
+              </div>
+            )}
+            
+            <LoginForm 
+              email={email} 
+              setEmail={setEmail} 
+              password={password} 
+              setPassword={setPassword} 
+              loading={loading}
+              remember={remember}
+              setRemember={setRemember}
+              onSubmit={handleSubmit}
+            />
           </div>
         </Card>
       </div>
