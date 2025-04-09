@@ -21,21 +21,44 @@ const Index = () => {
     setError(null);
     
     try {
-      // Call the login API
-      const response = await axios.post('http://localhost:8000/api/login', {
+      // Call the login API with the new endpoint
+      const response = await axios.post('http://backend.local.com/api/login', {
         email,
         password
       });
       
-      // Handle successful login
-      if (response.data) {
+      // Handle successful login and JWT token
+      if (response.data && response.data.token) {
+        // Store JWT token in localStorage
+        localStorage.setItem('auth_token', response.data.token);
+        
+        // Store user info if available
+        if (response.data.user) {
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+        }
+        
         toast.success("Connexion réussie!");
         // Redirect to home page
         navigate('/home');
+      } else {
+        throw new Error('Aucun token reçu du serveur');
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError('Identifiants invalides');
+      
+      // More specific error message based on error status
+      if (axios.isAxiosError(err) && err.response) {
+        if (err.response.status === 401) {
+          setError('Identifiants invalides');
+        } else if (err.response.status === 403) {
+          setError('Compte bloqué ou inactif');
+        } else {
+          setError('Erreur de connexion au serveur');
+        }
+      } else {
+        setError('Erreur de connexion au serveur');
+      }
+      
       toast.error("Échec de connexion");
     } finally {
       setLoading(false);

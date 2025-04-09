@@ -48,15 +48,9 @@ const LoginForm = ({ email, setEmail, password, setPassword, loading, remember, 
       setPassword(values.password);
       setRemember(values.remember || false);
       
-      // Simulate login process
-      console.log('Connexion soumise:', values);
+      // Log submission for debugging
+      console.log('Formulaire soumis:', { email: values.email, remember: values.remember });
       
-      // Simulate API call with a fake error for demo purposes
-      if (values.email === 'error@example.com') {
-        throw new Error('E-mail ou mot de passe invalide');
-      }
-      
-      // Success - would redirect or update auth state here
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
