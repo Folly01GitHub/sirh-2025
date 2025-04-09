@@ -49,7 +49,7 @@ const Index = () => {
         setTimeout(() => {
           // Redirect to home page
           navigate('/home');
-        }, 500);
+        }, 1000); // Increased delay to ensure redirect happens
       } else {
         throw new Error('Aucun token reçu du serveur');
       }
@@ -75,6 +75,13 @@ const Index = () => {
     }
   };
 
+  // Testing with provided credentials
+  React.useEffect(() => {
+    // Uncomment to auto-fill test credentials
+    // setEmail('test@example.com');
+    // setPassword('securepassword123');
+  }, []);
+
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <WaveBackground />
@@ -82,7 +89,6 @@ const Index = () => {
       <div className="z-10 w-full max-w-md">
         <Card className="backdrop-blur-sm border border-gray-100 shadow-lg animate-fade-in-down">
           <div className="p-8">
-            {/* Removed the form wrapper since LoginForm has its own form */}
             {error && (
               <div className="bg-red-50 text-red-600 px-4 py-2 rounded-md text-sm animate-slide-down mb-4">
                 {error}

@@ -27,7 +27,7 @@ interface LoginFormProps {
   loading: boolean;
   remember: boolean;
   setRemember: Dispatch<SetStateAction<boolean>>;
-  onSubmit: () => void; // Added onSubmit prop to be called from parent
+  onSubmit: () => void;
 }
 
 const LoginForm = ({ 
@@ -65,8 +65,12 @@ const LoginForm = ({
       onSubmit();
       
       setError(null);
+      
+      // Important: Return false to prevent default form submission
+      return false;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+      return false;
     }
   };
 
@@ -85,7 +89,13 @@ const LoginForm = ({
       )}
       
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault(); // Prevent default form submission
+            form.handleSubmit(handleFormSubmit)(e);
+          }} 
+          className="space-y-4"
+        >
           <FormField
             control={form.control}
             name="email"
