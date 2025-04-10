@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, UserCheck, UserClock, UserPlus } from 'lucide-react';
+import { Users, UserCheck, Clock, UserPlus } from 'lucide-react';
 
 interface StatCardProps {
   title: string;
@@ -55,7 +55,7 @@ const StatsCards = () => {
         title="Pending Activation"
         value={stats.pendingUsers}
         description="Awaiting account activation"
-        icon={<UserClock className="h-4 w-4 text-white" />}
+        icon={<Clock className="h-4 w-4 text-white" />}
         color="bg-amber-500"
       />
       <StatCard
