@@ -5,6 +5,9 @@ import { useNavigate } from 'react-router-dom';
 interface User {
   id?: string;
   email: string;
+  firstName?: string;
+  lastName?: string;
+  role?: 'user' | 'admin';
   [key: string]: any; // Allow for other user properties
 }
 
@@ -50,6 +53,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('user', JSON.stringify(userData));
     setToken(newToken);
     setUser(userData);
+    
+    // Redirect based on user role
+    if (userData.role === 'admin') {
+      navigate('/admin/dashboard');
+    } else {
+      navigate('/home');
+    }
   };
 
   const logout = () => {

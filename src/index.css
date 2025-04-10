@@ -55,6 +55,10 @@
     --navy-blue: 215 50% 23%;
     --off-white: 210 40% 98%;
     --gold: 43 74% 49%;
+    
+    /* Admin color palette */
+    --emerald-green: 160 84% 39%;
+    --deep-blue: 215 100% 30%;
   }
 
   .dark {
@@ -135,5 +139,22 @@
   @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
+  }
+  
+  /* Admin styles */
+  .admin-gradient {
+    @apply bg-gradient-to-r from-deep-blue to-emerald-green;
+  }
+  
+  .admin-card {
+    @apply bg-white/90 backdrop-blur-sm border border-gray-100 rounded-lg shadow-sm hover:shadow transition-all duration-300;
+  }
+  
+  .admin-table-row-hover {
+    @apply hover:bg-blue-50/50 transition-colors duration-200;
+  }
+  
+  .modal-transition {
+    @apply transition-all duration-300 ease-in-out;
   }
 }
