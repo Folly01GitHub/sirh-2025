@@ -9,7 +9,7 @@ const Dashboard = () => {
   return (
     <AdminLayout>
       <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+        <h1 className="text-2xl font-bold mb-6">Tableau de Bord Administrateur</h1>
         <StatsCards />
         <div className="flex flex-col xl:flex-row gap-6 mt-6">
           <div className="flex-1">

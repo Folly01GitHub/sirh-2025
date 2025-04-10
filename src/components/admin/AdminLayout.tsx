@@ -49,9 +49,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   };
 
   const menuItems = [
-    { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/admin/users', label: 'Users', icon: Users },
-    { path: '/admin/settings', label: 'Settings', icon: Settings }
+    { path: '/admin/dashboard', label: 'Tableau de Bord', icon: LayoutDashboard },
+    { path: '/admin/users', label: 'Utilisateurs', icon: Users },
+    { path: '/admin/settings', label: 'Paramètres', icon: Settings }
   ];
 
   return (
@@ -63,7 +63,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <div className="bg-primary rounded-md p-1">
                 <Users className="h-6 w-6 text-white" />
               </div>
-              <span className="font-bold text-lg">Admin Portal</span>
+              <span className="font-bold text-lg">Portail Admin</span>
             </Link>
           </SidebarHeader>
           <SidebarContent>
@@ -96,7 +96,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               onClick={handleLogout}
             >
               <LogOut className="h-4 w-4" />
-              <span>Logout</span>
+              <span>Déconnexion</span>
             </Button>
           </SidebarFooter>
         </Sidebar>
@@ -109,7 +109,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <div className="relative w-64">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
                 <Input 
-                  placeholder="Search..." 
+                  placeholder="Rechercher..." 
                   className="pl-8" 
                 />
               </div>

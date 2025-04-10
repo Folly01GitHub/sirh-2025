@@ -8,10 +8,12 @@ import { ChevronRight, Briefcase, Calendar as CalendarIcon, Award } from 'lucide
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import StatsCard from '@/components/hris/StatsCard';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Home = () => {
   const today = new Date();
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(today);
+  const { user } = useAuth();
   
   // Sample events for the calendar
   const events = [
@@ -28,6 +30,9 @@ const Home = () => {
       event.date.getFullYear() === date.getFullYear()
     );
   };
+
+  // Determine dashboard URL based on user role
+  const dashboardUrl = user?.role === 'admin' ? '/admin/dashboard' : '/dashboard';
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8f9fc]">
@@ -53,7 +58,7 @@ const Home = () => {
               className="group transition-all duration-300 transform hover:scale-105 animate-scale-in"
               asChild
             >
-              <Link to="/dashboard">
+              <Link to={dashboardUrl}>
                 Accéder au tableau de bord
                 <ChevronRight className="ml-1 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
               </Link>

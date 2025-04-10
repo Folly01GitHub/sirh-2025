@@ -6,9 +6,9 @@ const Settings = () => {
   return (
     <AdminLayout>
       <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Settings</h1>
+        <h1 className="text-2xl font-bold mb-6">Paramètres</h1>
         <div className="glass-card p-6 rounded-lg">
-          <p className="text-gray-600">Admin settings will be available here.</p>
+          <p className="text-gray-600">Les paramètres administrateur seront disponibles ici.</p>
         </div>
       </div>
     </AdminLayout>
