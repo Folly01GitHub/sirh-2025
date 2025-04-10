@@ -18,13 +18,25 @@ import {
   PopoverTrigger 
 } from '@/components/ui/popover';
 import { Menu, X, Home, LayoutDashboard, CalendarDays, Award, LogOut, User, Settings } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const HRISNavbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  const handleLogout = () => {
+    logout();
+    toggleMobileMenu(); // Close mobile menu if open
+  };
+
+  // User display name and avatar fallback
+  const userEmail = user?.email || 'user@example.com';
+  const userName = user?.name || userEmail.split('@')[0];
+  const avatarFallback = userName.substring(0, 2).toUpperCase();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md">
@@ -32,7 +44,7 @@ const HRISNavbar = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/" className="flex items-center">
+            <Link to="/home" className="flex items-center">
               <div className="relative h-8 w-8 mr-2">
                 <div className="absolute inset-0 rounded-md bg-primary"></div>
                 <div className="absolute inset-0.5 rounded-md bg-white flex items-center justify-center text-primary font-bold">
@@ -49,7 +61,7 @@ const HRISNavbar = () => {
               <NavigationMenuList>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                    <Link to="/">
+                    <Link to="/home">
                       <Home className="h-4 w-4 mr-1" />
                       <span>Accueil</span>
                     </Link>
@@ -88,7 +100,7 @@ const HRISNavbar = () => {
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src="https://github.com/shadcn.png" alt="Avatar utilisateur" />
-                    <AvatarFallback>JD</AvatarFallback>
+                    <AvatarFallback>{avatarFallback}</AvatarFallback>
                   </Avatar>
                 </Button>
               </PopoverTrigger>
@@ -97,11 +109,11 @@ const HRISNavbar = () => {
                   <div className="flex items-center gap-4">
                     <Avatar>
                       <AvatarImage src="https://github.com/shadcn.png" alt="Avatar utilisateur" />
-                      <AvatarFallback>JD</AvatarFallback>
+                      <AvatarFallback>{avatarFallback}</AvatarFallback>
                     </Avatar>
                     <div className="grid gap-1">
-                      <p className="text-sm font-medium">John Doe</p>
-                      <p className="text-xs text-gray-500">john@example.com</p>
+                      <p className="text-sm font-medium">{userName}</p>
+                      <p className="text-xs text-gray-500">{userEmail}</p>
                     </div>
                   </div>
                   <div className="grid gap-1">
@@ -117,11 +129,14 @@ const HRISNavbar = () => {
                         <span>Paramètres</span>
                       </Link>
                     </Button>
-                    <Button variant="ghost" size="sm" className="justify-start text-red-500 hover:text-red-500 hover:bg-red-50" asChild>
-                      <Link to="/">
-                        <LogOut className="h-4 w-4 mr-2" />
-                        <span>Déconnexion</span>
-                      </Link>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="justify-start text-red-500 hover:text-red-500 hover:bg-red-50"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      <span>Déconnexion</span>
                     </Button>
                   </div>
                 </div>
@@ -156,16 +171,16 @@ const HRISNavbar = () => {
               <div className="flex items-center gap-4 mb-4">
                 <Avatar>
                   <AvatarImage src="https://github.com/shadcn.png" alt="Avatar utilisateur" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarFallback>{avatarFallback}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">John Doe</p>
-                  <p className="text-sm text-gray-500">john@example.com</p>
+                  <p className="font-medium">{userName}</p>
+                  <p className="text-sm text-gray-500">{userEmail}</p>
                 </div>
               </div>
               <nav className="flex flex-col space-y-1">
                 <Link
-                  to="/"
+                  to="/home"
                   className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
                   onClick={toggleMobileMenu}
                 >
@@ -214,14 +229,13 @@ const HRISNavbar = () => {
                   <Settings className="h-5 w-5 mr-3" />
                   <span>Paramètres</span>
                 </Link>
-                <Link
-                  to="/"
-                  className="flex items-center px-3 py-2 text-red-500 rounded-md hover:bg-red-50"
-                  onClick={toggleMobileMenu}
+                <button
+                  className="flex items-center w-full text-left px-3 py-2 text-red-500 rounded-md hover:bg-red-50"
+                  onClick={handleLogout}
                 >
                   <LogOut className="h-5 w-5 mr-3" />
                   <span>Déconnexion</span>
-                </Link>
+                </button>
               </div>
             </div>
           </div>

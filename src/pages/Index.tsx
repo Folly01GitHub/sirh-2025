@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import WaveBackground from '@/components/ui/WaveBackground';
 import LoginForm from '@/components/auth/LoginForm';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
   const [email, setEmail] = useState('');
@@ -13,10 +14,20 @@ const Index = () => {
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login, isAuthenticated } = useAuth();
+  
+  // If user is already authenticated, redirect to home
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = location.state?.from?.pathname || '/home';
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location]);
 
   const handleSubmit = async () => {
-    // No need for e.preventDefault() as we're not in a form submit handler anymore
     if (loading) return; // Prevent multiple submissions
     
     setLoading(true);
@@ -25,7 +36,7 @@ const Index = () => {
     try {
       console.log('Attempting login with:', { email });
       
-      // Call the login API with the new endpoint
+      // Call the login API
       const response = await axios.post('http://backend.local.com/api/login', {
         email,
         password
@@ -35,21 +46,15 @@ const Index = () => {
       
       // Handle successful login and JWT token
       if (response.data && response.data.token) {
-        // Store JWT token in localStorage
-        localStorage.setItem('auth_token', response.data.token);
-        
-        // Store user info if available
-        if (response.data.user) {
-          localStorage.setItem('user', JSON.stringify(response.data.user));
-        }
+        // Pass token and user info to auth context
+        login(
+          response.data.token, 
+          response.data.user || { email }
+        );
         
         toast.success("Connexion réussie!");
         
-        // Use setTimeout to ensure the toast is visible before redirecting
-        setTimeout(() => {
-          // Redirect to home page
-          navigate('/home');
-        }, 1000); // Increased delay to ensure redirect happens
+        // Navigate happens in the useEffect because auth state changes
       } else {
         throw new Error('Aucun token reçu du serveur');
       }
@@ -75,11 +80,12 @@ const Index = () => {
     }
   };
 
-  // Testing with provided credentials
-  React.useEffect(() => {
-    // Uncomment to auto-fill test credentials
-    // setEmail('test@example.com');
-    // setPassword('securepassword123');
+  // Auto-fill test credentials in development
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      setEmail('test@example.com');
+      setPassword('securepassword123');
+    }
   }, []);
 
   return (
