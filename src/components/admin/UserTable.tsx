@@ -78,11 +78,11 @@ const mockUsers: User[] = Array.from({ length: 10 }).map((_, i) => ({
 
 // Form schema for editing users
 const userEditSchema = z.object({
-  firstName: z.string().min(2, "First name is required"),
-  lastName: z.string().min(2, "Last name is required"),
-  email: z.string().email("Invalid email address"),
-  position: z.string().min(1, "Position is required"),
-  department: z.string().min(1, "Department is required"),
+  firstName: z.string().min(2, "Le prénom est requis"),
+  lastName: z.string().min(2, "Le nom est requis"),
+  email: z.string().email("Adresse email invalide"),
+  position: z.string().min(1, "Le poste est requis"),
+  department: z.string().min(1, "Le département est requis"),
 });
 
 type UserEditFormData = z.infer<typeof userEditSchema>;
@@ -175,7 +175,7 @@ const UserTable = () => {
           ? { ...user, ...data } 
           : user
       ));
-      toast.success("User updated successfully");
+      toast.success("Utilisateur mis à jour avec succès");
       setIsEditDialogOpen(false);
     }
   };
@@ -189,7 +189,7 @@ const UserTable = () => {
     
     // Remove the user from the local state
     setUsers(users.filter(user => user.id !== selectedUser.id));
-    toast.success("User deleted successfully");
+    toast.success("Utilisateur supprimé avec succès");
     setIsDeleteDialogOpen(false);
   };
 
@@ -233,7 +233,7 @@ const UserTable = () => {
 
   // Export to CSV
   const exportToCsv = () => {
-    const headers = ['ID', 'First Name', 'Last Name', 'Email', 'Position', 'Department', 'Status', 'Date Created'];
+    const headers = ['ID', 'Prénom', 'Nom', 'Email', 'Poste', 'Département', 'Statut', 'Date de Création'];
     const data = filteredUsers.map(user => [
       user.id,
       user.firstName,
@@ -241,7 +241,7 @@ const UserTable = () => {
       user.email,
       user.position,
       user.department,
-      user.status,
+      user.status === 'active' ? 'Actif' : 'En attente',
       new Date(user.dateCreated).toLocaleDateString()
     ]);
     
@@ -254,7 +254,7 @@ const UserTable = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', 'users.csv');
+    link.setAttribute('download', 'utilisateurs.csv');
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -268,7 +268,7 @@ const UserTable = () => {
           <div className="relative w-full md:w-64">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
             <Input 
-              placeholder="Search users..." 
+              placeholder="Rechercher des utilisateurs..." 
               className="pl-8"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -280,7 +280,7 @@ const UserTable = () => {
         </div>
         <Button variant="outline" className="gap-2 w-full md:w-auto" onClick={exportToCsv}>
           <Download className="h-4 w-4" />
-          Export CSV
+          Exporter CSV
         </Button>
       </div>
 
@@ -289,12 +289,12 @@ const UserTable = () => {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[30px]">#</TableHead>
-              <TableHead>Name</TableHead>
+              <TableHead>Nom</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Position</TableHead>
-              <TableHead>Department</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Date Created</TableHead>
+              <TableHead>Poste</TableHead>
+              <TableHead>Département</TableHead>
+              <TableHead>Statut</TableHead>
+              <TableHead>Date de Création</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -313,7 +313,7 @@ const UserTable = () => {
             ) : filteredUsers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-6 text-gray-500">
-                  No users found
+                  Aucun utilisateur trouvé
                 </TableCell>
               </TableRow>
             ) : (
@@ -331,12 +331,12 @@ const UserTable = () => {
                       {user.status === 'active' ? (
                         <>
                           <Check className="h-4 w-4 text-green-500" />
-                          <span className="text-green-600">Active</span>
+                          <span className="text-green-600">Actif</span>
                         </>
                       ) : (
                         <>
                           <Clock className="h-4 w-4 text-amber-500" />
-                          <span className="text-amber-600">Pending</span>
+                          <span className="text-amber-600">En attente</span>
                         </>
                       )}
                     </div>
@@ -373,9 +373,9 @@ const UserTable = () => {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
+            <DialogTitle>Modifier l'utilisateur</DialogTitle>
             <DialogDescription>
-              Make changes to the user's information
+              Modifier les informations de l'utilisateur
             </DialogDescription>
           </DialogHeader>
           <Form {...editForm}>
@@ -385,7 +385,7 @@ const UserTable = () => {
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>First Name</FormLabel>
+                    <FormLabel>Prénom</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -398,7 +398,7 @@ const UserTable = () => {
                 name="lastName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Last Name</FormLabel>
+                    <FormLabel>Nom</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -424,11 +424,11 @@ const UserTable = () => {
                 name="position"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Position</FormLabel>
+                    <FormLabel>Poste</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select position" />
+                          <SelectValue placeholder="Sélectionner un poste" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -448,11 +448,11 @@ const UserTable = () => {
                 name="department"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Department</FormLabel>
+                    <FormLabel>Département</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select department" />
+                          <SelectValue placeholder="Sélectionner un département" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -468,7 +468,7 @@ const UserTable = () => {
                 )}
               />
               <DialogFooter>
-                <Button type="submit">Save Changes</Button>
+                <Button type="submit">Enregistrer les modifications</Button>
               </DialogFooter>
             </form>
           </Form>
@@ -479,22 +479,22 @@ const UserTable = () => {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogTitle>Confirmer la suppression</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this user? This action cannot be undone.
+              Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action ne peut pas être annulée.
             </DialogDescription>
           </DialogHeader>
           <div className="bg-red-50 p-4 rounded-md border border-red-200 mb-4">
             <p className="text-sm text-red-800">
-              You are about to delete: <strong>{selectedUser?.firstName} {selectedUser?.lastName}</strong> ({selectedUser?.email})
+              Vous êtes sur le point de supprimer : <strong>{selectedUser?.firstName} {selectedUser?.lastName}</strong> ({selectedUser?.email})
             </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancel
+              Annuler
             </Button>
             <Button variant="destructive" onClick={confirmDelete}>
-              Delete
+              Supprimer
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -504,17 +504,17 @@ const UserTable = () => {
       <Dialog open={isFilterDialogOpen} onOpenChange={setIsFilterDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Filter Users</DialogTitle>
+            <DialogTitle>Filtrer les utilisateurs</DialogTitle>
             <DialogDescription>
-              Apply filters to narrow down the user list
+              Appliquer des filtres pour affiner la liste des utilisateurs
             </DialogDescription>
           </DialogHeader>
           <Form {...filterForm}>
             <form onSubmit={filterForm.handleSubmit(applyFilters)} className="space-y-4">
               <Tabs defaultValue="status" className="w-full">
                 <TabsList className="w-full">
-                  <TabsTrigger value="status" className="flex-1">Status</TabsTrigger>
-                  <TabsTrigger value="role" className="flex-1">Role</TabsTrigger>
+                  <TabsTrigger value="status" className="flex-1">Statut</TabsTrigger>
+                  <TabsTrigger value="role" className="flex-1">Rôle</TabsTrigger>
                   <TabsTrigger value="date" className="flex-1">Date</TabsTrigger>
                 </TabsList>
                 <TabsContent value="status" className="mt-4">
@@ -523,17 +523,17 @@ const UserTable = () => {
                     name="status"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>User Status</FormLabel>
+                        <FormLabel>Statut de l'utilisateur</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="All statuses" />
+                              <SelectValue placeholder="Tous les statuts" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">All statuses</SelectItem>
-                            <SelectItem value="active">Active</SelectItem>
-                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="">Tous les statuts</SelectItem>
+                            <SelectItem value="active">Actif</SelectItem>
+                            <SelectItem value="pending">En attente</SelectItem>
                           </SelectContent>
                         </Select>
                       </FormItem>
@@ -546,15 +546,15 @@ const UserTable = () => {
                     name="position"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Position</FormLabel>
+                        <FormLabel>Poste</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="All positions" />
+                              <SelectValue placeholder="Tous les postes" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">All positions</SelectItem>
+                            <SelectItem value="">Tous les postes</SelectItem>
                             {["Associate", "Director", "Senior Manager", "Manager", "Senior", "Assistant", "Trainee"].map((position) => (
                               <SelectItem key={position} value={position}>
                                 {position}
@@ -570,15 +570,15 @@ const UserTable = () => {
                     name="department"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Department</FormLabel>
+                        <FormLabel>Département</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="All departments" />
+                              <SelectValue placeholder="Tous les départements" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">All departments</SelectItem>
+                            <SelectItem value="">Tous les départements</SelectItem>
                             {["HR", "TDC", "FA"].map((department) => (
                               <SelectItem key={department} value={department}>
                                 {department}
@@ -597,7 +597,7 @@ const UserTable = () => {
                       name="dateFrom"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
-                          <FormLabel>From Date</FormLabel>
+                          <FormLabel>De la date</FormLabel>
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>
@@ -608,7 +608,7 @@ const UserTable = () => {
                                   {field.value ? (
                                     format(field.value, "PPP")
                                   ) : (
-                                    <span className="text-muted-foreground">Pick a date</span>
+                                    <span className="text-muted-foreground">Choisir une date</span>
                                   )}
                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
@@ -632,7 +632,7 @@ const UserTable = () => {
                       name="dateTo"
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
-                          <FormLabel>To Date</FormLabel>
+                          <FormLabel>À la date</FormLabel>
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>
@@ -643,7 +643,7 @@ const UserTable = () => {
                                   {field.value ? (
                                     format(field.value, "PPP")
                                   ) : (
-                                    <span className="text-muted-foreground">Pick a date</span>
+                                    <span className="text-muted-foreground">Choisir une date</span>
                                   )}
                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
@@ -667,9 +667,9 @@ const UserTable = () => {
               </Tabs>
               <DialogFooter className="mt-6 gap-2">
                 <Button type="button" variant="outline" onClick={resetFilters}>
-                  Reset
+                  Réinitialiser
                 </Button>
-                <Button type="submit">Apply Filters</Button>
+                <Button type="submit">Appliquer les filtres</Button>
               </DialogFooter>
             </form>
           </Form>

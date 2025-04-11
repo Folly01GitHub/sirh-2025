@@ -1,17 +1,17 @@
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
 import axios from 'axios';
-import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Lock } from 'lucide-react';
+import WaveBackground from '@/components/ui/WaveBackground';
 
 const passwordSchema = z.object({
   password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
@@ -27,7 +27,6 @@ const Activate = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
   
   // Get token from URL query parameter
   const queryParams = new URLSearchParams(location.search);
@@ -49,23 +48,18 @@ const Activate = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post('http://backend.local.com/api/activate', {
+      await axios.post('http://backend.local.com/api/activate', {
         token,
         password: data.password
       });
 
       toast.success("Compte activé avec succès !");
       
-      // Assuming the activation API returns user data and token
-      if (response.data.token && response.data.user) {
-        login(response.data.token, response.data.user);
-        setTimeout(() => navigate('/home'), 1500);
-      } else {
-        setTimeout(() => navigate('/'), 1500);
-      }
+      // Redirect to login page after successful activation
+      setTimeout(() => navigate('/'), 1500);
     } catch (error) {
       console.error("Erreur d'activation:", error);
-      toast.error("Échec de l'activation du compte. Veuillez réessayer.");
+      toast.error("Échec de l'activation. Veuillez réessayer ou contacter l'administrateur.");
     } finally {
       setLoading(false);
     }
@@ -73,49 +67,68 @@ const Activate = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-green-50 p-4">
-      <Card className="w-full max-w-md glass-card animate-fade-in">
+      <WaveBackground />
+      
+      <Card className="w-full max-w-md glass-card animate-fade-in z-10">
         <CardHeader>
-          <CardTitle className="text-2xl">Activez Votre Compte</CardTitle>
-          <CardDescription>Définissez votre mot de passe pour finaliser la configuration de votre compte</CardDescription>
+          <CardTitle className="text-2xl">Activation du compte</CardTitle>
+          <CardDescription>Définissez votre mot de passe pour accéder à votre compte</CardDescription>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Mot de passe</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="Entrez votre mot de passe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirmer le mot de passe</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="Confirmez votre mot de passe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={loading}
-              >
-                {loading ? "Activation en cours..." : "Activer le compte"}
-              </Button>
-            </form>
-          </Form>
+          {!token ? (
+            <div className="text-center p-4">
+              <p className="text-red-500 mb-2">Lien d'activation invalide ou expiré</p>
+              <Button onClick={() => navigate('/')}>Retour à la page de connexion</Button>
+            </div>
+          ) : (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Mot de passe</FormLabel>
+                      <div className="relative">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                          <Lock size={18} />
+                        </div>
+                        <FormControl>
+                          <Input type="password" className="pl-10" placeholder="Entrez votre mot de passe" {...field} />
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirmer le mot de passe</FormLabel>
+                      <div className="relative">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                          <Lock size={18} />
+                        </div>
+                        <FormControl>
+                          <Input type="password" className="pl-10" placeholder="Confirmez votre mot de passe" {...field} />
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={loading}
+                >
+                  {loading ? "Activation en cours..." : "Activer le compte"}
+                </Button>
+              </form>
+            </Form>
+          )}
         </CardContent>
       </Card>
     </div>
