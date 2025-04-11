@@ -13,6 +13,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import Users from "./pages/admin/Users";
 import Settings from "./pages/admin/Settings";
 import Activate from "./pages/Activate";
+import ForgotPassword from "./pages/ForgotPassword";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
             {/* Public routes */}
             <Route path="/" element={<Index />} />
             <Route path="/activate" element={<Activate />} />
+            <Route path="/forgotpassword" element={<ForgotPassword />} />
             
             {/* Protected routes - require authentication */}
             <Route element={<AuthGuard />}>

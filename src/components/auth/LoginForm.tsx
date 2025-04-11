@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Mail, AlertCircle } from 'lucide-react';
 import PasswordInput from './PasswordInput';
+import axios from 'axios';
+import { toast } from 'sonner';
 
 // Form schema with validation
 const formSchema = z.object({
@@ -41,6 +43,7 @@ const LoginForm = ({
   onSubmit 
 }: LoginFormProps) => {
   const [error, setError] = useState<string | null>(null);
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -71,6 +74,31 @@ const LoginForm = ({
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
       return false;
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    const currentEmail = form.getValues().email;
+    
+    if (!currentEmail || !currentEmail.match(/^\S+@\S+\.\S+$/)) {
+      toast.error("Veuillez saisir une adresse e-mail valide");
+      return;
+    }
+    
+    setForgotPasswordLoading(true);
+    
+    try {
+      await axios.post('http://backend.local.com/api/mdp-oublie', {
+        email: currentEmail
+      });
+      
+      toast.success("Si un compte existe avec cette adresse e-mail, vous recevrez un lien pour réinitialiser votre mot de passe");
+    } catch (err) {
+      console.error("Erreur lors de la demande de réinitialisation:", err);
+      // For security reasons, we don't want to reveal if an email exists or not
+      toast.success("Si un compte existe avec cette adresse e-mail, vous recevrez un lien pour réinitialiser votre mot de passe");
+    } finally {
+      setForgotPasswordLoading(false);
     }
   };
 
@@ -168,9 +196,16 @@ const LoginForm = ({
               )}
             />
             
-            <a href="#" className="text-sm text-primary hover:text-primary/80">
-              Mot de passe oublié?
-            </a>
+            <Button 
+              variant="link" 
+              type="button" 
+              size="sm" 
+              onClick={handleForgotPassword}
+              disabled={forgotPasswordLoading}
+              className="text-sm text-primary hover:text-primary/80"
+            >
+              {forgotPasswordLoading ? 'Chargement...' : 'Mot de passe oublié?'}
+            </Button>
           </div>
           
           <Button 
