@@ -38,30 +38,30 @@ const StatsCards = () => {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatCard
-        title="Total Users"
+        title="Utilisateurs Totaux"
         value={stats.totalUsers}
-        description="All registered users"
+        description="Tous les utilisateurs enregistrés"
         icon={<Users className="h-4 w-4 text-white" />}
         color="bg-blue-500"
       />
       <StatCard
-        title="Active Users"
+        title="Utilisateurs Actifs"
         value={stats.activeUsers}
-        description="Users with active accounts"
+        description="Utilisateurs avec comptes actifs"
         icon={<UserCheck className="h-4 w-4 text-white" />}
         color="bg-green-500"
       />
       <StatCard
-        title="Pending Activation"
+        title="En Attente d'Activation"
         value={stats.pendingUsers}
-        description="Awaiting account activation"
+        description="En attente d'activation du compte"
         icon={<Clock className="h-4 w-4 text-white" />}
         color="bg-amber-500"
       />
       <StatCard
-        title="New This Month"
+        title="Nouveaux ce Mois"
         value={stats.newThisMonth}
-        description="Users registered in the last 30 days"
+        description="Utilisateurs enregistrés ces 30 derniers jours"
         icon={<UserPlus className="h-4 w-4 text-white" />}
         color="bg-purple-500"
       />

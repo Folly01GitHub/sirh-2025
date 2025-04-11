@@ -12,11 +12,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const userSchema = z.object({
-  firstName: z.string().min(2, "First name is required"),
-  lastName: z.string().min(2, "Last name is required"),
-  email: z.string().email("Invalid email address"),
-  position: z.string().min(1, "Position is required"),
-  department: z.string().min(1, "Department is required"),
+  firstName: z.string().min(2, "Le prénom est requis"),
+  lastName: z.string().min(2, "Le nom est requis"),
+  email: z.string().email("Adresse email invalide"),
+  position: z.string().min(1, "Le poste est requis"),
+  department: z.string().min(1, "Le département est requis"),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -58,11 +58,11 @@ const AddUserCard = () => {
         department: data.department,
       });
       
-      toast.success("Invitation sent successfully!");
+      toast.success("Invitation envoyée avec succès !");
       form.reset();
     } catch (error) {
-      console.error("Error sending invitation:", error);
-      toast.error("Failed to send invitation. Please try again.");
+      console.error("Erreur lors de l'envoi de l'invitation:", error);
+      toast.error("Échec de l'envoi de l'invitation. Veuillez réessayer.");
     } finally {
       setLoading(false);
     }
@@ -71,8 +71,8 @@ const AddUserCard = () => {
   return (
     <Card className="glass-card animate-hover-float">
       <CardHeader>
-        <CardTitle>Add a New User</CardTitle>
-        <CardDescription>Send an invitation to a new user</CardDescription>
+        <CardTitle>Ajouter un Nouvel Utilisateur</CardTitle>
+        <CardDescription>Envoyer une invitation à un nouvel utilisateur</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -82,9 +82,9 @@ const AddUserCard = () => {
               name="firstName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>First Name</FormLabel>
+                  <FormLabel>Prénom</FormLabel>
                   <FormControl>
-                    <Input placeholder="John" {...field} />
+                    <Input placeholder="Jean" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -95,9 +95,9 @@ const AddUserCard = () => {
               name="lastName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Last Name</FormLabel>
+                  <FormLabel>Nom</FormLabel>
                   <FormControl>
-                    <Input placeholder="Doe" {...field} />
+                    <Input placeholder="Dupont" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -110,7 +110,7 @@ const AddUserCard = () => {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="john.doe@example.com" {...field} />
+                    <Input placeholder="jean.dupont@exemple.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -121,11 +121,11 @@ const AddUserCard = () => {
               name="position"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Position</FormLabel>
+                  <FormLabel>Poste</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select position" />
+                        <SelectValue placeholder="Sélectionner un poste" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -145,11 +145,11 @@ const AddUserCard = () => {
               name="department"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Department</FormLabel>
+                  <FormLabel>Département</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select department" />
+                        <SelectValue placeholder="Sélectionner un département" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -169,7 +169,7 @@ const AddUserCard = () => {
               className="w-full mt-4"
               disabled={loading}
             >
-              {loading ? "Sending..." : "Send Invitation"}
+              {loading ? "Envoi en cours..." : "Envoyer l'invitation"}
             </Button>
           </form>
         </Form>

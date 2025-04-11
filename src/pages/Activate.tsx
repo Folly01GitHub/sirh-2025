@@ -14,10 +14,10 @@ import axios from 'axios';
 import { useAuth } from '@/contexts/AuthContext';
 
 const passwordSchema = z.object({
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
   confirmPassword: z.string()
 }).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
+  message: "Les mots de passe ne correspondent pas",
   path: ["confirmPassword"]
 });
 
@@ -43,7 +43,7 @@ const Activate = () => {
 
   const onSubmit = async (data: PasswordForm) => {
     if (!token) {
-      toast.error("Invalid activation link");
+      toast.error("Lien d'activation invalide");
       return;
     }
 
@@ -54,7 +54,7 @@ const Activate = () => {
         password: data.password
       });
 
-      toast.success("Account activated successfully!");
+      toast.success("Compte activé avec succès !");
       
       // Assuming the activation API returns user data and token
       if (response.data.token && response.data.user) {
@@ -64,8 +64,8 @@ const Activate = () => {
         setTimeout(() => navigate('/'), 1500);
       }
     } catch (error) {
-      console.error("Activation error:", error);
-      toast.error("Failed to activate account. Please try again.");
+      console.error("Erreur d'activation:", error);
+      toast.error("Échec de l'activation du compte. Veuillez réessayer.");
     } finally {
       setLoading(false);
     }
@@ -75,8 +75,8 @@ const Activate = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-green-50 p-4">
       <Card className="w-full max-w-md glass-card animate-fade-in">
         <CardHeader>
-          <CardTitle className="text-2xl">Activate Your Account</CardTitle>
-          <CardDescription>Set your password to complete your account setup</CardDescription>
+          <CardTitle className="text-2xl">Activez Votre Compte</CardTitle>
+          <CardDescription>Définissez votre mot de passe pour finaliser la configuration de votre compte</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -86,9 +86,9 @@ const Activate = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>Mot de passe</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Enter your password" {...field} />
+                      <Input type="password" placeholder="Entrez votre mot de passe" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -99,9 +99,9 @@ const Activate = () => {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
+                    <FormLabel>Confirmer le mot de passe</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Confirm your password" {...field} />
+                      <Input type="password" placeholder="Confirmez votre mot de passe" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -112,7 +112,7 @@ const Activate = () => {
                 className="w-full" 
                 disabled={loading}
               >
-                {loading ? "Activating..." : "Activate Account"}
+                {loading ? "Activation en cours..." : "Activer le compte"}
               </Button>
             </form>
           </Form>
