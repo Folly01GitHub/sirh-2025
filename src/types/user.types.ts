@@ -10,6 +10,10 @@ export interface User {
   dateCreated: string;
 }
 
+// Re-export types from schemas for easier imports throughout the app
+import { UserEditFormData, FilterFormData } from '@/schemas/user.schemas';
+export { UserEditFormData, FilterFormData };
+
 // Mock user data generator
 export const generateMockUsers = (): User[] => {
   return Array.from({ length: 10 }).map((_, i) => ({
