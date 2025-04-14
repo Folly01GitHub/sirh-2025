@@ -54,12 +54,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(newToken);
     setUser(userData);
     
-    // Redirect based on user role
-    if (userData.role === 'admin') {
-      navigate('/admin/dashboard');
-    } else {
-      navigate('/home');
-    }
+    // Always redirect to home page for all users (including admins)
+    navigate('/home');
   };
 
   const logout = () => {
