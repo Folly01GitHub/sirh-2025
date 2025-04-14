@@ -1,4 +1,3 @@
-
 export interface User {
   id: number;
   firstName: string;
@@ -12,7 +11,7 @@ export interface User {
 
 // Re-export types from schemas for easier imports throughout the app
 import { UserEditFormData, FilterFormData } from '@/schemas/user.schemas';
-export { UserEditFormData, FilterFormData };
+export type { UserEditFormData, FilterFormData };
 
 // Mock user data generator
 export const generateMockUsers = (): User[] => {
