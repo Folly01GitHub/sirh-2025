@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -17,7 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger 
 } from '@/components/ui/popover';
-import { Menu, X, Home, LayoutDashboard, CalendarDays, Award, LogOut, User, Settings } from 'lucide-react';
+import { Menu, X, Home, LayoutDashboard, CalendarDays, Award, LogOut, User, Settings, Lock, Wallet, FileCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const HRISNavbar = () => {
@@ -33,7 +32,6 @@ const HRISNavbar = () => {
     toggleMobileMenu(); // Close mobile menu if open
   };
 
-  // User display name and avatar fallback
   const userEmail = user?.email || 'user@example.com';
   const userName = user?.name || userEmail.split('@')[0];
   const avatarFallback = userName.substring(0, 2).toUpperCase();
@@ -42,7 +40,6 @@ const HRISNavbar = () => {
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md">
       <div className="container px-4 sm:px-6 lg:px-8 mx-auto">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
           <div className="flex items-center">
             <Link to="/home" className="flex items-center">
               <div className="relative h-8 w-8 mr-2">
@@ -55,7 +52,6 @@ const HRISNavbar = () => {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:gap-6">
             <NavigationMenu>
               <NavigationMenuList>
@@ -69,14 +65,6 @@ const HRISNavbar = () => {
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                    <Link to="/dashboard">
-                      <LayoutDashboard className="h-4 w-4 mr-1" />
-                      <span>Tableau de Bord</span>
-                    </Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                     <Link to="/leave">
                       <CalendarDays className="h-4 w-4 mr-1" />
                       <span>Congés</span>
@@ -85,16 +73,39 @@ const HRISNavbar = () => {
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                    <Link to="/appraisals">
+                    <Link to="/assessments">
                       <Award className="h-4 w-4 mr-1" />
                       <span>Évaluations</span>
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                    <Link to="/permissions">
+                      <Lock className="h-4 w-4 mr-1" />
+                      <span>Permissions</span>
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                    <Link to="/cashout">
+                      <Wallet className="h-4 w-4 mr-1" />
+                      <span>Décaissement</span>
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                    <Link to="/certificates">
+                      <FileCheck className="h-4 w-4 mr-1" />
+                      <span>Certificats</span>
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
 
-            {/* Profile Menu */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
@@ -144,7 +155,6 @@ const HRISNavbar = () => {
             </Popover>
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="flex md:hidden">
             <Button variant="ghost" size="icon" onClick={toggleMobileMenu}>
               {isMobileMenuOpen ? (
@@ -157,7 +167,6 @@ const HRISNavbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden">
           <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm" onClick={toggleMobileMenu}></div>
@@ -188,14 +197,6 @@ const HRISNavbar = () => {
                   <span>Accueil</span>
                 </Link>
                 <Link
-                  to="/dashboard"
-                  className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
-                  onClick={toggleMobileMenu}
-                >
-                  <LayoutDashboard className="h-5 w-5 mr-3" />
-                  <span>Tableau de Bord</span>
-                </Link>
-                <Link
                   to="/leave"
                   className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
                   onClick={toggleMobileMenu}
@@ -204,12 +205,36 @@ const HRISNavbar = () => {
                   <span>Congés</span>
                 </Link>
                 <Link
-                  to="/appraisals"
+                  to="/assessments"
                   className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
                   onClick={toggleMobileMenu}
                 >
                   <Award className="h-5 w-5 mr-3" />
                   <span>Évaluations</span>
+                </Link>
+                <Link
+                  to="/permissions"
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
+                  onClick={toggleMobileMenu}
+                >
+                  <Lock className="h-5 w-5 mr-3" />
+                  <span>Permissions</span>
+                </Link>
+                <Link
+                  to="/cashout"
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
+                  onClick={toggleMobileMenu}
+                >
+                  <Wallet className="h-5 w-5 mr-3" />
+                  <span>Décaissement</span>
+                </Link>
+                <Link
+                  to="/certificates"
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
+                  onClick={toggleMobileMenu}
+                >
+                  <FileCheck className="h-5 w-5 mr-3" />
+                  <span>Certificats</span>
                 </Link>
               </nav>
               <div className="border-t border-gray-200 pt-4 mt-4">

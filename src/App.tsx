@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -37,6 +36,12 @@ const App = () => (
               <Route path="/admin/dashboard" element={<Dashboard />} />
               <Route path="/admin/users" element={<Users />} />
               <Route path="/admin/settings" element={<Settings />} />
+              {/* HRIS routes */}
+              <Route path="/leave" element={<Home />} />
+              <Route path="/assessments" element={<Home />} />
+              <Route path="/permissions" element={<Home />} />
+              <Route path="/cashout" element={<Home />} />
+              <Route path="/certificates" element={<Home />} />
               {/* Placeholder routes for HRIS pages */}
               <Route path="/dashboard" element={<Home />} />
               <Route path="/leave" element={<Home />} />

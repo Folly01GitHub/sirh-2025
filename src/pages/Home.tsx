@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar } from '@/components/ui/calendar';
@@ -15,14 +14,12 @@ const Home = () => {
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(today);
   const { user } = useAuth();
   
-  // Sample events for the calendar
   const events = [
     { date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2), type: 'meeting' },
     { date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 5), type: 'appraisal' },
     { date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 8), type: 'leave' },
   ];
   
-  // Function to highlight dates with events
   const isDayWithEvent = (date: Date) => {
     return events.some(event => 
       event.date.getDate() === date.getDate() && 
@@ -31,14 +28,12 @@ const Home = () => {
     );
   };
 
-  // Determine dashboard URL based on user role
   const dashboardUrl = user?.role === 'admin' ? '/admin/dashboard' : '/dashboard';
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8f9fc]">
       <HRISNavbar />
       
-      {/* Hero Section */}
       <section className="relative px-6 py-16 md:py-24 lg:px-12 overflow-hidden">
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100 opacity-70"></div>
@@ -53,21 +48,22 @@ const Home = () => {
             <p className="text-lg md:text-xl text-[#5e6c84] max-w-2xl mb-8 animate-slide-up">
               Gérez votre personnel, suivez les performances et simplifiez les processus RH en un seul endroit.
             </p>
-            <Button 
-              size="lg" 
-              className="group transition-all duration-300 transform hover:scale-105 animate-scale-in"
-              asChild
-            >
-              <Link to={dashboardUrl}>
-                Accéder au tableau de bord
-                <ChevronRight className="ml-1 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-              </Link>
-            </Button>
+            {user?.role === 'admin' && (
+              <Button 
+                size="lg" 
+                className="group transition-all duration-300 transform hover:scale-105 animate-scale-in"
+                asChild
+              >
+                <Link to={dashboardUrl}>
+                  Accéder au tableau de bord
+                  <ChevronRight className="ml-1 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </section>
       
-      {/* Statistics Section */}
       <section className="px-6 py-12 lg:px-12">
         <div className="container max-w-6xl mx-auto">
           <h2 className="text-2xl font-semibold text-[#172b4d] mb-8">Votre aperçu</h2>
@@ -100,7 +96,6 @@ const Home = () => {
         </div>
       </section>
       
-      {/* Calendar Section */}
       <section className="px-6 py-12 lg:px-12 bg-white">
         <div className="container max-w-6xl mx-auto">
           <h2 className="text-2xl font-semibold text-[#172b4d] mb-8">Votre calendrier</h2>
