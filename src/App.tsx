@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +14,7 @@ import Users from "./pages/admin/Users";
 import Settings from "./pages/admin/Settings";
 import Activate from "./pages/Activate";
 import ForgotPassword from "./pages/ForgotPassword";
+import Permissions from "./pages/Permissions";
 
 const queryClient = new QueryClient();
 
@@ -39,7 +41,7 @@ const App = () => (
               {/* HRIS routes */}
               <Route path="/leave" element={<Home />} />
               <Route path="/assessments" element={<Home />} />
-              <Route path="/permissions" element={<Home />} />
+              <Route path="/permissions" element={<Permissions />} />
               <Route path="/cashout" element={<Home />} />
               <Route path="/certificates" element={<Home />} />
               {/* Placeholder routes for HRIS pages */}
