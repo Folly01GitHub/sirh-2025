@@ -51,7 +51,7 @@ interface PermissionToValidate {
 }
 
 const PermissionValidations = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth(); // Correctly access both user and token
   const queryClient = useQueryClient();
   const [selectedPermission, setSelectedPermission] = useState<PermissionToValidate | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,9 +61,10 @@ const PermissionValidations = () => {
   const { data: permissions, isLoading, isError } = useQuery({
     queryKey: ['permissionsToValidate'],
     queryFn: async () => {
+      console.log('Using token for validation requests:', token); // Log token for debugging
       const response = await axios.get('http://backend.local.com/api/permissions_a_valider', {
         headers: {
-          'Authorization': `Bearer ${user?.token || ''}`,
+          'Authorization': `Bearer ${token || ''}`, // Use token from AuthContext
           'Content-Type': 'application/json',
         },
       });
@@ -81,7 +82,7 @@ const PermissionValidations = () => {
         }),
       }, {
         headers: {
-          'Authorization': `Bearer ${user?.token || ''}`,
+          'Authorization': `Bearer ${token || ''}`, // Use token from AuthContext
           'Content-Type': 'application/json',
         },
       });

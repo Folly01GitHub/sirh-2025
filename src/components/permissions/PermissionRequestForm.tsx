@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -40,7 +39,7 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const PermissionRequestForm = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth(); // Correctly access both user and token from AuthContext
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Generate time options (24-hour format)
@@ -77,14 +76,15 @@ const PermissionRequestForm = () => {
       
       // Log the payload to console (for debugging)
       console.log('Sending permission request:', payload);
+      console.log('Using token:', token); // Log the token being used
       
-      // Make API call
+      // Make API call with the correct token from AuthContext
       const response = await axios.post(
         'http://backend.local.com/api/permission',
         payload,
         {
           headers: {
-            'Authorization': `Bearer ${user?.token || ''}`,
+            'Authorization': `Bearer ${token || ''}`, // Correctly use the token from AuthContext
             'Content-Type': 'application/json',
           },
         }
