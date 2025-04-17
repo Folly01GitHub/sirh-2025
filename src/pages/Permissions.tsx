@@ -35,8 +35,8 @@ const Permissions = () => {
         <div className="flex flex-1 h-full overflow-hidden">
           {/* Sidebar using the same structure as AdminLayout */}
           <Sidebar>
-            <SidebarHeader className="p-4">
-              <h3 className="text-lg font-medium">Espace Permissions</h3>
+            <SidebarHeader className="p-4 pb-0">
+              <h3 className="text-lg font-medium mb-4">Espace Permissions</h3>
             </SidebarHeader>
             <SidebarContent>
               <SidebarMenu>
@@ -46,6 +46,12 @@ const Permissions = () => {
                       isActive={activeSection === item.id}
                       onClick={() => setActiveSection(item.id)}
                       tooltip={item.label}
+                      className={`
+                        ${activeSection === item.id 
+                          ? 'bg-primary/10 text-primary font-semibold border-l-4 border-primary' 
+                          : 'hover:bg-gray-100'}
+                        transition-all duration-200 ease-in-out
+                      `}
                     >
                       <item.icon className="h-5 w-5" />
                       <span className="hidden md:inline">{item.label}</span>
