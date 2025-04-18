@@ -46,7 +46,7 @@ interface Permission {
 }
 
 const PermissionRequests = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth(); // Correctly access both user and token
   const [selectedPermission, setSelectedPermission] = useState<Permission | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -54,9 +54,10 @@ const PermissionRequests = () => {
   const { data: permissions, isLoading, isError, refetch } = useQuery({
     queryKey: ['permissionsInCurrent'],
     queryFn: async () => {
+      console.log('Using token for permissions list:', token); // Log token for debugging
       const response = await axios.get('http://backend.local.com/api/permissions_in_current', {
         headers: {
-          'Authorization': `Bearer ${user?.token || ''}`,
+          'Authorization': `Bearer ${token || ''}`, // Correctly use token from AuthContext
           'Content-Type': 'application/json',
         },
       });
@@ -80,7 +81,7 @@ const PermissionRequests = () => {
     try {
       await axios.delete(`http://backend.local.com/api/permissions/${selectedPermission.id}`, {
         headers: {
-          'Authorization': `Bearer ${user?.token || ''}`,
+          'Authorization': `Bearer ${token || ''}`, // Correctly use token from AuthContext
           'Content-Type': 'application/json',
         },
       });

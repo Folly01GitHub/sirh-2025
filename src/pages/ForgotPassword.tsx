@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -28,7 +27,6 @@ const ForgotPassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get token from URL query parameter
   const queryParams = new URLSearchParams(location.search);
   const token = queryParams.get('token');
 
@@ -55,7 +53,6 @@ const ForgotPassword = () => {
 
       toast.success("Mot de passe réinitialisé avec succès !");
       
-      // Redirect to login page after successful password reset
       setTimeout(() => navigate('/'), 1500);
     } catch (error) {
       console.error("Erreur de réinitialisation du mot de passe:", error);
