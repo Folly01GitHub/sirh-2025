@@ -73,7 +73,7 @@ const HRISNavbar = () => {
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                    <Link to="/assessments">
+                    <Link to="/evaluation">
                       <Award className="h-4 w-4 mr-1" />
                       <span>Évaluations</span>
                     </Link>
@@ -205,7 +205,7 @@ const HRISNavbar = () => {
                   <span>Congés</span>
                 </Link>
                 <Link
-                  to="/assessments"
+                  to="/evaluation"
                   className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
                   onClick={toggleMobileMenu}
                 >
