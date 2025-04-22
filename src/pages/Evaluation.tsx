@@ -47,7 +47,12 @@ export interface Employee {
   position: string;
 }
 
-// Mock API functions - replace with actual API calls
+// --- New interface for Missions (Assignments) ---
+export interface Assignment {
+  id: number;
+  titre: string;
+}
+
 const fetchCriteriaGroups = async (): Promise<CriteriaGroup[]> => {
   // This would be an API call in production
   return [
@@ -107,6 +112,13 @@ const fetchEmployees = async (): Promise<Employee[]> => {
   ];
 };
 
+// --- Fetch missions (assignments) ---
+const fetchMissions = async (): Promise<Assignment[]> => {
+  const response = await axios.get('http://backend.local.com/api/liste_missions');
+  // Adapt shape if necessary; assuming data is Array<{ id, titre }>
+  return response.data;
+};
+
 const Evaluation = () => {
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
@@ -115,7 +127,10 @@ const Evaluation = () => {
   const [evaluatorId, setEvaluatorId] = useState<number | null>(null);
   const [approverId, setApproverId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
+  // --- NEW: State for assignments ---
+  const [selectedAssignment, setSelectedAssignment] = useState<number | null>(null);
+
   // Fetch criteria groups
   const { 
     data: criteriaGroups, 
@@ -124,7 +139,7 @@ const Evaluation = () => {
     queryKey: ['criteriaGroups'],
     queryFn: fetchCriteriaGroups
   });
-  
+
   // Fetch criteria items for the current group
   const {
     data: criteriaItems,
@@ -134,7 +149,7 @@ const Evaluation = () => {
     queryFn: () => fetchCriteriaItems(currentGroupId),
     enabled: !!currentGroupId
   });
-  
+
   // Fetch employees for selection
   const {
     data: employees,
@@ -143,7 +158,16 @@ const Evaluation = () => {
     queryKey: ['employees'],
     queryFn: fetchEmployees
   });
-  
+
+  // --- Fetch assignments (missions) ---
+  const {
+    data: missions,
+    isLoading: missionsLoading
+  } = useQuery({
+    queryKey: ['assignments'],
+    queryFn: fetchMissions
+  });
+
   // Calculate progress percentage
   const calculateProgress = useCallback(() => {
     if (!criteriaGroups || criteriaGroups.length === 0) return 0;
@@ -153,12 +177,12 @@ const Evaluation = () => {
     
     return Math.round(((currentGroupIndex + 1) / totalGroups) * 100);
   }, [criteriaGroups, currentGroupId]);
-  
+
   // Handle navigating to a specific group
   const handleGroupChange = useCallback((groupId: number) => {
     setCurrentGroupId(groupId);
   }, []);
-  
+
   // Handle navigation between groups
   const handlePreviousGroup = useCallback(() => {
     if (criteriaGroups && criteriaGroups.length > 0) {
@@ -168,7 +192,7 @@ const Evaluation = () => {
       }
     }
   }, [criteriaGroups, currentGroupId]);
-  
+
   const handleNextGroup = useCallback(() => {
     if (criteriaGroups && criteriaGroups.length > 0) {
       const currentIndex = criteriaGroups.findIndex(group => group.id === currentGroupId);
@@ -177,7 +201,7 @@ const Evaluation = () => {
       }
     }
   }, [criteriaGroups, currentGroupId]);
-  
+
   // Handle updating responses
   const handleResponseChange = useCallback((itemId: number, value: string | number) => {
     setResponses(prev => {
@@ -195,11 +219,15 @@ const Evaluation = () => {
       }
     });
   }, []);
-  
+
   // Handle submission of self-assessment
   const handleSubmitSelfAssessment = useCallback(async () => {
+    if (!selectedAssignment) {
+      toast.error("Veuillez sélectionner la mission concernée");
+      return;
+    }
     if (!evaluatorId || !approverId) {
-      toast.error("Please select both an evaluator and an approver");
+      toast.error("Veuillez sélectionner à la fois un évaluateur et un validateur");
       return;
     }
     
@@ -217,22 +245,22 @@ const Evaluation = () => {
       // Mock API response
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast.success("Self-assessment submitted successfully", {
-        description: "Your evaluator has been notified"
+      toast.success("Auto-évaluation soumise avec succès", {
+        description: "Votre évaluateur a été notifié",
       });
       
       // Move to step 2 (in a real app, only the evaluator would see step 2)
       setCurrentStep(2);
     } catch (error) {
       console.error("Error submitting self-assessment:", error);
-      toast.error("Failed to submit self-assessment", {
-        description: "Please try again later"
+      toast.error("Échec de la soumission de l'auto-évaluation", {
+        description: "Veuillez réessayer plus tard"
       });
     } finally {
       setIsSubmitting(false);
     }
-  }, [evaluatorId, approverId, responses]);
-  
+  }, [selectedAssignment, evaluatorId, approverId, responses]);
+
   // Handle submission of evaluation by manager
   const handleSubmitEvaluation = useCallback(async () => {
     setIsSubmitting(true);
@@ -247,26 +275,26 @@ const Evaluation = () => {
       // Mock API response
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast.success("Evaluation submitted successfully", {
-        description: "The approver has been notified"
+      toast.success("Évaluation soumise avec succès", {
+        description: "Le validateur a été notifié",
       });
       
       // Move to step 3 (in a real app, only the approver would see step 3)
       setCurrentStep(3);
     } catch (error) {
       console.error("Error submitting evaluation:", error);
-      toast.error("Failed to submit evaluation", {
-        description: "Please try again later"
+      toast.error("Échec de la soumission de l'évaluation", {
+        description: "Veuillez réessayer plus tard"
       });
     } finally {
       setIsSubmitting(false);
     }
   }, [responses]);
-  
+
   // Handle final approval
   const handleApprove = useCallback(async (approved: boolean, comment?: string) => {
     if (!approved && (!comment || comment.trim().length < 10)) {
-      toast.error("Please provide a detailed comment for rejection");
+      toast.error("Veuillez fournir un commentaire détaillé pour la réjection");
       return;
     }
     
@@ -284,12 +312,12 @@ const Evaluation = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       if (approved) {
-        toast.success("Evaluation approved", {
-          description: "The evaluation process is now complete"
+        toast.success("Évaluation approuvée", {
+          description: "Le processus d'évaluation est maintenant terminé"
         });
       } else {
-        toast.success("Evaluation sent back for revision", {
-          description: "The evaluator has been notified"
+        toast.success("Évaluation renvoyée pour révision", {
+          description: "L'évaluateur a été notifié"
         });
         // In a real app, we would go back to step 2 with the evaluator
       }
@@ -297,21 +325,21 @@ const Evaluation = () => {
       // In a real app, we would redirect to a summary page or dashboard
     } catch (error) {
       console.error("Error finalizing evaluation:", error);
-      toast.error("Failed to finalize evaluation", {
-        description: "Please try again later"
+      toast.error("Échec de la finalisation de l'évaluation", {
+        description: "Veuillez réessayer plus tard"
       });
     } finally {
       setIsSubmitting(false);
     }
   }, []);
-  
+
   // Reset to first group when step changes
   useEffect(() => {
     if (criteriaGroups && criteriaGroups.length > 0) {
       setCurrentGroupId(criteriaGroups[0].id);
     }
   }, [currentStep, criteriaGroups]);
-  
+
   return (
     <SidebarProvider>
       <div className="flex flex-col min-h-screen w-full bg-[#f8f9fc]">
@@ -320,7 +348,7 @@ const Evaluation = () => {
         <div className="flex flex-1 h-full overflow-hidden">
           <Sidebar>
             <SidebarHeader className="p-4 pb-0">
-              <h3 className="text-lg font-medium mb-2">Évaluation</h3>
+              <h3 className="text-lg font-medium mb-2">Évaluation de mission</h3>
               <Progress value={calculateProgress()} className="h-2 mb-4" />
             </SidebarHeader>
             <SidebarContent>
@@ -371,6 +399,10 @@ const Evaluation = () => {
                         onApproverChange={setApproverId}
                         isLoading={itemsLoading || isSubmitting}
                         onSubmit={handleSubmitSelfAssessment}
+                        assignments={missions || []}
+                        selectedAssignment={selectedAssignment}
+                        onAssignmentChange={setSelectedAssignment}
+                        assignmentsLoading={missionsLoading}
                       />
                     )}
                     
