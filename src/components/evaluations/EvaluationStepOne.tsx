@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { CriteriaItem, EvaluationResponse, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
@@ -13,6 +13,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
+// Mission type
+interface Mission {
+  id: number;
+  nom: string;
+}
+
+// Props update: add onMissionChange, selectedMissionId
 interface EvaluationStepOneProps {
   criteriaItems: CriteriaItem[];
   onResponseChange: (itemId: number, value: string | number) => void;
@@ -22,12 +29,15 @@ interface EvaluationStepOneProps {
   onApproverChange: (id: number) => void;
   isLoading: boolean;
   onSubmit: () => void;
+  onMissionChange?: (id: number) => void;
+  selectedMissionId?: number | null;
 }
 
-// Créer un schéma pour la validation du formulaire
+// Modifier ici pour ajouter mission à la validation
 const formSchema = z.object({
   evaluator: z.string().min(1, "Veuillez sélectionner un évaluateur"),
   approver: z.string().min(1, "Veuillez sélectionner un approbateur"),
+  mission: z.string().min(1, "Veuillez sélectionner une mission"),
 });
 
 const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
@@ -38,39 +48,70 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   onEvaluatorChange,
   onApproverChange,
   isLoading,
-  onSubmit
+  onSubmit,
+  onMissionChange,
+  selectedMissionId
 }) => {
+  const [missions, setMissions] = useState<Mission[]>([]);
+  const [missionsLoading, setMissionsLoading] = useState(false);
+  const [missionsError, setMissionsError] = useState<string | null>(null);
+
+  // fetch missions
+  useEffect(() => {
+    setMissionsLoading(true);
+    setMissionsError(null);
+    fetch('http://backend.local.com/api/liste_missions')
+      .then(res => {
+        if (!res.ok) throw new Error('Network error');
+        return res.json();
+      })
+      .then(data => {
+        setMissions(Array.isArray(data) ? data : []);
+      })
+      .catch(err => {
+        setMissionsError("Erreur lors du chargement des missions");
+        setMissions([]);
+      })
+      .finally(() => setMissionsLoading(false));
+  }, []);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       evaluator: "",
       approver: "",
+      mission: selectedMissionId ? selectedMissionId.toString() : "",
     },
   });
-  
-  // Obtenir la valeur actuelle pour un critère
+
+  // Sync mission external selection if provided (for initial value support)
+  useEffect(() => {
+    if (selectedMissionId) {
+      form.setValue("mission", selectedMissionId.toString());
+    }
+  }, [selectedMissionId]);
+
+  // Helper for criteria value
   const getResponseValue = (itemId: number) => {
     const response = responses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
   
-  // Gestion de la soumission du formulaire
+  // Form submit
   const handleSubmit = form.handleSubmit((data) => {
     const formComplete = criteriaItems.every(item => {
       const response = responses.find(r => r.item_id === item.id);
       
       if (item.type === 'numeric') {
-        // Toujours caster la valeur en nombre pour comparaison
         const numericValue = typeof response?.value === 'number' ? response.value : 
                             (typeof response?.value === 'string' ? Number(response.value) : 0);
         return numericValue >= 1 && numericValue <= 5;
       } else if (item.type === 'observation') {
         return response && typeof response.value === 'string' && response.value.length >= 50;
       }
-      
       return false;
     });
-    
+
     if (!formComplete) {
       form.setError("root", { 
         type: "manual", 
@@ -78,14 +119,14 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       });
       return;
     }
-    
+
+    if (onMissionChange) onMissionChange(Number(form.getValues("mission")));
     onSubmit();
   });
-  
-  // Rendu des étoiles (notation)
+
+  // Star UI
   const renderStarRating = (itemId: number) => {
     const currentValue = Number(getResponseValue(itemId)) || 0;
-    
     return (
       <RadioGroup 
         value={currentValue.toString()} 
@@ -112,7 +153,8 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       </RadioGroup>
     );
   };
-  
+
+  // Loading state
   if (isLoading && criteriaItems.length === 0) {
     return (
       <div className="space-y-6">
@@ -129,13 +171,14 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-8">
       <Form {...form}>
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Sélection de l'évaluateur et de l'approbateur */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Selecteurs: évaluateur, approbateur, mission */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Evaluateur */}
             <FormField
               control={form.control}
               name="evaluator"
@@ -166,7 +209,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                 </FormItem>
               )}
             />
-            
+            {/* Approbateur */}
             <FormField
               control={form.control}
               name="approver"
@@ -197,6 +240,44 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                 </FormItem>
               )}
             />
+            {/* Mission selector */}
+            <FormField
+              control={form.control}
+              name="mission"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Mission</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      if (onMissionChange) {
+                        onMissionChange(Number(value));
+                      }
+                    }}
+                    value={field.value}
+                    disabled={missionsLoading || !!missionsError}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={missionsLoading ? "Chargement..." : "Sélectionnez une mission"} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {missionsError ? (
+                        <SelectItem value="" disabled>{missionsError}</SelectItem>
+                      ) : (
+                        missions.map(mission => (
+                          <SelectItem key={mission.id} value={mission.id.toString()}>
+                            {mission.nom}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
           
           {/* Critères d'évaluation */}
@@ -208,7 +289,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                 <div className="space-y-2">
                   <p className="text-sm text-gray-500 mb-2">Évaluez de 1 à 5 étoiles</p>
                   {renderStarRating(item.id)}
-                  
                   <div className="flex justify-between text-xs text-gray-500 mt-1">
                     <span>Débutant</span>
                     <span>Expert</span>
@@ -257,3 +337,4 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
 };
 
 export default EvaluationStepOne;
+
