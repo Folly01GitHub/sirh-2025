@@ -60,7 +60,10 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       const response = responses.find(r => r.item_id === item.id);
       
       if (item.type === 'numeric') {
-        return response && response.value >= 1 && response.value <= 5;
+        // Convert to number and then compare
+        const numericValue = typeof response?.value === 'number' ? response.value : 
+                            (typeof response?.value === 'string' ? Number(response.value) : 0);
+        return numericValue >= 1 && numericValue <= 5;
       } else if (item.type === 'observation') {
         return response && typeof response.value === 'string' && response.value.length >= 50;
       }
