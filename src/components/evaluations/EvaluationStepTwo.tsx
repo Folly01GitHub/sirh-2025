@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -50,6 +51,54 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     });
     
     onResponseChange(itemId, value);
+  };
+  
+  // Render star rating for evaluator
+  const renderEvaluatorStarRating = (itemId: number) => {
+    const currentValue = Number(getEvaluatorResponseValue(itemId)) || 0;
+    
+    return (
+      <RadioGroup 
+        value={currentValue.toString()} 
+        onValueChange={(value) => handleEvaluatorResponseChange(itemId, parseInt(value))}
+        className="flex space-x-2"
+      >
+        {[1, 2, 3, 4, 5].map((value) => (
+          <div key={value} className="flex flex-col items-center">
+            <RadioGroupItem 
+              value={value.toString()} 
+              id={`evaluator-rating-${itemId}-${value}`} 
+              className="sr-only"
+            />
+            <label 
+              htmlFor={`evaluator-rating-${itemId}-${value}`}
+              className="cursor-pointer"
+            >
+              <Star 
+                className={`h-6 w-6 transition-all ${value <= currentValue ? 'fill-primary text-primary' : 'text-gray-300'}`}
+              />
+            </label>
+          </div>
+        ))}
+      </RadioGroup>
+    );
+  };
+  
+  // Render read-only star rating for employee
+  const renderEmployeeStarRating = (itemId: number) => {
+    const currentValue = Number(getEmployeeResponseValue(itemId)) || 0;
+    
+    return (
+      <div className="flex space-x-2">
+        {[1, 2, 3, 4, 5].map((value) => (
+          <div key={value} className="flex flex-col items-center">
+            <Star 
+              className={`h-6 w-6 ${value <= currentValue ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+            />
+          </div>
+        ))}
+      </div>
+    );
   };
   
   // Handle form submission
