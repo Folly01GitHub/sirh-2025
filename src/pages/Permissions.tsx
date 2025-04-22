@@ -19,6 +19,11 @@ import { FormInput, PanelBottom, ClipboardCheck } from 'lucide-react';
 const Permissions = () => {
   const [activeSection, setActiveSection] = useState("form");
 
+  const handleSectionChange = (section: string) => {
+    console.log(`Changing active section to: ${section}`);
+    setActiveSection(section);
+  };
+
   const menuItems = [
     { id: "form", label: "Formulaire de demande", icon: FormInput, shortLabel: "Demande" },
     { id: "requests", label: "Mes demandes", icon: PanelBottom, shortLabel: "Demandes" },
@@ -41,7 +46,7 @@ const Permissions = () => {
                   <SidebarMenuItem key={item.id}>
                     <SidebarMenuButton 
                       isActive={activeSection === item.id}
-                      onClick={() => setActiveSection(item.id)}
+                      onClick={() => handleSectionChange(item.id)}
                       tooltip={item.label}
                       className={`
                         ${activeSection === item.id 
@@ -77,7 +82,12 @@ const Permissions = () => {
                     <h2 className="text-2xl font-semibold text-[#172b4d] mb-4">
                       Formulaire de demande
                     </h2>
-                    <PermissionRequestForm onSubmitSuccess={() => setActiveSection("requests")} />
+                    <PermissionRequestForm 
+                      onSubmitSuccess={() => {
+                        console.log('onSubmitSuccess called in Permissions component');
+                        handleSectionChange("requests");
+                      }} 
+                    />
                   </>
                 )}
                 

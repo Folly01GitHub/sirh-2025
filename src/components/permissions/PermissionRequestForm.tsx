@@ -92,6 +92,8 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
         description: 'Votre demande de permission a été soumise avec succès.',
       });
       
+      console.log('Permission request successful, redirecting to requests section');
+      
       form.reset({
         permission_date: new Date(),
         start_time: '',
