@@ -24,19 +24,19 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
 }) => {
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   
-  // Get employee response value for an item
+  // Récupérer la valeur de la réponse du collaborateur
   const getEmployeeResponseValue = (itemId: number) => {
     const response = employeeResponses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
   
-  // Get evaluator response value for an item
+  // Récupérer la valeur de la réponse de l'évaluateur
   const getEvaluatorResponseValue = (itemId: number) => {
     const response = evaluatorResponses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
   
-  // Handle evaluator response change
+  // Gérer le changement de la réponse de l'évaluateur
   const handleEvaluatorResponseChange = (itemId: number, value: string | number) => {
     setEvaluatorResponses(prev => {
       const existingIndex = prev.findIndex(r => r.item_id === itemId);
@@ -53,7 +53,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     onResponseChange(itemId, value);
   };
   
-  // Render star rating for evaluator
+  // Rendu étoiles évaluateur
   const renderEvaluatorStarRating = (itemId: number) => {
     const currentValue = Number(getEvaluatorResponseValue(itemId)) || 0;
     
@@ -84,7 +84,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     );
   };
   
-  // Render read-only star rating for employee
+  // Rendu étoiles collaborateur (lecture seule)
   const renderEmployeeStarRating = (itemId: number) => {
     const currentValue = Number(getEmployeeResponseValue(itemId)) || 0;
     
@@ -101,7 +101,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     );
   };
   
-  // Handle form submission
+  // Gestion de la soumission du formulaire
   const handleSubmit = () => {
     const formComplete = criteriaItems.every(item => {
       const response = evaluatorResponses.find(r => r.item_id === item.id);
@@ -140,18 +140,18 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     <div className="space-y-8">
       <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
         <p className="text-blue-800">
-          En tant qu'évaluateur, vous pouvez désormais consulter les auto-évaluations du collaborateur 
+          En tant qu'évaluateur, vous pouvez consulter l'auto-évaluation du collaborateur 
           et saisir votre propre évaluation. Les deux seront affichées côte à côte pour faciliter la comparaison.
         </p>
       </div>
       
-      {/* Criteria Items */}
+      {/* Critères d'évaluation */}
       {criteriaItems.map((item) => (
         <div key={item.id} className="p-4 border rounded-md shadow-sm">
           <h3 className="text-lg font-medium mb-4">{item.label}</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Employee Response (Read-only) */}
+            {/* Réponses collaborateur (lecture seule) */}
             <div className="space-y-2 bg-gray-50 p-4 rounded-md">
               <h4 className="font-medium text-gray-700">Auto-évaluation du collaborateur</h4>
               
@@ -168,7 +168,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
               )}
             </div>
             
-            {/* Evaluator Response */}
+            {/* Réponse évaluateur */}
             <div className="space-y-2">
               <h4 className="font-medium text-primary">Votre évaluation</h4>
               
@@ -189,7 +189,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
                   <Textarea 
                     value={getEvaluatorResponseValue(item.id) as string}
                     onChange={(e) => handleEvaluatorResponseChange(item.id, e.target.value)}
-                    placeholder="Entrez votre observation..."
+                    placeholder="Entrez votre observation…"
                     className="min-h-[120px]"
                   />
                   <div className="text-xs text-right">

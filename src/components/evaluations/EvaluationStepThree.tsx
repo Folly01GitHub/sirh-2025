@@ -30,13 +30,13 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   const [comment, setComment] = useState("");
   const [showRejectionComment, setShowRejectionComment] = useState(false);
   
-  // Get response value for an item
+  // Obtenir la valeur de réponse pour un critère
   const getResponseValue = (responses: EvaluationResponse[], itemId: number) => {
     const response = responses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
   
-  // Render star rating (read-only)
+  // Rendu étoiles (lecture seule)
   const renderStarRating = (value: number) => {
     return (
       <div className="flex space-x-1">
@@ -50,7 +50,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
     );
   };
   
-  // Calculate averages for numeric ratings
+  // Calcul des moyennes pour les notes numériques
   const calculateAverages = () => {
     const numericItems = criteriaItems.filter(item => item.type === 'numeric');
     
@@ -72,12 +72,12 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   
   const { employeeAvg, evaluatorAvg } = calculateAverages();
   
-  // Handle approval
+  // Gérer la validation
   const handleApprove = () => {
     onApprove(true);
   };
   
-  // Handle rejection
+  // Gérer le rejet
   const handleReject = () => {
     if (!comment || comment.trim().length < 10) {
       alert("Veuillez fournir un commentaire de rejet d'au moins 10 caractères");
@@ -102,12 +102,12 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
     <div className="space-y-8">
       <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
         <p className="text-blue-800">
-          En tant qu'approbateur, vous devez valider ou rejeter cette évaluation. 
-          Vous pouvez voir les évaluations du collaborateur et du manager côte à côte.
+          En tant qu'approbateur, vous devez valider ou rejeter cette évaluation de mission.
+          Vous pouvez consulter les évaluations du collaborateur et du manager côte à côte.
         </p>
       </div>
       
-      {/* Summary card */}
+      {/* Carte de synthèse */}
       <div className="bg-white p-6 rounded-lg border shadow-sm">
         <h3 className="text-xl font-medium mb-4">Résumé de l'évaluation</h3>
         
@@ -121,7 +121,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
           </div>
           
           <div className="space-y-2">
-            <h4 className="font-medium text-primary">Évaluation manager</h4>
+            <h4 className="font-medium text-primary">Évaluation du manager</h4>
             <div className="flex items-center">
               <div className="text-3xl font-bold text-primary mr-3">{evaluatorAvg}</div>
               {renderStarRating(parseFloat(evaluatorAvg))}
@@ -130,7 +130,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </div>
       </div>
       
-      {/* Detailed evaluations */}
+      {/* Détails des évaluations */}
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="details">
           <AccordionTrigger>
@@ -143,7 +143,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                   <h3 className="text-lg font-medium mb-4">{item.label}</h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Employee Response (Read-only) */}
+                    {/* Réponse collaborateur (lecture seule) */}
                     <div className="space-y-2 bg-gray-50 p-4 rounded-md">
                       <h4 className="font-medium text-gray-700">Auto-évaluation du collaborateur</h4>
                       
@@ -160,7 +160,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                       )}
                     </div>
                     
-                    {/* Evaluator Response (Read-only) */}
+                    {/* Réponse évaluateur (lecture seule) */}
                     <div className="space-y-2 bg-blue-50 p-4 rounded-md">
                       <h4 className="font-medium text-primary">Évaluation du manager</h4>
                       
@@ -184,19 +184,19 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </AccordionItem>
       </Accordion>
       
-      {/* Approval actions */}
+      {/* Actions de validation */}
       <div className="bg-gray-50 p-6 rounded-lg border mt-8">
         <h3 className="text-xl font-medium mb-4">Décision finale</h3>
         
         {showRejectionComment ? (
           <div className="space-y-4">
             <p className="text-gray-700">
-              Veuillez fournir un commentaire expliquant les raisons du rejet:
+              Veuillez fournir un commentaire expliquant les raisons du rejet :
             </p>
             <Textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Détaillez les raisons du rejet et les points à améliorer..."
+              placeholder="Détaillez les raisons du rejet et les axes d'amélioration…"
               className="min-h-[150px]"
             />
             <div className="flex flex-col sm:flex-row gap-4 mt-4">

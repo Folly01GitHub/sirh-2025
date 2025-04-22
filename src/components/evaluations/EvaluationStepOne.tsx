@@ -24,7 +24,7 @@ interface EvaluationStepOneProps {
   onSubmit: () => void;
 }
 
-// Create schema for form validation
+// Créer un schéma pour la validation du formulaire
 const formSchema = z.object({
   evaluator: z.string().min(1, "Veuillez sélectionner un évaluateur"),
   approver: z.string().min(1, "Veuillez sélectionner un approbateur"),
@@ -48,19 +48,19 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     },
   });
   
-  // Get current response value for an item
+  // Obtenir la valeur actuelle pour un critère
   const getResponseValue = (itemId: number) => {
     const response = responses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
   
-  // Handle form submission
+  // Gestion de la soumission du formulaire
   const handleSubmit = form.handleSubmit((data) => {
     const formComplete = criteriaItems.every(item => {
       const response = responses.find(r => r.item_id === item.id);
       
       if (item.type === 'numeric') {
-        // Convert to number and then compare
+        // Toujours caster la valeur en nombre pour comparaison
         const numericValue = typeof response?.value === 'number' ? response.value : 
                             (typeof response?.value === 'string' ? Number(response.value) : 0);
         return numericValue >= 1 && numericValue <= 5;
@@ -82,7 +82,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     onSubmit();
   });
   
-  // Render star rating
+  // Rendu des étoiles (notation)
   const renderStarRating = (itemId: number) => {
     const currentValue = Number(getResponseValue(itemId)) || 0;
     
@@ -134,7 +134,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     <div className="space-y-8">
       <Form {...form}>
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Evaluator and Approver selection */}
+          {/* Sélection de l'évaluateur et de l'approbateur */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
@@ -151,7 +151,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un évaluateur" />
+                        <SelectValue placeholder="Sélectionnez un évaluateur" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -182,7 +182,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un approbateur" />
+                        <SelectValue placeholder="Sélectionnez un approbateur" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -199,7 +199,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
             />
           </div>
           
-          {/* Criteria Items */}
+          {/* Critères d'évaluation */}
           {criteriaItems.map((item) => (
             <div key={item.id} className="p-4 border rounded-md shadow-sm">
               <h3 className="text-lg font-medium mb-3">{item.label}</h3>
@@ -222,7 +222,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                   <Textarea 
                     value={getResponseValue(item.id) as string}
                     onChange={(e) => onResponseChange(item.id, e.target.value)}
-                    placeholder="Entrez votre observation..."
+                    placeholder="Entrez votre observation…"
                     className="min-h-[120px]"
                   />
                   <div className="text-xs text-right">

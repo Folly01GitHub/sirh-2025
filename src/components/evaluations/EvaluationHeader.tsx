@@ -17,10 +17,10 @@ const EvaluationHeader: React.FC<EvaluationHeaderProps> = ({ currentStep }) => {
   return (
     <div className="mb-8">
       <h1 className="text-3xl md:text-4xl font-bold text-[#172b4d] mb-4 animate-fade-in">
-        Évaluation annuelle
+        Évaluation de mission
       </h1>
       <p className="text-lg text-[#5e6c84] max-w-3xl mb-8 animate-fade-in">
-        Processus d'évaluation des performances et de développement professionnel
+        Processus d'évaluation des performances et du développement professionnel pour une mission précise
       </p>
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
@@ -51,7 +51,7 @@ const EvaluationHeader: React.FC<EvaluationHeaderProps> = ({ currentStep }) => {
             )}
             <div>
               <p className="font-medium">Étape 2</p>
-              <p className="text-sm">Évaluation manager</p>
+              <p className="text-sm">Évaluation du manager</p>
             </div>
           </div>
           
@@ -78,7 +78,7 @@ const EvaluationHeader: React.FC<EvaluationHeaderProps> = ({ currentStep }) => {
           {currentStep === 3 && <ClipboardCheck className="h-5 w-5" />}
           <span className="font-medium">
             {currentStep === 1 && "Auto-évaluation en cours"}
-            {currentStep === 2 && "Évaluation manager en cours"}
+            {currentStep === 2 && "Évaluation du manager en cours"}
             {currentStep === 3 && "Validation finale en cours"}
           </span>
         </div>
