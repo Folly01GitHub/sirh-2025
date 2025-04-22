@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import HRISNavbar from '@/components/hris/HRISNavbar';
@@ -20,7 +19,6 @@ import { FormInput, PanelBottom, ClipboardCheck } from 'lucide-react';
 const Permissions = () => {
   const [activeSection, setActiveSection] = useState("form");
 
-  // Menu items for sidebar
   const menuItems = [
     { id: "form", label: "Formulaire de demande", icon: FormInput, shortLabel: "Demande" },
     { id: "requests", label: "Mes demandes", icon: PanelBottom, shortLabel: "Demandes" },
@@ -33,7 +31,6 @@ const Permissions = () => {
         <HRISNavbar />
         
         <div className="flex flex-1 h-full overflow-hidden">
-          {/* Sidebar using the same structure as AdminLayout */}
           <Sidebar>
             <SidebarHeader className="p-4 pb-0">
               <h3 className="text-lg font-medium mb-4">Espace Permissions</h3>
@@ -63,7 +60,6 @@ const Permissions = () => {
             </SidebarContent>
           </Sidebar>
 
-          {/* Main content area using SidebarInset for consistent layout with admin */}
           <SidebarInset className="flex flex-col h-full overflow-auto">
             <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-fade-in">
               <div className="text-center mb-8">
@@ -81,7 +77,7 @@ const Permissions = () => {
                     <h2 className="text-2xl font-semibold text-[#172b4d] mb-4">
                       Formulaire de demande
                     </h2>
-                    <PermissionRequestForm />
+                    <PermissionRequestForm onSubmitSuccess={() => setActiveSection("requests")} />
                   </>
                 )}
                 
