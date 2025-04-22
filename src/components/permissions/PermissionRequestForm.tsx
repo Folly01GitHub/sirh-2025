@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -75,7 +76,6 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
       };
       
       console.log('Sending permission request:', payload);
-      console.log('Using token:', token);
       
       const response = await axios.post(
         'http://backend.local.com/api/permission',
@@ -88,11 +88,11 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
         }
       );
       
+      console.log('Permission request successful, response:', response.data);
+      
       toast.success('Demande envoyée !', {
         description: 'Votre demande de permission a été soumise avec succès.',
       });
-      
-      console.log('Permission request successful, redirecting to requests section');
       
       form.reset({
         permission_date: new Date(),
@@ -102,7 +102,14 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
         validation_level: 0,
       });
       
-      onSubmitSuccess();
+      console.log('About to call onSubmitSuccess callback from form');
+      // Make sure this callback is executed after successful API call
+      if (typeof onSubmitSuccess === 'function') {
+        // Add slight delay to ensure toast is shown first
+        setTimeout(() => {
+          onSubmitSuccess();
+        }, 300);
+      }
       
     } catch (error) {
       console.error('Permission request submission error:', error);

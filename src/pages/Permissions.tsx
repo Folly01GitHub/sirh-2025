@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import { 
@@ -19,10 +20,17 @@ import { FormInput, PanelBottom, ClipboardCheck } from 'lucide-react';
 const Permissions = () => {
   const [activeSection, setActiveSection] = useState("form");
 
-  const handleSectionChange = (section: string) => {
+  // Use useCallback to ensure the function reference doesn't change between renders
+  const handleSectionChange = useCallback((section: string) => {
     console.log(`Changing active section to: ${section}`);
     setActiveSection(section);
-  };
+  }, []);
+
+  // Create a dedicated function for form submission success
+  const handleFormSubmitSuccess = useCallback(() => {
+    console.log('onSubmitSuccess called in Permissions component - redirecting to requests');
+    setActiveSection("requests");
+  }, []);
 
   const menuItems = [
     { id: "form", label: "Formulaire de demande", icon: FormInput, shortLabel: "Demande" },
@@ -82,12 +90,7 @@ const Permissions = () => {
                     <h2 className="text-2xl font-semibold text-[#172b4d] mb-4">
                       Formulaire de demande
                     </h2>
-                    <PermissionRequestForm 
-                      onSubmitSuccess={() => {
-                        console.log('onSubmitSuccess called in Permissions component');
-                        handleSectionChange("requests");
-                      }} 
-                    />
+                    <PermissionRequestForm onSubmitSuccess={handleFormSubmitSuccess} />
                   </>
                 )}
                 
