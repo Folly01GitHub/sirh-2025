@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { CriteriaItem, EvaluationResponse, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ import { Star } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
 // Mission type
 interface Mission {
@@ -53,27 +53,37 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   selectedMissionId
 }) => {
   const [missions, setMissions] = useState<Mission[]>([]);
+  const [missionQuery, setMissionQuery] = useState("");
+  const [missionOptions, setMissionOptions] = useState<Mission[]>([]);
   const [missionsLoading, setMissionsLoading] = useState(false);
   const [missionsError, setMissionsError] = useState<string | null>(null);
+  const [evaluatorQuery, setEvaluatorQuery] = useState("");
+  const [approverQuery, setApproverQuery] = useState("");
 
-  // fetch missions
+  // fetch missions autocomplete on search
   useEffect(() => {
     setMissionsLoading(true);
     setMissionsError(null);
-    fetch('http://backend.local.com/api/liste_missions')
+
+    fetch(`http://backend.local.com/api/liste_missions?search=${encodeURIComponent(missionQuery)}`)
       .then(res => {
-        if (!res.ok) throw new Error('Network error');
+        if (!res.ok) throw new Error("Network error");
         return res.json();
       })
       .then(data => {
-        setMissions(Array.isArray(data) ? data : []);
+        setMissionOptions(Array.isArray(data) ? data : []);
       })
       .catch(err => {
         setMissionsError("Erreur lors du chargement des missions");
-        setMissions([]);
+        setMissionOptions([]);
       })
       .finally(() => setMissionsLoading(false));
-  }, []);
+  }, [missionQuery]);
+
+  // use normal missions if no search (for initial mount/display)
+  useEffect(() => {
+    if (!missionQuery) setMissionOptions(missions);
+  }, [missions, missionQuery]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -154,6 +164,18 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     );
   };
 
+  // Filtering helpers for local filtering on employee list
+  const filteredEmployees = (query: string) =>
+    employees.filter(
+      e =>
+        e.name.toLowerCase().includes(query.toLowerCase()) ||
+        e.position.toLowerCase().includes(query.toLowerCase())
+    )
+    .map(e => ({
+      value: e.id.toString(),
+      label: `${e.name} - ${e.position}`,
+    }));
+
   // Loading state
   if (isLoading && criteriaItems.length === 0) {
     return (
@@ -176,7 +198,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     <div className="space-y-8">
       <Form {...form}>
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Selecteurs: évaluateur, approbateur, mission */}
+          {/* Selecteurs (ligne unique, tous searchables) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Evaluateur */}
             <FormField
@@ -184,27 +206,18 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
               name="evaluator"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Évaluateur</FormLabel>
-                  <Select 
-                    onValueChange={(value) => {
+                  <SearchableSelect
+                    label="Évaluateur"
+                    placeholder="Sélectionnez ou cherchez…"
+                    value={field.value}
+                    onChange={value => {
                       field.onChange(value);
-                      onEvaluatorChange(parseInt(value));
+                      onEvaluatorChange(Number(value));
                     }}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionnez un évaluateur" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {employees.map(employee => (
-                        <SelectItem key={employee.id} value={employee.id.toString()}>
-                          {employee.name} - {employee.position}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onSearch={setEvaluatorQuery}
+                    options={filteredEmployees(evaluatorQuery)}
+                    loading={employees.length === 0}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -215,65 +228,44 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
               name="approver"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Approbateur</FormLabel>
-                  <Select 
-                    onValueChange={(value) => {
+                  <SearchableSelect
+                    label="Approbateur"
+                    placeholder="Sélectionnez ou cherchez…"
+                    value={field.value}
+                    onChange={value => {
                       field.onChange(value);
-                      onApproverChange(parseInt(value));
+                      onApproverChange(Number(value));
                     }}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionnez un approbateur" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {employees.map(employee => (
-                        <SelectItem key={employee.id} value={employee.id.toString()}>
-                          {employee.name} - {employee.position}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onSearch={setApproverQuery}
+                    options={filteredEmployees(approverQuery)}
+                    loading={employees.length === 0}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
             />
-            {/* Mission selector */}
+            {/* Mission */}
             <FormField
               control={form.control}
               name="mission"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mission</FormLabel>
-                  <Select
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      if (onMissionChange) {
-                        onMissionChange(Number(value));
-                      }
-                    }}
+                  <SearchableSelect
+                    label="Mission"
+                    placeholder="Sélectionnez ou cherchez…"
                     value={field.value}
-                    disabled={missionsLoading || !!missionsError}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={missionsLoading ? "Chargement..." : "Sélectionnez une mission"} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {missionsError ? (
-                        <SelectItem value="" disabled>{missionsError}</SelectItem>
-                      ) : (
-                        missions.map(mission => (
-                          <SelectItem key={mission.id} value={mission.id.toString()}>
-                            {mission.nom}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
+                    onChange={val => {
+                      field.onChange(val);
+                      if (onMissionChange) onMissionChange(Number(val));
+                    }}
+                    onSearch={setMissionQuery}
+                    options={missionOptions.map(m => ({
+                      value: m.id.toString(),
+                      label: m.nom,
+                    }))}
+                    loading={missionsLoading}
+                    disabled={!!missionsError}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -337,4 +329,3 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
 };
 
 export default EvaluationStepOne;
-
