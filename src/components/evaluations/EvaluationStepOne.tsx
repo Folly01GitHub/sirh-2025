@@ -1,25 +1,34 @@
-import React from "react";
-import { CriteriaItem, EvaluationResponse, Employee, Assignment } from "@/pages/Evaluation";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
-// --- Extend props ---
+import React from 'react';
+import { CriteriaItem, EvaluationResponse, Employee } from '@/pages/Evaluation';
+import { Button } from '@/components/ui/button';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Star } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+
 interface EvaluationStepOneProps {
   criteriaItems: CriteriaItem[];
   onResponseChange: (itemId: number, value: string | number) => void;
   responses: EvaluationResponse[];
   employees: Employee[];
-  onEvaluatorChange: (value: number) => void;
-  onApproverChange: (value: number) => void;
+  onEvaluatorChange: (id: number) => void;
+  onApproverChange: (id: number) => void;
   isLoading: boolean;
   onSubmit: () => void;
-  // --- New Props for assignment field ---
-  assignments: Assignment[];
-  selectedAssignment: number | null;
-  onAssignmentChange: (assignmentId: number) => void;
-  assignmentsLoading: boolean;
 }
+
+// Créer un schéma pour la validation du formulaire
+const formSchema = z.object({
+  evaluator: z.string().min(1, "Veuillez sélectionner un évaluateur"),
+  approver: z.string().min(1, "Veuillez sélectionner un approbateur"),
+});
 
 const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   criteriaItems,
@@ -29,96 +38,220 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   onEvaluatorChange,
   onApproverChange,
   isLoading,
-  onSubmit,
-  assignments,
-  selectedAssignment,
-  onAssignmentChange,
-  assignmentsLoading,
+  onSubmit
 }) => {
-  // --- Add at the top of the form: Mission selection ---
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      evaluator: "",
+      approver: "",
+    },
+  });
+  
+  // Obtenir la valeur actuelle pour un critère
+  const getResponseValue = (itemId: number) => {
+    const response = responses.find(r => r.item_id === itemId);
+    return response ? response.value : "";
+  };
+  
+  // Gestion de la soumission du formulaire
+  const handleSubmit = form.handleSubmit((data) => {
+    const formComplete = criteriaItems.every(item => {
+      const response = responses.find(r => r.item_id === item.id);
+      
+      if (item.type === 'numeric') {
+        // Toujours caster la valeur en nombre pour comparaison
+        const numericValue = typeof response?.value === 'number' ? response.value : 
+                            (typeof response?.value === 'string' ? Number(response.value) : 0);
+        return numericValue >= 1 && numericValue <= 5;
+      } else if (item.type === 'observation') {
+        return response && typeof response.value === 'string' && response.value.length >= 50;
+      }
+      
+      return false;
+    });
+    
+    if (!formComplete) {
+      form.setError("root", { 
+        type: "manual", 
+        message: "Veuillez compléter tous les champs d'évaluation" 
+      });
+      return;
+    }
+    
+    onSubmit();
+  });
+  
+  // Rendu des étoiles (notation)
+  const renderStarRating = (itemId: number) => {
+    const currentValue = Number(getResponseValue(itemId)) || 0;
+    
+    return (
+      <RadioGroup 
+        value={currentValue.toString()} 
+        onValueChange={(value) => onResponseChange(itemId, parseInt(value))}
+        className="flex space-x-2"
+      >
+        {[1, 2, 3, 4, 5].map((value) => (
+          <div key={value} className="flex flex-col items-center">
+            <RadioGroupItem 
+              value={value.toString()} 
+              id={`rating-${itemId}-${value}`} 
+              className="sr-only"
+            />
+            <label 
+              htmlFor={`rating-${itemId}-${value}`}
+              className="cursor-pointer"
+            >
+              <Star 
+                className={`h-6 w-6 transition-all ${value <= currentValue ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+              />
+            </label>
+          </div>
+        ))}
+      </RadioGroup>
+    );
+  };
+  
+  if (isLoading && criteriaItems.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-6 w-1/3" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-6 w-1/3" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="space-y-8">
-      {/* Assignment selector */}
-      <div>
-        <label htmlFor="assignment-select" className="block text-sm font-semibold mb-2 text-gray-700">
-          Mission concernée <span className="text-destructive">*</span>
-        </label>
-        {assignmentsLoading ? (
-          <Skeleton className="h-10 w-full" />
-        ) : (
-          <Select
-            value={selectedAssignment ? selectedAssignment.toString() : ""}
-            onValueChange={(val) => onAssignmentChange(val ? parseInt(val) : null)}
-            disabled={isLoading || assignmentsLoading}
-          >
-            <SelectTrigger id="assignment-select" aria-label="Sélection de la mission">
-              <SelectValue placeholder="Sélectionnez une mission..." />
-            </SelectTrigger>
-            <SelectContent>
-              {assignments && assignments.length > 0 ? (
-                assignments.map((a) => (
-                  <SelectItem value={a.id.toString()} key={a.id}>
-                    {a.titre}
-                  </SelectItem>
-                ))
-              ) : (
-                <div className="px-4 py-2 text-muted-foreground text-sm">Aucune mission disponible</div>
+      <Form {...form}>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Sélection de l'évaluateur et de l'approbateur */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="evaluator"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Évaluateur</FormLabel>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      onEvaluatorChange(parseInt(value));
+                    }}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionnez un évaluateur" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {employees.map(employee => (
+                        <SelectItem key={employee.id} value={employee.id.toString()}>
+                          {employee.name} - {employee.position}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
               )}
-            </SelectContent>
-          </Select>
-        )}
-      </div>
-      <div>
-        <h2 className="text-xl font-semibold mb-4">
-          Sélectionnez votre évaluateur et votre validateur
-        </h2>
-        
-        {/* Select Evaluator */}
-        <div>
-          <label htmlFor="evaluator-select" className="block text-sm font-semibold mb-2 text-gray-700">
-            Sélectionner l'évaluateur <span className="text-destructive">*</span>
-          </label>
-          <Select onValueChange={(value) => onEvaluatorChange(parseInt(value))} disabled={isLoading}>
-            <SelectTrigger id="evaluator-select" aria-label="Sélectionner l'évaluateur">
-              <SelectValue placeholder="Sélectionner l'évaluateur" />
-            </SelectTrigger>
-            <SelectContent>
-              {employees.map((employee) => (
-                <SelectItem value={employee.id.toString()} key={employee.id}>
-                  {employee.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        {/* Select Approver */}
-        <div>
-          <label htmlFor="approver-select" className="block text-sm font-semibold mb-2 text-gray-700">
-            Sélectionner le validateur <span className="text-destructive">*</span>
-          </label>
-          <Select onValueChange={(value) => onApproverChange(parseInt(value))} disabled={isLoading}>
-            <SelectTrigger id="approver-select" aria-label="Sélectionner le validateur">
-              <SelectValue placeholder="Sélectionner le validateur" />
-            </SelectTrigger>
-            <SelectContent>
-              {employees.map((employee) => (
-                <SelectItem value={employee.id.toString()} key={employee.id}>
-                  {employee.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      {/* Wrap the submit area to disable it if assignment not selected */}
-      <Button
-        onClick={onSubmit}
-        className="w-full md:w-auto"
-        disabled={isLoading || !selectedAssignment}
-      >
-        Soumettre mon auto-évaluation
-      </Button>
+            />
+            
+            <FormField
+              control={form.control}
+              name="approver"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Approbateur</FormLabel>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      onApproverChange(parseInt(value));
+                    }}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionnez un approbateur" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {employees.map(employee => (
+                        <SelectItem key={employee.id} value={employee.id.toString()}>
+                          {employee.name} - {employee.position}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          {/* Critères d'évaluation */}
+          {criteriaItems.map((item) => (
+            <div key={item.id} className="p-4 border rounded-md shadow-sm">
+              <h3 className="text-lg font-medium mb-3">{item.label}</h3>
+              
+              {item.type === 'numeric' ? (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-500 mb-2">Évaluez de 1 à 5 étoiles</p>
+                  {renderStarRating(item.id)}
+                  
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Débutant</span>
+                    <span>Expert</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-500 mb-2">
+                    Minimum 50 caractères
+                  </p>
+                  <Textarea 
+                    value={getResponseValue(item.id) as string}
+                    onChange={(e) => onResponseChange(item.id, e.target.value)}
+                    placeholder="Entrez votre observation…"
+                    className="min-h-[120px]"
+                  />
+                  <div className="text-xs text-right">
+                    {typeof getResponseValue(item.id) === 'string' && (
+                      <span className={`${(getResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
+                        {(getResponseValue(item.id) as string).length} / 50 caractères minimum
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+          
+          {form.formState.errors.root && (
+            <p className="text-sm font-medium text-destructive">
+              {form.formState.errors.root.message}
+            </p>
+          )}
+          
+          <Button 
+            type="submit" 
+            className="w-full md:w-auto" 
+            disabled={isLoading}
+          >
+            Soumettre mon auto-évaluation
+          </Button>
+        </form>
+      </Form>
     </div>
   );
 };
