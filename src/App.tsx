@@ -15,6 +15,7 @@ import Settings from "./pages/admin/Settings";
 import Activate from "./pages/Activate";
 import ForgotPassword from "./pages/ForgotPassword";
 import Permissions from "./pages/Permissions";
+import Evaluation from "./pages/Evaluation";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
               <Route path="/leave" element={<Home />} />
               <Route path="/assessments" element={<Home />} />
               <Route path="/permissions" element={<Permissions />} />
+              <Route path="/evaluation" element={<Evaluation />} />
               <Route path="/cashout" element={<Home />} />
               <Route path="/certificates" element={<Home />} />
               {/* Placeholder routes for HRIS pages */}
