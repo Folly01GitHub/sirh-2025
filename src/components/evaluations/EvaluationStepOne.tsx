@@ -178,6 +178,18 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     
     const missing: { group?: string, label: string }[] = [];
 
+    // Validate form-level inputs first
+    const formValues = form.getValues();
+    if (!formValues.evaluator) {
+      missing.push({ label: 'Évaluateur', group: 'Informations générales' });
+    }
+    if (!formValues.approver) {
+      missing.push({ label: 'Approbateur', group: 'Informations générales' });
+    }
+    if (!formValues.mission) {
+      missing.push({ label: 'Mission', group: 'Informations générales' });
+    }
+
     // Test each criteria item against its corresponding response
     criteriaItems.forEach(item => {
       const response = responses.find(r => r.item_id === item.id);
@@ -201,9 +213,9 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       }`;
       console.error('Validation failed:', message);
       toast.error("Formulaire incomplet", {
-        description: `${missing.length} champ(s) obligatoire(s) non rempli(s)`
+        description: `${missing.length} champ(s) obligatoire(s) non rempli(s)`,
+        duration: 5000
       });
-      alert(message);
       return false;
     }
 
@@ -214,11 +226,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const handleSubmit = form.handleSubmit((data) => {
     console.log('Form submit handler triggered');
     console.log('Form data:', data);
-
-    if (!data.evaluator || !data.approver || !data.mission) {
-      console.error('Evaluator, approver, or mission not selected');
-      return; // form validation will show errors
-    }
     
     if (!validateAllFields()) {
       console.error('Field validation failed');
