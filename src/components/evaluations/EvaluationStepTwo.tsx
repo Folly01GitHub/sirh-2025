@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -35,19 +34,21 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const handleEvaluatorResponseChange = (itemId: number, value: string | number) => {
+    const stringValue = typeof value === 'number' ? value.toString() : value;
+    
     setEvaluatorResponses(prev => {
       const existingIndex = prev.findIndex(r => r.item_id === itemId);
       
       if (existingIndex !== -1) {
         const updated = [...prev];
-        updated[existingIndex] = { item_id: itemId, value };
+        updated[existingIndex] = { item_id: itemId, value: stringValue };
         return updated;
       } else {
-        return [...prev, { item_id: itemId, value }];
+        return [...prev, { item_id: itemId, value: stringValue }];
       }
     });
     
-    onResponseChange(itemId, value);
+    onResponseChange(itemId, stringValue);
   };
   
   const renderEvaluatorStarRating = (itemId: number) => {
@@ -98,8 +99,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   const renderBooleanResponse = (itemId: number, isEmployee: boolean = false) => {
     const value = isEmployee ? 
-      getEmployeeResponseValue(itemId) as string : 
-      getEvaluatorResponseValue(itemId) as string;
+      getEmployeeResponseValue(itemId) : 
+      getEvaluatorResponseValue(itemId);
     
     if (isEmployee) {
       return (
