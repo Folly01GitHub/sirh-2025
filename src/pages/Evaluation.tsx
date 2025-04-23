@@ -54,38 +54,8 @@ const fetchCriteriaGroups = async (): Promise<CriteriaGroup[]> => {
 };
 
 const fetchCriteriaItems = async (groupId: number): Promise<CriteriaItem[]> => {
-  const items: Record<number, CriteriaItem[]> = {
-    1: [
-      { id: 1, type: 'numeric', label: 'Tools Mastery', group_id: 1 },
-      { id: 2, type: 'observation', label: 'Technical Comments', group_id: 1 },
-      { id: 3, type: 'numeric', label: 'Code Quality', group_id: 1 },
-      { id: 4, type: 'numeric', label: 'Problem-Solving Skills', group_id: 1 },
-    ],
-    2: [
-      { id: 5, type: 'numeric', label: 'Communication', group_id: 2 },
-      { id: 6, type: 'observation', label: 'Communication Comments', group_id: 2 },
-      { id: 7, type: 'numeric', label: 'Teamwork', group_id: 2 },
-    ],
-    3: [
-      { id: 8, type: 'numeric', label: 'Efficiency', group_id: 3 },
-      { id: 9, type: 'observation', label: 'Productivity Comments', group_id: 3 },
-      { id: 10, type: 'numeric', label: 'Quality of Deliverables', group_id: 3 },
-    ],
-    4: [
-      { id: 11, type: 'numeric', label: 'Proactivity', group_id: 4 },
-      { id: 12, type: 'observation', label: 'Initiative Comments', group_id: 4 },
-    ],
-    5: [
-      { id: 13, type: 'numeric', label: 'Collaboration', group_id: 5 },
-      { id: 14, type: 'observation', label: 'Team Collaboration Comments', group_id: 5 },
-    ],
-    6: [
-      { id: 15, type: 'numeric', label: 'Critical Thinking', group_id: 6 },
-      { id: 16, type: 'observation', label: 'Problem Solving Comments', group_id: 6 },
-    ],
-  };
-  
-  return items[groupId] || [];
+  const response = await apiClient.get('/items');
+  return response.data.filter((item: CriteriaItem) => item.group_id === groupId);
 };
 
 const fetchEmployees = async (): Promise<Employee[]> => {
