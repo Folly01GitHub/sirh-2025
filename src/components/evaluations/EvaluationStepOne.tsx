@@ -1,11 +1,9 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect, useState, useCallback } from 'react';
 import { CriteriaItem, EvaluationResponse, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Star } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -13,13 +11,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
-// Mission type
 interface Mission {
   id: number;
   nom: string;
 }
 
-// Props update: add onMissionChange, selectedMissionId
 interface EvaluationStepOneProps {
   criteriaItems: CriteriaItem[];
   onResponseChange: (itemId: number, value: string | number) => void;
@@ -33,7 +29,6 @@ interface EvaluationStepOneProps {
   selectedMissionId?: number | null;
 }
 
-// Modifier ici pour ajouter mission à la validation
 const formSchema = z.object({
   evaluator: z.string().min(1, "Veuillez sélectionner un évaluateur"),
   approver: z.string().min(1, "Veuillez sélectionner un approbateur"),
@@ -52,39 +47,87 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   onMissionChange,
   selectedMissionId
 }) => {
-  const [missions, setMissions] = useState<Mission[]>([]);
+  // State for API options and search values for all 3 selectors
   const [missionQuery, setMissionQuery] = useState("");
   const [missionOptions, setMissionOptions] = useState<Mission[]>([]);
   const [missionsLoading, setMissionsLoading] = useState(false);
   const [missionsError, setMissionsError] = useState<string | null>(null);
-  const [evaluatorQuery, setEvaluatorQuery] = useState("");
-  const [approverQuery, setApproverQuery] = useState("");
 
-  // fetch missions autocomplete on search
+  const [evaluatorQuery, setEvaluatorQuery] = useState("");
+  const [evaluatorOptions, setEvaluatorOptions] = useState<Employee[]>([]);
+  const [evaluatorLoading, setEvaluatorLoading] = useState(false);
+
+  const [approverQuery, setApproverQuery] = useState("");
+  const [approverOptions, setApproverOptions] = useState<Employee[]>([]);
+  const [approverLoading, setApproverLoading] = useState(false);
+
+  // --- Remote mission autocomplete (API) ---
   useEffect(() => {
     setMissionsLoading(true);
     setMissionsError(null);
-
-    fetch(`http://backend.local.com/api/liste_missions?search=${encodeURIComponent(missionQuery)}`)
-      .then(res => {
-        if (!res.ok) throw new Error("Network error");
-        return res.json();
-      })
-      .then(data => {
-        setMissionOptions(Array.isArray(data) ? data : []);
-      })
-      .catch(err => {
-        setMissionsError("Erreur lors du chargement des missions");
-        setMissionOptions([]);
-      })
-      .finally(() => setMissionsLoading(false));
+    const handler = setTimeout(() => {
+      fetch(`http://backend.local.com/api/liste_missions?search=${encodeURIComponent(missionQuery)}`)
+        .then(res => {
+          if (!res.ok) throw new Error("Network error");
+          return res.json();
+        })
+        .then(data => {
+          setMissionOptions(Array.isArray(data) ? data : []);
+        })
+        .catch(() => {
+          setMissionsError("Erreur lors du chargement des missions");
+          setMissionOptions([]);
+        })
+        .finally(() => setMissionsLoading(false));
+    }, 250);
+    return () => clearTimeout(handler);
   }, [missionQuery]);
 
-  // use normal missions if no search (for initial mount/display)
   useEffect(() => {
-    if (!missionQuery) setMissionOptions(missions);
-  }, [missions, missionQuery]);
+    if (!missionQuery) setMissionOptions([]);
+  }, [missionQuery]);
 
+  // --- Remote evaluator autocomplete (API) ---
+  useEffect(() => {
+    setEvaluatorLoading(true);
+    const handler = setTimeout(() => {
+      fetch(`http://backend.local.com/api/employees_list?search=${encodeURIComponent(evaluatorQuery)}`)
+        .then(res => {
+          if (!res.ok) throw new Error("Network error");
+          return res.json();
+        })
+        .then(data => {
+          setEvaluatorOptions(Array.isArray(data) ? data : []);
+        })
+        .catch(() => {
+          setEvaluatorOptions([]);
+        })
+        .finally(() => setEvaluatorLoading(false));
+    }, 250);
+    return () => clearTimeout(handler);
+  }, [evaluatorQuery]);
+
+  // --- Remote approver autocomplete (API) ---
+  useEffect(() => {
+    setApproverLoading(true);
+    const handler = setTimeout(() => {
+      fetch(`http://backend.local.com/api/employees_list?search=${encodeURIComponent(approverQuery)}`)
+        .then(res => {
+          if (!res.ok) throw new Error("Network error");
+          return res.json();
+        })
+        .then(data => {
+          setApproverOptions(Array.isArray(data) ? data : []);
+        })
+        .catch(() => {
+          setApproverOptions([]);
+        })
+        .finally(() => setApproverLoading(false));
+    }, 250);
+    return () => clearTimeout(handler);
+  }, [approverQuery]);
+
+  // Form config (no changes)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -94,24 +137,20 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     },
   });
 
-  // Sync mission external selection if provided (for initial value support)
   useEffect(() => {
     if (selectedMissionId) {
       form.setValue("mission", selectedMissionId.toString());
     }
   }, [selectedMissionId]);
 
-  // Helper for criteria value
   const getResponseValue = (itemId: number) => {
     const response = responses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
   
-  // Form submit
   const handleSubmit = form.handleSubmit((data) => {
     const formComplete = criteriaItems.every(item => {
       const response = responses.find(r => r.item_id === item.id);
-      
       if (item.type === 'numeric') {
         const numericValue = typeof response?.value === 'number' ? response.value : 
                             (typeof response?.value === 'string' ? Number(response.value) : 0);
@@ -134,49 +173,44 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     onSubmit();
   });
 
-  // Star UI
   const renderStarRating = (itemId: number) => {
     const currentValue = Number(getResponseValue(itemId)) || 0;
     return (
-      <RadioGroup 
-        value={currentValue.toString()} 
-        onValueChange={(value) => onResponseChange(itemId, parseInt(value))}
-        className="flex space-x-2"
-      >
+      <div className="flex space-x-2">
         {[1, 2, 3, 4, 5].map((value) => (
-          <div key={value} className="flex flex-col items-center">
-            <RadioGroupItem 
-              value={value.toString()} 
-              id={`rating-${itemId}-${value}`} 
+          <label key={value} htmlFor={`rating-${itemId}-${value}`} className="cursor-pointer flex flex-col items-center">
+            <input
+              type="radio"
+              id={`rating-${itemId}-${value}`}
+              value={value}
+              checked={currentValue === value}
+              onChange={() => onResponseChange(itemId, value)}
               className="sr-only"
             />
-            <label 
-              htmlFor={`rating-${itemId}-${value}`}
-              className="cursor-pointer"
-            >
-              <Star 
-                className={`h-6 w-6 transition-all ${value <= currentValue ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-              />
-            </label>
-          </div>
+            <Star className={`h-6 w-6 transition-all ${value <= currentValue ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
+          </label>
         ))}
-      </RadioGroup>
+      </div>
     );
   };
 
-  // Filtering helpers for local filtering on employee list
-  const filteredEmployees = (query: string) =>
-    employees.filter(
-      e =>
-        e.name.toLowerCase().includes(query.toLowerCase()) ||
-        e.position.toLowerCase().includes(query.toLowerCase())
-    )
-    .map(e => ({
-      value: e.id.toString(),
-      label: `${e.name} - ${e.position}`,
-    }));
+  // Map API data to select options for each selector
+  const evaluatorSelectOptions = evaluatorOptions.map(e => ({
+    value: e.id.toString(),
+    label: `${e.name} - ${e.position}`,
+  }));
 
-  // Loading state
+  const approverSelectOptions = approverOptions.map(e => ({
+    value: e.id.toString(),
+    label: `${e.name} - ${e.position}`,
+  }));
+
+  const missionSelectOptions = missionOptions.map(m => ({
+    value: m.id.toString(),
+    label: m.nom,
+  }));
+
+  // Loading state for skeleton
   if (isLoading && criteriaItems.length === 0) {
     return (
       <div className="space-y-6">
@@ -198,9 +232,8 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     <div className="space-y-8">
       <Form {...form}>
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Selecteurs (ligne unique, tous searchables) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Evaluateur */}
+            {/* Evaluator */}
             <FormField
               control={form.control}
               name="evaluator"
@@ -215,14 +248,14 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                       onEvaluatorChange(Number(value));
                     }}
                     onSearch={setEvaluatorQuery}
-                    options={filteredEmployees(evaluatorQuery)}
-                    loading={employees.length === 0}
+                    options={evaluatorSelectOptions}
+                    loading={evaluatorLoading}
                   />
                   <FormMessage />
                 </FormItem>
               )}
             />
-            {/* Approbateur */}
+            {/* Approver */}
             <FormField
               control={form.control}
               name="approver"
@@ -237,8 +270,8 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                       onApproverChange(Number(value));
                     }}
                     onSearch={setApproverQuery}
-                    options={filteredEmployees(approverQuery)}
-                    loading={employees.length === 0}
+                    options={approverSelectOptions}
+                    loading={approverLoading}
                   />
                   <FormMessage />
                 </FormItem>
@@ -259,10 +292,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                       if (onMissionChange) onMissionChange(Number(val));
                     }}
                     onSearch={setMissionQuery}
-                    options={missionOptions.map(m => ({
-                      value: m.id.toString(),
-                      label: m.nom,
-                    }))}
+                    options={missionSelectOptions}
                     loading={missionsLoading}
                     disabled={!!missionsError}
                   />
@@ -329,3 +359,4 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
 };
 
 export default EvaluationStepOne;
+
