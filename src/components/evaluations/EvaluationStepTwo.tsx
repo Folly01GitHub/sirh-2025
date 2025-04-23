@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -117,7 +118,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
 
     return (
       <RadioGroup
-        value={value}
+        value={value || ""}
         onValueChange={(val) => handleEvaluatorResponseChange(itemId, val)}
         className="flex gap-6"
       >
