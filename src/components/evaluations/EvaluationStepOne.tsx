@@ -131,32 +131,61 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     const response = responses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
-  
-  const handleSubmit = form.handleSubmit((data) => {
-    const formComplete = criteriaItems.every(item => {
-      const response = responses.find(r => r.item_id === item.id);
-      if (!response) return false;
-      
-      if (item.type === 'numeric') {
+
+  const isValidResponse = (response: EvaluationResponse | undefined, type: string): boolean => {
+    if (!response) return false;
+    
+    switch (type) {
+      case 'numeric':
         const numericValue = typeof response.value === 'number' ? response.value : 
-                            (typeof response.value === 'string' ? Number(response.value) : 0);
+                          (typeof response.value === 'string' ? Number(response.value) : 0);
         return numericValue >= 1 && numericValue <= 5;
-      } else if (item.type === 'observation') {
-        return typeof response.value === 'string' && response.value.trim().length >= 50;
-      } else if (item.type === 'boolean') {
-        return typeof response.value === 'string' && (response.value === 'oui' || response.value === 'non');
+      case 'observation':
+        return typeof response.value === 'string' && response.value.length >= 50;
+      case 'boolean':
+        return typeof response.value === 'string' && ['oui', 'non'].includes(response.value);
+      default:
+        return false;
+    }
+  };
+
+  const validateAllFields = (): boolean => {
+    const missing: { group?: string, label: string }[] = [];
+
+    // Check all criteria items that are available
+    criteriaItems.forEach(item => {
+      const response = responses.find(r => r.item_id === item.id);
+      if (!isValidResponse(response, item.type)) {
+        missing.push({
+          label: item.label,
+          group: item.group_name || `Group ${item.group_id}`
+        });
       }
-      return false;
     });
 
-    if (!formComplete) {
-      form.setError("root", { 
-        type: "manual", 
-        message: "Veuillez compléter tous les champs d'évaluation. Les observations doivent contenir au moins 50 caractères et toutes les notes doivent être attribuées." 
-      });
+    if (missing.length > 0) {
+      const message = `Veuillez compléter tous les champs obligatoires avant de soumettre votre auto-évaluation:\n\n${
+        missing.map(item => `- ${item.group ? `${item.group}: ` : ''}${item.label}`).join('\n')
+      }`;
+      alert(message);
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = form.handleSubmit((data) => {
+    // First validate evaluator, approver and mission are selected
+    if (!data.evaluator || !data.approver || !data.mission) {
+      return; // form validation will show errors
+    }
+    
+    // Then validate all fields across all groups
+    if (!validateAllFields()) {
       return;
     }
 
+    // If validation passes, proceed with submission
     if (onMissionChange) onMissionChange(Number(form.getValues("mission")));
     onSubmit();
   });
