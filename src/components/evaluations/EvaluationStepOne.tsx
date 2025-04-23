@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { CriteriaItem, EvaluationResponse, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import * as z from 'zod';
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import apiClient from '@/utils/apiClient';
+import { toast } from 'sonner';
 
 interface Mission {
   id: number;
@@ -171,25 +173,36 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
 
   const validateAllFields = (): boolean => {
     console.log('Starting full form validation');
+    console.log(`Total criteria items: ${criteriaItems.length}`);
+    console.log(`Total responses: ${responses.length}`);
+    
     const missing: { group?: string, label: string }[] = [];
 
+    // Test each criteria item against its corresponding response
     criteriaItems.forEach(item => {
       const response = responses.find(r => r.item_id === item.id);
-      console.log(`Checking item: ${item.label} (type: ${item.type})`);
+      console.log(`Checking item: ${item.label} (type: ${item.type}, group: ${item.group_name || item.group_id})`);
       
       if (!isValidResponse(response, item.type)) {
         missing.push({
           label: item.label,
           group: item.group_name || `Group ${item.group_id}`
         });
+        console.log(`❌ FAILED: ${item.label} in ${item.group_name || `Group ${item.group_id}`}`);
+      } else {
+        console.log(`✅ PASSED: ${item.label}`);
       }
     });
 
     if (missing.length > 0) {
+      console.log('Validation failed with missing items:', missing);
       const message = `Veuillez compléter tous les champs obligatoires avant de soumettre votre auto-évaluation:\n\n${
         missing.map(item => `- ${item.group ? `${item.group}: ` : ''}${item.label}`).join('\n')
       }`;
       console.error('Validation failed:', message);
+      toast.error("Formulaire incomplet", {
+        description: `${missing.length} champ(s) obligatoire(s) non rempli(s)`
+      });
       alert(message);
       return false;
     }
