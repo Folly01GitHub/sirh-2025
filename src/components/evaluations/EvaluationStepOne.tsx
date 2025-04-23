@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { CriteriaItem, EvaluationResponse, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import apiClient from '@/utils/apiClient';
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
 
 interface Mission {
   id: number;
@@ -38,6 +38,11 @@ const formSchema = z.object({
   mission: z.string().min(1, "Veuillez sélectionner une mission"),
 });
 
+const fetchAllCriteriaItems = async (): Promise<CriteriaItem[]> => {
+  const response = await apiClient.get('/items');
+  return response.data;
+};
+
 const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   criteriaItems,
   onResponseChange,
@@ -62,6 +67,11 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const [approverQuery, setApproverQuery] = useState("");
   const [approverOptions, setApproverOptions] = useState<Employee[]>([]);
   const [approverLoading, setApproverLoading] = useState(false);
+
+  const { data: allCriteriaItems, isLoading: allItemsLoading } = useQuery({
+    queryKey: ['allCriteriaItems'],
+    queryFn: fetchAllCriteriaItems
+  });
 
   useEffect(() => {
     setMissionsLoading(true);
@@ -127,7 +137,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     if (selectedMissionId) {
       form.setValue("mission", selectedMissionId.toString());
     }
-  }, [selectedMissionId]);
+  }, [selectedMissionId, form]);
 
   const getResponseValue = (itemId: number) => {
     const response = responses.find(r => r.item_id === itemId);
@@ -173,12 +183,20 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
 
   const validateAllFields = (): boolean => {
     console.log('Starting full form validation');
-    console.log(`Total criteria items: ${criteriaItems.length}`);
+    
+    if (!allCriteriaItems || allCriteriaItems.length === 0) {
+      console.warn("Cannot validate form - all criteria items not loaded yet");
+      toast.error("Erreur de validation", { 
+        description: "Impossible de valider tous les champs. Veuillez réessayer."
+      });
+      return false;
+    }
+    
+    console.log(`Total criteria items to validate: ${allCriteriaItems.length}`);
     console.log(`Total responses: ${responses.length}`);
     
     const missing: { group?: string, label: string }[] = [];
 
-    // Validate form-level inputs first
     const formValues = form.getValues();
     if (!formValues.evaluator) {
       missing.push({ label: 'Évaluateur', group: 'Informations générales' });
@@ -190,8 +208,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       missing.push({ label: 'Mission', group: 'Informations générales' });
     }
 
-    // Test each criteria item against its corresponding response
-    criteriaItems.forEach(item => {
+    allCriteriaItems.forEach(item => {
       const response = responses.find(r => r.item_id === item.id);
       console.log(`Checking item: ${item.label} (type: ${item.type}, group: ${item.group_name || item.group_id})`);
       
@@ -435,7 +452,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
           <Button 
             type="submit" 
             className="w-full md:w-auto" 
-            disabled={isLoading}
+            disabled={isLoading || allItemsLoading}
           >
             Soumettre mon auto-évaluation
           </Button>
