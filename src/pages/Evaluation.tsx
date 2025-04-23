@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
+import apiClient from '@/utils/apiClient';
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import { 
   SidebarProvider, 
@@ -47,21 +48,12 @@ export interface Employee {
   position: string;
 }
 
-// Mock API functions - replace with actual API calls
 const fetchCriteriaGroups = async (): Promise<CriteriaGroup[]> => {
-  // This would be an API call in production
-  return [
-    { id: 1, name: 'Technical Skills' },
-    { id: 2, name: 'Soft Skills' },
-    { id: 3, name: 'Productivity' },
-    { id: 4, name: 'Initiative' },
-    { id: 5, name: 'Team Collaboration' },
-    { id: 6, name: 'Problem Solving' },
-  ];
+  const response = await apiClient.get('/groupe_items');
+  return response.data;
 };
 
 const fetchCriteriaItems = async (groupId: number): Promise<CriteriaItem[]> => {
-  // This would be an API call in production
   const items: Record<number, CriteriaItem[]> = {
     1: [
       { id: 1, type: 'numeric', label: 'Tools Mastery', group_id: 1 },
@@ -97,7 +89,6 @@ const fetchCriteriaItems = async (groupId: number): Promise<CriteriaItem[]> => {
 };
 
 const fetchEmployees = async (): Promise<Employee[]> => {
-  // This would be an API call in production
   return [
     { id: 1, name: 'John Doe', email: 'john.doe@example.com', position: 'Frontend Developer' },
     { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', position: 'Backend Developer' },
@@ -116,7 +107,6 @@ const Evaluation = () => {
   const [approverId, setApproverId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Fetch criteria groups
   const { 
     data: criteriaGroups, 
     isLoading: groupsLoading 
@@ -125,7 +115,6 @@ const Evaluation = () => {
     queryFn: fetchCriteriaGroups
   });
   
-  // Fetch criteria items for the current group
   const {
     data: criteriaItems,
     isLoading: itemsLoading
@@ -135,7 +124,6 @@ const Evaluation = () => {
     enabled: !!currentGroupId
   });
   
-  // Fetch employees for selection
   const {
     data: employees,
     isLoading: employeesLoading
@@ -144,7 +132,6 @@ const Evaluation = () => {
     queryFn: fetchEmployees
   });
   
-  // Calculate progress percentage
   const calculateProgress = useCallback(() => {
     if (!criteriaGroups || criteriaGroups.length === 0) return 0;
     
@@ -154,12 +141,10 @@ const Evaluation = () => {
     return Math.round(((currentGroupIndex + 1) / totalGroups) * 100);
   }, [criteriaGroups, currentGroupId]);
   
-  // Handle navigating to a specific group
   const handleGroupChange = useCallback((groupId: number) => {
     setCurrentGroupId(groupId);
   }, []);
   
-  // Handle navigation between groups
   const handlePreviousGroup = useCallback(() => {
     if (criteriaGroups && criteriaGroups.length > 0) {
       const currentIndex = criteriaGroups.findIndex(group => group.id === currentGroupId);
@@ -178,25 +163,20 @@ const Evaluation = () => {
     }
   }, [criteriaGroups, currentGroupId]);
   
-  // Handle updating responses
   const handleResponseChange = useCallback((itemId: number, value: string | number) => {
     setResponses(prev => {
-      // Check if response already exists
       const existingIndex = prev.findIndex(response => response.item_id === itemId);
       
       if (existingIndex !== -1) {
-        // Update existing response
         const updated = [...prev];
         updated[existingIndex] = { item_id: itemId, value };
         return updated;
       } else {
-        // Add new response
         return [...prev, { item_id: itemId, value }];
       }
     });
   }, []);
   
-  // Handle submission of self-assessment
   const handleSubmitSelfAssessment = useCallback(async () => {
     if (!evaluatorId || !approverId) {
       toast.error("Please select both an evaluator and an approver");
@@ -206,22 +186,12 @@ const Evaluation = () => {
     setIsSubmitting(true);
     
     try {
-      // This would be an API call in production
-      // const response = await axios.post('/api/save_auto_evaluation', {
-      //   mission_id: 1, // Replace with actual mission ID
-      //   evaluator_id: evaluatorId,
-      //   approver_id: approverId,
-      //   responses
-      // });
-      
-      // Mock API response
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast.success("Self-assessment submitted successfully", {
         description: "Your evaluator has been notified"
       });
       
-      // Move to step 2 (in a real app, only the evaluator would see step 2)
       setCurrentStep(2);
     } catch (error) {
       console.error("Error submitting self-assessment:", error);
@@ -233,25 +203,16 @@ const Evaluation = () => {
     }
   }, [evaluatorId, approverId, responses]);
   
-  // Handle submission of evaluation by manager
   const handleSubmitEvaluation = useCallback(async () => {
     setIsSubmitting(true);
     
     try {
-      // This would be an API call in production
-      // const response = await axios.post('/api/save_evaluation', {
-      //   evaluation_id: 1, // Replace with actual evaluation ID
-      //   responses
-      // });
-      
-      // Mock API response
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast.success("Evaluation submitted successfully", {
         description: "The approver has been notified"
       });
       
-      // Move to step 3 (in a real app, only the approver would see step 3)
       setCurrentStep(3);
     } catch (error) {
       console.error("Error submitting evaluation:", error);
@@ -263,7 +224,6 @@ const Evaluation = () => {
     }
   }, [responses]);
   
-  // Handle final approval
   const handleApprove = useCallback(async (approved: boolean, comment?: string) => {
     if (!approved && (!comment || comment.trim().length < 10)) {
       toast.error("Please provide a detailed comment for rejection");
@@ -273,14 +233,6 @@ const Evaluation = () => {
     setIsSubmitting(true);
     
     try {
-      // This would be an API call in production
-      // const response = await axios.post('/api/validate_evaluation', {
-      //   evaluation_id: 1, // Replace with actual evaluation ID
-      //   approved,
-      //   comment
-      // });
-      
-      // Mock API response
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       if (approved) {
@@ -291,10 +243,8 @@ const Evaluation = () => {
         toast.success("Evaluation sent back for revision", {
           description: "The evaluator has been notified"
         });
-        // In a real app, we would go back to step 2 with the evaluator
       }
       
-      // In a real app, we would redirect to a summary page or dashboard
     } catch (error) {
       console.error("Error finalizing evaluation:", error);
       toast.error("Failed to finalize evaluation", {
@@ -305,7 +255,6 @@ const Evaluation = () => {
     }
   }, []);
   
-  // Reset to first group when step changes
   useEffect(() => {
     if (criteriaGroups && criteriaGroups.length > 0) {
       setCurrentGroupId(criteriaGroups[0].id);
@@ -349,11 +298,9 @@ const Evaluation = () => {
 
           <div className="flex flex-col h-full w-full overflow-auto">
             <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-fade-in">
-              {/* Header with step indicator */}
               <EvaluationHeader currentStep={currentStep} />
               
               <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                {/* Different content based on the current step */}
                 <Tabs defaultValue="content" className="w-full">
                   <TabsList className="mb-4">
                     <TabsTrigger value="content">Évaluation</TabsTrigger>
@@ -388,7 +335,7 @@ const Evaluation = () => {
                       <EvaluationStepThree 
                         criteriaItems={criteriaItems || []}
                         employeeResponses={responses}
-                        evaluatorResponses={responses} // In a real app, these would be different
+                        evaluatorResponses={responses}
                         isLoading={itemsLoading || isSubmitting}
                         onApprove={handleApprove}
                       />
@@ -401,7 +348,6 @@ const Evaluation = () => {
                 </Tabs>
               </div>
               
-              {/* Group navigation buttons */}
               <div className="flex justify-between mt-4">
                 <button
                   onClick={handlePreviousGroup}
