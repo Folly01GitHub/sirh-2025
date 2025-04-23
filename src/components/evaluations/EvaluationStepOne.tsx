@@ -1,40 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { CriteriaItem, EvaluationResponse, Employee } from '@/pages/Evaluation';
+import React, { useState, useEffect, useCallback } from 'react';
+import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
-import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Star } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { SearchableSelect } from "@/components/ui/SearchableSelect";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertTriangle, Star } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
-
-interface Mission {
-  id: number;
-  nom: string;
-}
 
 interface EvaluationStepOneProps {
   criteriaItems: CriteriaItem[];
-  onResponseChange: (itemId: number, value: string | number) => void;
+  onResponseChange: (itemId: number, value: string) => void;
   responses: EvaluationResponse[];
-  employees: Employee[];
-  onEvaluatorChange: (id: number) => void;
-  onApproverChange: (id: number) => void;
+  employees: { id: number; name: string; position: string }[];
+  onEvaluatorChange: (id: number | null) => void;
+  onApproverChange: (id: number | null) => void;
   isLoading: boolean;
   onSubmit: () => void;
-  onMissionChange?: (id: number) => void;
-  selectedMissionId?: number | null;
 }
 
-const formSchema = z.object({
-  evaluator: z.string().min(1, "Veuillez sélectionner un évaluateur"),
-  approver: z.string().min(1, "Veuillez sélectionner un approbateur"),
-  mission: z.string().min(1, "Veuillez sélectionner une mission"),
-});
+// Fetch all criteria items function to get a full list of all groups
+const fetchAllCriteriaItems = async (): Promise<CriteriaItem[]> => {
+  const response = await apiClient.get('/items');
+  return response.data;
+};
 
 const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   criteriaItems,
@@ -44,151 +33,137 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   onEvaluatorChange,
   onApproverChange,
   isLoading,
-  onSubmit,
-  onMissionChange,
-  selectedMissionId
+  onSubmit
 }) => {
-  const [missionQuery, setMissionQuery] = useState("");
-  const [missionOptions, setMissionOptions] = useState<Mission[]>([]);
-  const [missionsLoading, setMissionsLoading] = useState(false);
-  const [missionsError, setMissionsError] = useState<string | null>(null);
+  const [evaluatorId, setEvaluatorId] = useState<number | null>(null);
+  const [approverId, setApproverId] = useState<number | null>(null);
+  const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
+  const [missingFields, setMissingFields] = useState<{ group?: string; label: string }[]>([]);
 
-  const [evaluatorQuery, setEvaluatorQuery] = useState("");
-  const [evaluatorOptions, setEvaluatorOptions] = useState<Employee[]>([]);
-  const [evaluatorLoading, setEvaluatorLoading] = useState(false);
-
-  const [approverQuery, setApproverQuery] = useState("");
-  const [approverOptions, setApproverOptions] = useState<Employee[]>([]);
-  const [approverLoading, setApproverLoading] = useState(false);
-
-  useEffect(() => {
-    setMissionsLoading(true);
-    setMissionsError(null);
-    const handler = setTimeout(() => {
-      apiClient.get(`/liste_missions?search=${encodeURIComponent(missionQuery)}`)
-        .then(res => {
-          setMissionOptions(Array.isArray(res.data) ? res.data : []);
-        })
-        .catch(() => {
-          setMissionsError("Erreur lors du chargement des missions");
-          setMissionOptions([]);
-        })
-        .finally(() => setMissionsLoading(false));
-    }, 250);
-    return () => clearTimeout(handler);
-  }, [missionQuery]);
-
-  useEffect(() => {
-    if (!missionQuery) setMissionOptions([]);
-  }, [missionQuery]);
-
-  useEffect(() => {
-    setEvaluatorLoading(true);
-    const handler = setTimeout(() => {
-      apiClient.get(`/employees_list?search=${encodeURIComponent(evaluatorQuery)}`)
-        .then(res => {
-          setEvaluatorOptions(Array.isArray(res.data) ? res.data : []);
-        })
-        .catch(() => {
-          setEvaluatorOptions([]);
-        })
-        .finally(() => setEvaluatorLoading(false));
-    }, 250);
-    return () => clearTimeout(handler);
-  }, [evaluatorQuery]);
-
-  useEffect(() => {
-    setApproverLoading(true);
-    const handler = setTimeout(() => {
-      apiClient.get(`/employees_list?search=${encodeURIComponent(approverQuery)}`)
-        .then(res => {
-          setApproverOptions(Array.isArray(res.data) ? res.data : []);
-        })
-        .catch(() => {
-          setApproverOptions([]);
-        })
-        .finally(() => setApproverLoading(false));
-    }, 250);
-    return () => clearTimeout(handler);
-  }, [approverQuery]);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      evaluator: "",
-      approver: "",
-      mission: selectedMissionId ? selectedMissionId.toString() : "",
-    },
+  // Query to get ALL criteria items across all groups
+  const { data: allCriteriaItems, isSuccess: allItemsLoaded } = useQuery({
+    queryKey: ['allCriteriaItems'],
+    queryFn: fetchAllCriteriaItems
   });
 
+  // Reset warning when component gets new criteria items
   useEffect(() => {
-    if (selectedMissionId) {
-      form.setValue("mission", selectedMissionId.toString());
+    if (criteriaItems.length > 0) {
+      setCriteriaMissing(false);
+      setMissingFields([]);
     }
-  }, [selectedMissionId]);
+  }, [criteriaItems]);
 
-  const getResponseValue = (itemId: number) => {
-    const response = responses.find(r => r.item_id === itemId);
-    return response ? response.value : "";
+  const handleEvaluatorChange = (value: string) => {
+    const id = value ? Number(value) : null;
+    setEvaluatorId(id);
+    onEvaluatorChange(id);
   };
-  
-  const handleSubmit = form.handleSubmit((data) => {
-    const formComplete = criteriaItems.every(item => {
-      const response = responses.find(r => r.item_id === item.id);
-      if (!response) return false;
-      
-      if (item.type === 'numeric') {
-        const numericValue = typeof response.value === 'number' ? response.value : 
-                            (typeof response.value === 'string' ? Number(response.value) : 0);
+
+  const handleApproverChange = (value: string) => {
+    const id = value ? Number(value) : null;
+    setApproverId(id);
+    onApproverChange(id);
+  };
+
+  const isValidResponse = (response: EvaluationResponse | undefined, type: string): boolean => {
+    if (!response) return false;
+
+    switch (type) {
+      case 'numeric':
+        const numericValue = typeof response.value === 'number' ? response.value :
+          (typeof response.value === 'string' ? Number(response.value) : 0);
         return numericValue >= 1 && numericValue <= 5;
-      } else if (item.type === 'observation') {
-        return typeof response.value === 'string' && response.value.trim().length >= 50;
-      } else if (item.type === 'boolean') {
-        return typeof response.value === 'string' && (response.value === 'oui' || response.value === 'non');
-      }
+      case 'observation':
+        return typeof response.value === 'string' && response.value.length >= 50;
+      case 'boolean':
+        return typeof response.value === 'string' && ['oui', 'non'].includes(response.value);
+      default:
+        return false;
+    }
+  };
+
+  const validateAllFields = (): boolean => {
+    // Only validate if we have successfully loaded all criteria items
+    if (!allItemsLoaded || !allCriteriaItems) {
+      console.warn("Cannot validate form - all criteria items not loaded yet");
       return false;
+    }
+
+    // Check evaluator and approver selection
+    if (!evaluatorId || !approverId) {
+      setMissingFields([
+        { label: "Évaluateur" },
+        { label: "Approbateur" }
+      ]);
+      return false;
+    }
+
+    const missing: { group?: string; label: string }[] = [];
+
+    // Check ALL criteria items across ALL groups
+    allCriteriaItems.forEach(item => {
+      const response = responses.find(r => r.item_id === item.id);
+      if (!isValidResponse(response, item.type)) {
+        missing.push({
+          label: item.label,
+          group: item.group_name || `Group ${item.group_id}`
+        });
+      }
     });
 
-    if (!formComplete) {
-      form.setError("root", { 
-        type: "manual", 
-        message: "Veuillez compléter tous les champs d'évaluation. Les observations doivent contenir au moins 50 caractères et toutes les notes doivent être attribuées." 
-      });
-      return;
-    }
+    setMissingFields(missing);
+    return missing.length === 0;
+  };
 
-    if (onMissionChange) onMissionChange(Number(form.getValues("mission")));
-    onSubmit();
-  });
+  const getResponseValue = useCallback((itemId: number) => {
+    const response = responses.find(r => r.item_id === itemId);
+    return response ? response.value : "";
+  }, [responses]);
+
+  const handleResponseChange = useCallback((itemId: number, value: string | number) => {
+    const stringValue = typeof value === 'number' ? value.toString() : value;
+
+    onResponseChange(itemId, stringValue);
+  }, [onResponseChange]);
 
   const renderStarRating = (itemId: number) => {
     const currentValue = Number(getResponseValue(itemId)) || 0;
+
     return (
-      <div className="flex space-x-2">
+      <RadioGroup
+        value={currentValue.toString()}
+        onValueChange={(value) => handleResponseChange(itemId, parseInt(value))}
+        className="flex space-x-2"
+      >
         {[1, 2, 3, 4, 5].map((value) => (
-          <label key={value} htmlFor={`rating-${itemId}-${value}`} className="cursor-pointer flex flex-col items-center">
-            <input
-              type="radio"
+          <div key={value} className="flex flex-col items-center">
+            <RadioGroupItem
+              value={value.toString()}
               id={`rating-${itemId}-${value}`}
-              value={value}
-              checked={currentValue === value}
-              onChange={() => onResponseChange(itemId, value)}
               className="sr-only"
             />
-            <Star className={`h-6 w-6 transition-all ${value <= currentValue ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
-          </label>
+            <label
+              htmlFor={`rating-${itemId}-${value}`}
+              className="cursor-pointer"
+            >
+              <Star
+                className={`h-6 w-6 transition-all ${value <= currentValue ? 'fill-primary text-primary' : 'text-gray-300'}`}
+              />
+            </label>
+          </div>
         ))}
-      </div>
+      </RadioGroup>
     );
   };
 
   const renderBooleanResponse = (itemId: number) => {
-    const currentValue = getResponseValue(itemId) as string;
-    
+    const value = getResponseValue(itemId);
+
     return (
       <RadioGroup
-        value={currentValue}
-        onValueChange={(value) => onResponseChange(itemId, value)}
+        value={value ? value.toString() : ""}
+        onValueChange={(val) => handleResponseChange(itemId, val)}
         className="flex gap-6"
       >
         <div className="flex items-center space-x-2">
@@ -207,164 +182,134 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     );
   };
 
-  const evaluatorSelectOptions = evaluatorOptions.map(e => ({
-    value: e.id.toString(),
-    label: `${e.name} - ${e.position}`,
-  }));
+  const handleSubmit = () => {
+    if (!validateAllFields()) {
+      setCriteriaMissing(true);
+      
+      // Format a more descriptive message including group info
+      const message = `Veuillez compléter tous les champs obligatoires avant de soumettre le formulaire:\n\n${
+        missingFields.map(item => `- ${item.group ? `${item.group}: ` : ''}${item.label}`).join('\n')
+      }`;
+      alert(message);
+      
+      console.log("Form validation failed. Missing fields:", missingFields);
+      return;
+    }
 
-  const approverSelectOptions = approverOptions.map(e => ({
-    value: e.id.toString(),
-    label: `${e.name} - ${e.position}`,
-  }));
-
-  const missionSelectOptions = missionOptions.map(m => ({
-    value: m.id.toString(),
-    label: m.nom,
-  }));
-
-  if (isLoading && criteriaItems.length === 0) {
-    return (
-      <div className="space-y-6">
-        <div className="space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-        </div>
-        <div className="space-y-4">
-          <Skeleton className="h-6 w-1/3" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-6 w-1/3" />
-          <Skeleton className="h-24 w-full" />
-        </div>
-      </div>
-    );
-  }
+    console.log("Form validation successful, submitting self-assessment");
+    onSubmit();
+  };
 
   return (
     <div className="space-y-8">
-      <Form {...form}>
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <FormField
-              control={form.control}
-              name="evaluator"
-              render={({ field }) => (
-                <FormItem>
-                  <SearchableSelect
-                    label="Évaluateur"
-                    placeholder="Sélectionnez ou cherchez…"
-                    value={field.value}
-                    onChange={value => {
-                      field.onChange(value);
-                      onEvaluatorChange(Number(value));
-                    }}
-                    onSearch={setEvaluatorQuery}
-                    options={evaluatorSelectOptions}
-                    loading={evaluatorLoading}
-                  />
-                  <FormMessage />
-                </FormItem>
+      <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
+        <p className="text-blue-800">
+          Veuillez compléter votre auto-évaluation en remplissant tous les champs ci-dessous.
+          Une fois terminée, elle sera envoyée à votre évaluateur pour analyse.
+        </p>
+      </div>
+
+      {criteriaMissing && missingFields.length > 0 && (
+        <div className="bg-yellow-50 p-4 rounded-md border border-yellow-200 flex items-start gap-2">
+          <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+          <div className="text-yellow-800">
+            <p className="font-medium mb-2">Tous les champs de tous les groupes doivent être complétés:</p>
+            <ul className="list-disc pl-5 space-y-1 text-sm">
+              {missingFields.slice(0, 5).map((field, idx) => (
+                <li key={idx}>
+                  <span className="font-medium">{field.group ? `${field.group}: ` : ''}</span>
+                  {field.label}
+                </li>
+              ))}
+              {missingFields.length > 5 && (
+                <li>...et {missingFields.length - 5} autre(s) champ(s)</li>
               )}
-            />
-            <FormField
-              control={form.control}
-              name="approver"
-              render={({ field }) => (
-                <FormItem>
-                  <SearchableSelect
-                    label="Approbateur"
-                    placeholder="Sélectionnez ou cherchez…"
-                    value={field.value}
-                    onChange={value => {
-                      field.onChange(value);
-                      onApproverChange(Number(value));
-                    }}
-                    onSearch={setApproverQuery}
-                    options={approverSelectOptions}
-                    loading={approverLoading}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="mission"
-              render={({ field }) => (
-                <FormItem>
-                  <SearchableSelect
-                    label="Mission"
-                    placeholder="Sélectionnez ou cherchez…"
-                    value={field.value}
-                    onChange={val => {
-                      field.onChange(val);
-                      if (onMissionChange) onMissionChange(Number(val));
-                    }}
-                    onSearch={setMissionQuery}
-                    options={missionSelectOptions}
-                    loading={missionsLoading}
-                    disabled={!!missionsError}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            </ul>
           </div>
-          
-          {criteriaItems.map((item) => (
-            <div key={item.id} className="p-4 border rounded-md shadow-sm">
-              <h3 className="text-lg font-medium mb-3">{item.label}</h3>
-              
-              {item.type === 'numeric' ? (
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-500 mb-2">Évaluez de 1 à 5 étoiles</p>
-                  {renderStarRating(item.id)}
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Débutant</span>
-                    <span>Expert</span>
-                  </div>
-                </div>
-              ) : item.type === 'boolean' ? (
-                <div className="space-y-2">
-                  {renderBooleanResponse(item.id)}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-500 mb-2">
-                    Minimum 50 caractères
-                  </p>
-                  <Textarea 
-                    value={getResponseValue(item.id) as string}
-                    onChange={(e) => onResponseChange(item.id, e.target.value)}
-                    placeholder="Entrez votre observation…"
-                    className="min-h-[120px]"
-                  />
-                  <div className="text-xs text-right">
-                    {typeof getResponseValue(item.id) === 'string' && (
-                      <span className={`${(getResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
-                        {(getResponseValue(item.id) as string).length} / 50 caractères minimum
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <label className="text-sm font-medium">Sélectionnez votre évaluateur</label>
+          <Select onValueChange={handleEvaluatorChange} value={evaluatorId?.toString()}>
+            <SelectTrigger>
+              <SelectValue placeholder="Choisir un évaluateur" />
+            </SelectTrigger>
+            <SelectContent>
+              {employees.map((employee) => (
+                <SelectItem key={employee.id} value={employee.id.toString()}>
+                  {employee.name} - {employee.position}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-4">
+          <label className="text-sm font-medium">Sélectionnez l'approbateur final</label>
+          <Select onValueChange={handleApproverChange} value={approverId?.toString()}>
+            <SelectTrigger>
+              <SelectValue placeholder="Choisir un approbateur" />
+            </SelectTrigger>
+            <SelectContent>
+              {employees.map((employee) => (
+                <SelectItem key={employee.id} value={employee.id.toString()}>
+                  {employee.name} - {employee.position}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {criteriaItems.map((item) => (
+        <div key={item.id} className="p-4 border rounded-md shadow-sm">
+          <h3 className="text-lg font-medium mb-4">{item.label}</h3>
+
+          {item.type === 'numeric' ? (
+            <div className="mt-4">
+              {renderStarRating(item.id)}
+
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>Débutant</span>
+                <span>Expert</span>
+              </div>
             </div>
-          ))}
-          
-          {form.formState.errors.root && (
-            <p className="text-sm font-medium text-destructive">
-              {form.formState.errors.root.message}
-            </p>
+          ) : item.type === 'boolean' ? (
+            <div className="mt-4">
+              {renderBooleanResponse(item.id)}
+            </div>
+          ) : (
+            <div className="mt-2">
+              <p className="text-sm text-gray-500 mb-2">
+                Minimum 50 caractères
+              </p>
+              <Textarea
+                value={getResponseValue(item.id)?.toString() || ""}
+                onChange={(e) => handleResponseChange(item.id, e.target.value)}
+                placeholder="Entrez votre observation…"
+                className="min-h-[120px]"
+              />
+              <div className="text-xs text-right">
+                {typeof getResponseValue(item.id) === 'string' && (
+                  <span className={`${(getResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
+                    {(getResponseValue(item.id) as string).length} / 50 caractères minimum
+                  </span>
+                )}
+              </div>
+            </div>
           )}
-          
-          <Button 
-            type="submit" 
-            className="w-full md:w-auto" 
-            disabled={isLoading}
-          >
-            Soumettre mon auto-évaluation
-          </Button>
-        </form>
-      </Form>
+        </div>
+      ))}
+
+      <Button 
+        onClick={handleSubmit} 
+        className="w-full md:w-auto" 
+        disabled={isLoading}
+      >
+        Soumettre mon auto-évaluation
+      </Button>
     </div>
   );
 };
