@@ -16,6 +16,7 @@ interface EvaluationStepTwoProps {
   onSubmit: () => void;
 }
 
+// Fetch all criteria items function to get a full list of all groups
 const fetchAllCriteriaItems = async (): Promise<CriteriaItem[]> => {
   const response = await apiClient.get('/items');
   return response.data;
@@ -32,11 +33,13 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
   const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
   
+  // Query to get ALL criteria items across all groups
   const { data: allCriteriaItems, isSuccess: allItemsLoaded } = useQuery({
     queryKey: ['allCriteriaItems'],
     queryFn: fetchAllCriteriaItems
   });
   
+  // Reset warning when component gets new criteria items
   useEffect(() => {
     if (criteriaItems.length > 0) {
       setCriteriaMissing(false);
@@ -71,6 +74,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     
     onResponseChange(itemId, stringValue);
     
+    // Reset the missing criteria flag when user starts responding
     if (criteriaMissing) {
       setCriteriaMissing(false);
       setMissingFields([]);
@@ -183,6 +187,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const validateAllFields = (): boolean => {
+    // Only validate if we have successfully loaded all criteria items
     if (!allItemsLoaded || !allCriteriaItems) {
       console.warn("Cannot validate form - all criteria items not loaded yet");
       return false;
@@ -190,6 +195,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     
     const missing: { group?: string, label: string }[] = [];
 
+    // Check ALL criteria items across ALL groups
     allCriteriaItems.forEach(item => {
       const response = evaluatorResponses.find(r => r.item_id === item.id);
       if (!isValidResponse(response, item.type)) {
@@ -205,12 +211,22 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const handleSubmit = () => {
+    // Validate all fields across all groups
     if (!validateAllFields()) {
+      // Set the flag to show the warning message
       setCriteriaMissing(true);
-      alert('All the fields in all the groups must be filled in');
+      
+      // Format a more descriptive message including group info
+      const message = `Veuillez compléter tous les champs obligatoires avant de soumettre le formulaire:\n\n${
+        missingFields.map(item => `- ${item.group ? `${item.group}: ` : ''}${item.label}`).join('\n')
+      }`;
+      alert(message);
+      
+      console.log("Form validation failed. Missing fields:", missingFields);
       return;
     }
 
+    // If validation passes, proceed with submission
     console.log("Form validation successful, submitting evaluation");
     onSubmit();
   };
