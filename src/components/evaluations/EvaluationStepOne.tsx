@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CriteriaItem, EvaluationResponse, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import apiClient from '@/utils/apiClient';
 
 interface Mission {
   id: number;
@@ -46,7 +47,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   onMissionChange,
   selectedMissionId
 }) => {
-  // State for API options and search values for all 3 selectors
   const [missionQuery, setMissionQuery] = useState("");
   const [missionOptions, setMissionOptions] = useState<Mission[]>([]);
   const [missionsLoading, setMissionsLoading] = useState(false);
@@ -60,18 +60,13 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const [approverOptions, setApproverOptions] = useState<Employee[]>([]);
   const [approverLoading, setApproverLoading] = useState(false);
 
-  // --- Remote mission autocomplete (API) ---
   useEffect(() => {
     setMissionsLoading(true);
     setMissionsError(null);
     const handler = setTimeout(() => {
-      fetch(`http://backend.local.com/api/liste_missions?search=${encodeURIComponent(missionQuery)}`)
+      apiClient.get(`/liste_missions?search=${encodeURIComponent(missionQuery)}`)
         .then(res => {
-          if (!res.ok) throw new Error("Network error");
-          return res.json();
-        })
-        .then(data => {
-          setMissionOptions(Array.isArray(data) ? data : []);
+          setMissionOptions(Array.isArray(res.data) ? res.data : []);
         })
         .catch(() => {
           setMissionsError("Erreur lors du chargement des missions");
@@ -86,17 +81,12 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     if (!missionQuery) setMissionOptions([]);
   }, [missionQuery]);
 
-  // --- Remote evaluator autocomplete (API) ---
   useEffect(() => {
     setEvaluatorLoading(true);
     const handler = setTimeout(() => {
-      fetch(`http://backend.local.com/api/employees_list?search=${encodeURIComponent(evaluatorQuery)}`)
+      apiClient.get(`/employees_list?search=${encodeURIComponent(evaluatorQuery)}`)
         .then(res => {
-          if (!res.ok) throw new Error("Network error");
-          return res.json();
-        })
-        .then(data => {
-          setEvaluatorOptions(Array.isArray(data) ? data : []);
+          setEvaluatorOptions(Array.isArray(res.data) ? res.data : []);
         })
         .catch(() => {
           setEvaluatorOptions([]);
@@ -106,17 +96,12 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     return () => clearTimeout(handler);
   }, [evaluatorQuery]);
 
-  // --- Remote approver autocomplete (API) ---
   useEffect(() => {
     setApproverLoading(true);
     const handler = setTimeout(() => {
-      fetch(`http://backend.local.com/api/employees_list?search=${encodeURIComponent(approverQuery)}`)
+      apiClient.get(`/employees_list?search=${encodeURIComponent(approverQuery)}`)
         .then(res => {
-          if (!res.ok) throw new Error("Network error");
-          return res.json();
-        })
-        .then(data => {
-          setApproverOptions(Array.isArray(data) ? data : []);
+          setApproverOptions(Array.isArray(res.data) ? res.data : []);
         })
         .catch(() => {
           setApproverOptions([]);
@@ -126,7 +111,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     return () => clearTimeout(handler);
   }, [approverQuery]);
 
-  // Form config (no changes)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -195,7 +179,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     );
   };
 
-  // Map API data to select options for each selector
   const evaluatorSelectOptions = evaluatorOptions.map(e => ({
     value: e.id.toString(),
     label: `${e.name} - ${e.position}`,
@@ -211,7 +194,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     label: m.nom,
   }));
 
-  // Loading state for skeleton
   if (isLoading && criteriaItems.length === 0) {
     return (
       <div className="space-y-6">
@@ -234,7 +216,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       <Form {...form}>
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Evaluator */}
             <FormField
               control={form.control}
               name="evaluator"
@@ -256,7 +237,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                 </FormItem>
               )}
             />
-            {/* Approver */}
             <FormField
               control={form.control}
               name="approver"
@@ -278,7 +258,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                 </FormItem>
               )}
             />
-            {/* Mission */}
             <FormField
               control={form.control}
               name="mission"
@@ -303,7 +282,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
             />
           </div>
           
-          {/* Critères d'évaluation */}
           {criteriaItems.map((item) => (
             <div key={item.id} className="p-4 border rounded-md shadow-sm">
               <h3 className="text-lg font-medium mb-3">{item.label}</h3>
