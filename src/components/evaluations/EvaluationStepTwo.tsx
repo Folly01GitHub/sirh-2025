@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -119,7 +120,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
 
     return (
       <RadioGroup
-        value={value || ""}
+        value={value ? value.toString() : ""}
         onValueChange={(val) => handleEvaluatorResponseChange(itemId, val)}
         className="flex gap-6"
       >
@@ -150,7 +151,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       } else if (item.type === 'observation') {
         return response && typeof response.value === 'string' && response.value.length >= 50;
       } else if (item.type === 'boolean') {
-        return response && ['oui', 'non'].includes(response.value);
+        return response && ['oui', 'non'].includes(response.value.toString());
       }
       
       return false;
@@ -231,7 +232,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
                     Minimum 50 caractères
                   </p>
                   <Textarea 
-                    value={getEvaluatorResponseValue(item.id) as string}
+                    value={getEvaluatorResponseValue(item.id).toString()}
                     onChange={(e) => handleEvaluatorResponseChange(item.id, e.target.value)}
                     placeholder="Entrez votre observation…"
                     className="min-h-[120px]"
