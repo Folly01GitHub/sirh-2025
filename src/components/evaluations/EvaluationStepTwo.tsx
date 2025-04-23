@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Star, AlertTriangle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
+import { toast } from 'sonner';
 
 interface EvaluationStepTwoProps {
   criteriaItems: CriteriaItem[];
@@ -16,7 +17,6 @@ interface EvaluationStepTwoProps {
   onSubmit: () => void;
 }
 
-// Fetch all criteria items function to get a full list of all groups
 const fetchAllCriteriaItems = async (): Promise<CriteriaItem[]> => {
   const response = await apiClient.get('/items');
   return response.data;
@@ -33,13 +33,11 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
   const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
   
-  // Query to get ALL criteria items across all groups
   const { data: allCriteriaItems, isSuccess: allItemsLoaded } = useQuery({
     queryKey: ['allCriteriaItems'],
     queryFn: fetchAllCriteriaItems
   });
   
-  // Reset warning when component gets new criteria items
   useEffect(() => {
     if (criteriaItems.length > 0) {
       setCriteriaMissing(false);
@@ -74,7 +72,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     
     onResponseChange(itemId, stringValue);
     
-    // Reset the missing criteria flag when user starts responding
     if (criteriaMissing) {
       setCriteriaMissing(false);
       setMissingFields([]);
@@ -187,7 +184,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const validateAllFields = (): boolean => {
-    // Only validate if we have successfully loaded all criteria items
     if (!allItemsLoaded || !allCriteriaItems) {
       console.warn("Cannot validate form - all criteria items not loaded yet");
       return false;
@@ -195,7 +191,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     
     const missing: { group?: string, label: string }[] = [];
 
-    // Check ALL criteria items across ALL groups
     allCriteriaItems.forEach(item => {
       const response = evaluatorResponses.find(r => r.item_id === item.id);
       if (!isValidResponse(response, item.type)) {
@@ -211,22 +206,19 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const handleSubmit = () => {
-    // Validate all fields across all groups
     if (!validateAllFields()) {
-      // Set the flag to show the warning message
-      setCriteriaMissing(true);
-      
-      // Format a more descriptive message including group info
-      const message = `Veuillez compléter tous les champs obligatoires avant de soumettre le formulaire:\n\n${
-        missingFields.map(item => `- ${item.group ? `${item.group}: ` : ''}${item.label}`).join('\n')
-      }`;
-      alert(message);
-      
       console.log("Form validation failed. Missing fields:", missingFields);
+      
+      if (missingFields.length > 0) {
+        toast.error("Formulaire incomplet", {
+          description: `${missingFields.length} champ(s) obligatoire(s) non rempli(s)`,
+          duration: 5000
+        });
+      }
+      
       return;
     }
 
-    // If validation passes, proceed with submission
     console.log("Form validation successful, submitting evaluation");
     onSubmit();
   };
@@ -250,25 +242,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
           et saisir votre propre évaluation. Les deux seront affichées côte à côte pour faciliter la comparaison.
         </p>
       </div>
-      
-      {criteriaMissing && missingFields.length > 0 && (
-        <div className="bg-yellow-50 p-4 rounded-md border border-yellow-200 flex items-start gap-2">
-          <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-          <div className="text-yellow-800">
-            <p className="font-medium mb-2">Tous les champs de tous les groupes doivent être complétés:</p>
-            <ul className="list-disc pl-5 space-y-1 text-sm">
-              {missingFields.slice(0, 5).map((field, idx) => (
-                <li key={idx}>
-                  <span className="font-medium">{field.group}: </span>{field.label}
-                </li>
-              ))}
-              {missingFields.length > 5 && (
-                <li>...et {missingFields.length - 5} autre(s) champ(s)</li>
-              )}
-            </ul>
-          </div>
-        </div>
-      )}
       
       {criteriaItems.map((item) => (
         <div key={item.id} className="p-4 border rounded-md shadow-sm">
