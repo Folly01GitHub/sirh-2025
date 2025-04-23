@@ -1,18 +1,27 @@
-import React, { useState } from 'react';
-import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
+
+import React, { useState, useEffect } from 'react';
+import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star } from 'lucide-react';
+import { Star, AlertTriangle } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '@/utils/apiClient';
 
 interface EvaluationStepTwoProps {
   criteriaItems: CriteriaItem[];
-  onResponseChange: (itemId: number, value: string | number) => void;
+  onResponseChange: (itemId: number, value: string) => void;
   employeeResponses: EvaluationResponse[];
   isLoading: boolean;
   onSubmit: () => void;
 }
+
+// Fetch all criteria items function to get a full list of all groups
+const fetchAllCriteriaItems = async (): Promise<CriteriaItem[]> => {
+  const response = await apiClient.get('/items');
+  return response.data;
+};
 
 const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   criteriaItems,
@@ -22,6 +31,12 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   onSubmit
 }) => {
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
+  
+  // Query to get ALL criteria items across all groups
+  const { data: allCriteriaItems } = useQuery({
+    queryKey: ['allCriteriaItems'],
+    queryFn: fetchAllCriteriaItems
+  });
   
   const getEmployeeResponseValue = (itemId: number) => {
     const response = employeeResponses.find(r => r.item_id === itemId);
@@ -157,18 +172,27 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const handleSubmit = () => {
-    const allResponses = evaluatorResponses;
-    const missingResponses: string[] = [];
+    // If we have the full list of items, validate against that
+    const itemsToValidate = allCriteriaItems || criteriaItems;
+    const missingResponses: { group?: string, label: string }[] = [];
 
-    criteriaItems.forEach(item => {
-      const response = allResponses.find(r => r.item_id === item.id);
+    // Check all criteria items, not just the current visible ones
+    itemsToValidate.forEach(item => {
+      const response = evaluatorResponses.find(r => r.item_id === item.id);
       if (!isValidResponse(response, item.type)) {
-        missingResponses.push(item.label);
+        missingResponses.push({
+          label: item.label,
+          // Include the group name if we have it (for better user feedback)
+          group: item.group_name || `Group ${item.group_id}`
+        });
       }
     });
 
     if (missingResponses.length > 0) {
-      const message = `Veuillez compléter les champs suivants :\n${missingResponses.join('\n')}`;
+      // Format a more descriptive message including group info when available
+      const message = `Veuillez compléter tous les champs obligatoires avant de soumettre le formulaire:\n\n${
+        missingResponses.map(item => `- ${item.group ? `${item.group}: ` : ''}${item.label}`).join('\n')
+      }`;
       alert(message);
       return;
     }
@@ -195,6 +219,15 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
           et saisir votre propre évaluation. Les deux seront affichées côte à côte pour faciliter la comparaison.
         </p>
       </div>
+      
+      {criteriaMissing && (
+        <div className="bg-yellow-50 p-4 rounded-md border border-yellow-200 flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5 text-yellow-600" />
+          <p className="text-yellow-800">
+            Tous les champs de tous les groupes doivent être complétés avant de soumettre l'évaluation.
+          </p>
+        </div>
+      )}
       
       {criteriaItems.map((item) => (
         <div key={item.id} className="p-4 border rounded-md shadow-sm">

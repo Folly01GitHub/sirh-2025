@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -34,6 +35,7 @@ export interface CriteriaItem {
   type: 'numeric' | 'observation' | 'boolean';
   label: string;
   group_id: number;
+  group_name?: string; // Added for better error messaging
 }
 
 export interface EvaluationResponse {
