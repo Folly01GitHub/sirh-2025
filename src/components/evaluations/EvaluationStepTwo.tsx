@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -31,6 +30,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   onSubmit
 }) => {
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
+  const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
   
   // Query to get ALL criteria items across all groups
   const { data: allCriteriaItems } = useQuery({
@@ -64,6 +64,11 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     });
     
     onResponseChange(itemId, stringValue);
+    
+    // Reset the missing criteria flag when user starts responding
+    if (criteriaMissing) {
+      setCriteriaMissing(false);
+    }
   };
   
   const renderEvaluatorStarRating = (itemId: number) => {
@@ -189,6 +194,9 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     });
 
     if (missingResponses.length > 0) {
+      // Set the flag to show the warning message
+      setCriteriaMissing(true);
+      
       // Format a more descriptive message including group info when available
       const message = `Veuillez compléter tous les champs obligatoires avant de soumettre le formulaire:\n\n${
         missingResponses.map(item => `- ${item.group ? `${item.group}: ` : ''}${item.label}`).join('\n')
