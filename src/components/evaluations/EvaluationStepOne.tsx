@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { CriteriaItem, EvaluationResponse, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -151,12 +150,14 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const handleSubmit = form.handleSubmit((data) => {
     const formComplete = criteriaItems.every(item => {
       const response = responses.find(r => r.item_id === item.id);
+      if (!response) return false;
+      
       if (item.type === 'numeric') {
-        const numericValue = typeof response?.value === 'number' ? response.value : 
-                            (typeof response?.value === 'string' ? Number(response.value) : 0);
+        const numericValue = typeof response.value === 'number' ? response.value : 
+                            (typeof response.value === 'string' ? Number(response.value) : 0);
         return numericValue >= 1 && numericValue <= 5;
       } else if (item.type === 'observation') {
-        return response && typeof response.value === 'string' && response.value.length >= 50;
+        return typeof response.value === 'string' && response.value.trim().length >= 50;
       }
       return false;
     });
@@ -164,7 +165,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     if (!formComplete) {
       form.setError("root", { 
         type: "manual", 
-        message: "Veuillez compléter tous les champs d'évaluation" 
+        message: "Veuillez compléter tous les champs d'évaluation. Les observations doivent contenir au moins 50 caractères et toutes les notes doivent être attribuées." 
       });
       return;
     }
@@ -359,4 +360,3 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
 };
 
 export default EvaluationStepOne;
-
