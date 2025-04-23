@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -140,28 +139,40 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     );
   };
   
-  const handleSubmit = () => {
-    const formComplete = criteriaItems.every(item => {
-      const response = evaluatorResponses.find(r => r.item_id === item.id);
-      
-      if (item.type === 'numeric') {
-        const numericValue = typeof response?.value === 'number' ? response.value : 
-                            (typeof response?.value === 'string' ? Number(response.value) : 0);
-        return numericValue >= 1 && numericValue <= 5;
-      } else if (item.type === 'observation') {
-        return response && typeof response.value === 'string' && response.value.length >= 50;
-      } else if (item.type === 'boolean') {
-        return response && ['oui', 'non'].includes(response.value.toString());
-      }
-      
-      return false;
-    });
+  const isValidResponse = (response: EvaluationResponse | undefined, type: string): boolean => {
+    if (!response) return false;
     
-    if (!formComplete) {
-      alert("Veuillez compléter tous les champs d'évaluation");
+    switch (type) {
+      case 'numeric':
+        const numericValue = typeof response.value === 'number' ? response.value : 
+                          (typeof response.value === 'string' ? Number(response.value) : 0);
+        return numericValue >= 1 && numericValue <= 5;
+      case 'observation':
+        return typeof response.value === 'string' && response.value.length >= 50;
+      case 'boolean':
+        return typeof response.value === 'string' && ['oui', 'non'].includes(response.value);
+      default:
+        return false;
+    }
+  };
+  
+  const handleSubmit = () => {
+    const allResponses = evaluatorResponses;
+    const missingResponses: string[] = [];
+
+    criteriaItems.forEach(item => {
+      const response = allResponses.find(r => r.item_id === item.id);
+      if (!isValidResponse(response, item.type)) {
+        missingResponses.push(item.label);
+      }
+    });
+
+    if (missingResponses.length > 0) {
+      const message = `Veuillez compléter les champs suivants :\n${missingResponses.join('\n')}`;
+      alert(message);
       return;
     }
-    
+
     onSubmit();
   };
   
