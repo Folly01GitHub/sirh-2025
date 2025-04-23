@@ -31,7 +31,7 @@ export interface CriteriaGroup {
 
 export interface CriteriaItem {
   id: number;
-  type: 'numeric' | 'observation';
+  type: 'numeric' | 'observation' | 'boolean';
   label: string;
   group_id: number;
 }

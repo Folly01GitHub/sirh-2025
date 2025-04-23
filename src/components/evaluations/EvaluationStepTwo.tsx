@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -24,19 +23,16 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
 }) => {
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   
-  // Récupérer la valeur de la réponse du collaborateur
   const getEmployeeResponseValue = (itemId: number) => {
     const response = employeeResponses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
   
-  // Récupérer la valeur de la réponse de l'évaluateur
   const getEvaluatorResponseValue = (itemId: number) => {
     const response = evaluatorResponses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
   
-  // Gérer le changement de la réponse de l'évaluateur
   const handleEvaluatorResponseChange = (itemId: number, value: string | number) => {
     setEvaluatorResponses(prev => {
       const existingIndex = prev.findIndex(r => r.item_id === itemId);
@@ -53,7 +49,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     onResponseChange(itemId, value);
   };
   
-  // Rendu étoiles évaluateur
   const renderEvaluatorStarRating = (itemId: number) => {
     const currentValue = Number(getEvaluatorResponseValue(itemId)) || 0;
     
@@ -84,7 +79,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     );
   };
   
-  // Rendu étoiles collaborateur (lecture seule)
   const renderEmployeeStarRating = (itemId: number) => {
     const currentValue = Number(getEmployeeResponseValue(itemId)) || 0;
     
@@ -101,7 +95,48 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     );
   };
   
-  // Gestion de la soumission du formulaire
+  const renderBooleanResponse = (itemId: number, isEmployee: boolean = false) => {
+    const value = isEmployee ? 
+      getEmployeeResponseValue(itemId) as string : 
+      getEvaluatorResponseValue(itemId) as string;
+    
+    if (isEmployee) {
+      return (
+        <div className="flex gap-6">
+          <div className="flex items-center space-x-2">
+            <div className={`w-4 h-4 rounded-full border ${value === 'oui' ? 'bg-yellow-400 border-yellow-400' : 'border-gray-300'}`} />
+            <span className="text-sm">Oui</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className={`w-4 h-4 rounded-full border ${value === 'non' ? 'bg-yellow-400 border-yellow-400' : 'border-gray-300'}`} />
+            <span className="text-sm">Non</span>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <RadioGroup
+        value={value}
+        onValueChange={(val) => handleEvaluatorResponseChange(itemId, val)}
+        className="flex gap-6"
+      >
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="oui" id={`evaluator-oui-${itemId}`} />
+          <label htmlFor={`evaluator-oui-${itemId}`} className="text-sm font-medium">
+            Oui
+          </label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="non" id={`evaluator-non-${itemId}`} />
+          <label htmlFor={`evaluator-non-${itemId}`} className="text-sm font-medium">
+            Non
+          </label>
+        </div>
+      </RadioGroup>
+    );
+  };
+  
   const handleSubmit = () => {
     const formComplete = criteriaItems.every(item => {
       const response = evaluatorResponses.find(r => r.item_id === item.id);
@@ -112,6 +147,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         return numericValue >= 1 && numericValue <= 5;
       } else if (item.type === 'observation') {
         return response && typeof response.value === 'string' && response.value.length >= 50;
+      } else if (item.type === 'boolean') {
+        return response && ['oui', 'non'].includes(response.value);
       }
       
       return false;
@@ -145,19 +182,21 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         </p>
       </div>
       
-      {/* Critères d'évaluation */}
       {criteriaItems.map((item) => (
         <div key={item.id} className="p-4 border rounded-md shadow-sm">
           <h3 className="text-lg font-medium mb-4">{item.label}</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Réponses collaborateur (lecture seule) */}
             <div className="space-y-2 bg-gray-50 p-4 rounded-md">
               <h4 className="font-medium text-gray-700">Auto-évaluation du collaborateur</h4>
               
               {item.type === 'numeric' ? (
                 <div className="mt-4">
                   {renderEmployeeStarRating(item.id)}
+                </div>
+              ) : item.type === 'boolean' ? (
+                <div className="mt-4">
+                  {renderBooleanResponse(item.id, true)}
                 </div>
               ) : (
                 <div className="mt-2">
@@ -168,7 +207,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
               )}
             </div>
             
-            {/* Réponse évaluateur */}
             <div className="space-y-2">
               <h4 className="font-medium text-primary">Votre évaluation</h4>
               
@@ -180,6 +218,10 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
                     <span>Débutant</span>
                     <span>Expert</span>
                   </div>
+                </div>
+              ) : item.type === 'boolean' ? (
+                <div className="mt-4">
+                  {renderBooleanResponse(item.id)}
                 </div>
               ) : (
                 <div className="mt-2">

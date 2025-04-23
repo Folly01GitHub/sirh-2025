@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import apiClient from '@/utils/apiClient';
 
 interface Mission {
@@ -142,6 +143,8 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         return numericValue >= 1 && numericValue <= 5;
       } else if (item.type === 'observation') {
         return typeof response.value === 'string' && response.value.trim().length >= 50;
+      } else if (item.type === 'boolean') {
+        return typeof response.value === 'string' && (response.value === 'oui' || response.value === 'non');
       }
       return false;
     });
@@ -176,6 +179,31 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
           </label>
         ))}
       </div>
+    );
+  };
+
+  const renderBooleanResponse = (itemId: number) => {
+    const currentValue = getResponseValue(itemId) as string;
+    
+    return (
+      <RadioGroup
+        value={currentValue}
+        onValueChange={(value) => onResponseChange(itemId, value)}
+        className="flex gap-6"
+      >
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="oui" id={`oui-${itemId}`} />
+          <label htmlFor={`oui-${itemId}`} className="text-sm font-medium">
+            Oui
+          </label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="non" id={`non-${itemId}`} />
+          <label htmlFor={`non-${itemId}`} className="text-sm font-medium">
+            Non
+          </label>
+        </div>
+      </RadioGroup>
     );
   };
 
@@ -294,6 +322,10 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                     <span>Débutant</span>
                     <span>Expert</span>
                   </div>
+                </div>
+              ) : item.type === 'boolean' ? (
+                <div className="space-y-2">
+                  {renderBooleanResponse(item.id)}
                 </div>
               ) : (
                 <div className="space-y-2">
