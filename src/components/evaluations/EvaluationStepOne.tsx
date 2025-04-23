@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { CriteriaItem, EvaluationResponse, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -133,28 +134,43 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   };
 
   const isValidResponse = (response: EvaluationResponse | undefined, type: string): boolean => {
-    if (!response) return false;
+    console.log(`Validating response for ${type}:`, response);
+    
+    if (!response) {
+      console.log('No response found');
+      return false;
+    }
     
     switch (type) {
       case 'numeric':
         const numericValue = typeof response.value === 'number' ? response.value : 
                           (typeof response.value === 'string' ? Number(response.value) : 0);
-        return numericValue >= 1 && numericValue <= 5;
+        const isNumericValid = numericValue >= 1 && numericValue <= 5;
+        console.log(`Numeric validation: ${isNumericValid} (value: ${numericValue})`);
+        return isNumericValid;
       case 'observation':
-        return typeof response.value === 'string' && response.value.length >= 50;
+        const isObservationValid = typeof response.value === 'string' && response.value.length >= 50;
+        console.log(`Observation validation: ${isObservationValid} (length: ${response.value.length})`);
+        return isObservationValid;
       case 'boolean':
-        return typeof response.value === 'string' && ['oui', 'non'].includes(response.value);
+        const isBooleanValid = typeof response.value === 'string' && ['oui', 'non'].includes(response.value);
+        console.log(`Boolean validation: ${isBooleanValid} (value: ${response.value})`);
+        return isBooleanValid;
       default:
+        console.log('Unknown type');
         return false;
     }
   };
 
   const validateAllFields = (): boolean => {
+    console.log('Starting full form validation');
     const missing: { group?: string, label: string }[] = [];
 
     // Check all criteria items that are available
     criteriaItems.forEach(item => {
       const response = responses.find(r => r.item_id === item.id);
+      console.log(`Checking item: ${item.label} (type: ${item.type})`);
+      
       if (!isValidResponse(response, item.type)) {
         missing.push({
           label: item.label,
@@ -167,25 +183,33 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       const message = `Veuillez compléter tous les champs obligatoires avant de soumettre votre auto-évaluation:\n\n${
         missing.map(item => `- ${item.group ? `${item.group}: ` : ''}${item.label}`).join('\n')
       }`;
+      console.error('Validation failed:', message);
       alert(message);
       return false;
     }
 
+    console.log('All fields validated successfully');
     return true;
   };
 
   const handleSubmit = form.handleSubmit((data) => {
+    console.log('Form submit handler triggered');
+    console.log('Form data:', data);
+
     // First validate evaluator, approver and mission are selected
     if (!data.evaluator || !data.approver || !data.mission) {
+      console.error('Evaluator, approver, or mission not selected');
       return; // form validation will show errors
     }
     
     // Then validate all fields across all groups
     if (!validateAllFields()) {
+      console.error('Field validation failed');
       return;
     }
 
     // If validation passes, proceed with submission
+    console.log('All validations passed, proceeding with submission');
     if (onMissionChange) onMissionChange(Number(form.getValues("mission")));
     onSubmit();
   });
