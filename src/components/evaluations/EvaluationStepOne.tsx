@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { CriteriaItem, EvaluationResponse, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -149,11 +148,19 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         console.log(`Numeric validation: ${isNumericValid} (value: ${numericValue})`);
         return isNumericValid;
       case 'observation':
-        const isObservationValid = typeof response.value === 'string' && response.value.length >= 50;
+        if (typeof response.value !== 'string') {
+          console.log('Observation value is not a string');
+          return false;
+        }
+        const isObservationValid = response.value.length >= 50;
         console.log(`Observation validation: ${isObservationValid} (length: ${response.value.length})`);
         return isObservationValid;
       case 'boolean':
-        const isBooleanValid = typeof response.value === 'string' && ['oui', 'non'].includes(response.value);
+        if (typeof response.value !== 'string') {
+          console.log('Boolean value is not a string');
+          return false;
+        }
+        const isBooleanValid = ['oui', 'non'].includes(response.value);
         console.log(`Boolean validation: ${isBooleanValid} (value: ${response.value})`);
         return isBooleanValid;
       default:
@@ -166,7 +173,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     console.log('Starting full form validation');
     const missing: { group?: string, label: string }[] = [];
 
-    // Check all criteria items that are available
     criteriaItems.forEach(item => {
       const response = responses.find(r => r.item_id === item.id);
       console.log(`Checking item: ${item.label} (type: ${item.type})`);
@@ -196,19 +202,16 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     console.log('Form submit handler triggered');
     console.log('Form data:', data);
 
-    // First validate evaluator, approver and mission are selected
     if (!data.evaluator || !data.approver || !data.mission) {
       console.error('Evaluator, approver, or mission not selected');
       return; // form validation will show errors
     }
     
-    // Then validate all fields across all groups
     if (!validateAllFields()) {
       console.error('Field validation failed');
       return;
     }
 
-    // If validation passes, proceed with submission
     console.log('All validations passed, proceeding with submission');
     if (onMissionChange) onMissionChange(Number(form.getValues("mission")));
     onSubmit();
