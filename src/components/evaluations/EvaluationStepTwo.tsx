@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star, AlertTriangle } from 'lucide-react';
+import { Star, FileText } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import apiClient from '@/utils/apiClient';
 import { toast } from 'sonner';
 
@@ -32,11 +33,32 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
   const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
+  const [currentGroupId, setCurrentGroupId] = useState<number>(1);
   
   const { data: allCriteriaItems, isSuccess: allItemsLoaded } = useQuery({
     queryKey: ['allCriteriaItems'],
     queryFn: fetchAllCriteriaItems
   });
+
+  const { data: criteriaGroups } = useQuery({
+    queryKey: ['criteriaGroups'],
+    queryFn: async () => {
+      const response = await apiClient.get('/groupe_items');
+      return response.data;
+    }
+  });
+  
+  useEffect(() => {
+    if (criteriaGroups && criteriaGroups.length > 0) {
+      setCurrentGroupId(criteriaGroups[0].id);
+    }
+  }, [criteriaGroups]);
+  
+  const handleGroupChange = (groupId: string) => {
+    setCurrentGroupId(parseInt(groupId));
+  };
+
+  const currentGroupItems = criteriaItems.filter(item => item.group_id === currentGroupId);
   
   useEffect(() => {
     if (criteriaItems.length > 0) {
@@ -242,8 +264,28 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
           et saisir votre propre évaluation. Les deux seront affichées côte à côte pour faciliter la comparaison.
         </p>
       </div>
+
+      {criteriaGroups && criteriaGroups.length > 0 && (
+        <Tabs 
+          value={currentGroupId.toString()}
+          onValueChange={handleGroupChange}
+        >
+          <TabsList className="w-full flex-wrap justify-start h-auto gap-2 bg-transparent p-0">
+            {criteriaGroups.map((group: CriteriaGroup) => (
+              <TabsTrigger
+                key={group.id}
+                value={group.id.toString()}
+                className="data-[state=active]:bg-primary data-[state=active]:text-white"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                {group.name}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      )}
       
-      {criteriaItems.map((item) => (
+      {currentGroupItems.map((item) => (
         <div key={item.id} className="p-4 border rounded-md shadow-sm">
           <h3 className="text-lg font-medium mb-4">{item.label}</h3>
           
@@ -251,15 +293,19 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
             <div className="space-y-2 bg-gray-50 p-4 rounded-md">
               <h4 className="font-medium text-gray-700">Auto-évaluation du collaborateur</h4>
               
-              {item.type === 'numeric' ? (
+              {item.type === 'numeric' && (
                 <div className="mt-4">
                   {renderEmployeeStarRating(item.id)}
                 </div>
-              ) : item.type === 'boolean' ? (
+              )}
+              
+              {item.type === 'boolean' && (
                 <div className="mt-4">
                   {renderBooleanResponse(item.id, true)}
                 </div>
-              ) : (
+              )}
+              
+              {item.type === 'observation' && (
                 <div className="mt-2">
                   <p className="p-3 bg-gray-100 rounded min-h-[120px] text-gray-600">
                     {getEmployeeResponseValue(item.id) || "Aucune observation fournie"}
@@ -271,7 +317,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
             <div className="space-y-2">
               <h4 className="font-medium text-primary">Votre évaluation</h4>
               
-              {item.type === 'numeric' ? (
+              {item.type === 'numeric' && (
                 <div className="mt-4">
                   {renderEvaluatorStarRating(item.id)}
                   
@@ -280,11 +326,15 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
                     <span>Excellent</span>
                   </div>
                 </div>
-              ) : item.type === 'boolean' ? (
+              )}
+              
+              {item.type === 'boolean' && (
                 <div className="mt-4">
                   {renderBooleanResponse(item.id)}
                 </div>
-              ) : (
+              )}
+              
+              {item.type === 'observation' && (
                 <div className="mt-2">
                   <p className="text-sm text-gray-500 mb-2">
                     Minimum 50 caractères
