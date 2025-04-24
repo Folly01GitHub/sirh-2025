@@ -19,7 +19,7 @@ const EvaluationHeader: React.FC<EvaluationHeaderProps> = ({ currentStep }) => {
       <h1 className="text-3xl md:text-4xl font-bold text-[#172b4d] mb-4 animate-fade-in">
         Évaluation de mission
       </h1>
-      <p className="text-lg text-[#5e6c84] max-w-3xl mx-auto mb-8 animate-fade-in">
+      <p className="text-lg text-[#5e6c84] max-w-3xl mx-auto mb-8 animate-fade-in whitespace-nowrap overflow-hidden text-ellipsis">
         Processus d'évaluation des performances et du développement professionnel pour une mission précise
       </p>
       
