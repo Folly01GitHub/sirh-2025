@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -73,7 +74,8 @@ const Evaluation = () => {
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [currentGroupId, setCurrentGroupId] = useState<number>(1);
-  const [responses, setResponses] = useState<EvaluationResponse[]>([]);
+  const [employeeResponses, setEmployeeResponses] = useState<EvaluationResponse[]>([]);
+  const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   const [evaluatorId, setEvaluatorId] = useState<number | null>(null);
   const [approverId, setApproverId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -134,8 +136,22 @@ const Evaluation = () => {
     }
   }, [criteriaGroups, currentGroupId]);
   
-  const handleResponseChange = useCallback((itemId: number, value: string | number) => {
-    setResponses(prev => {
+  const handleEmployeeResponseChange = useCallback((itemId: number, value: string | number) => {
+    setEmployeeResponses(prev => {
+      const existingIndex = prev.findIndex(response => response.item_id === itemId);
+      
+      if (existingIndex !== -1) {
+        const updated = [...prev];
+        updated[existingIndex] = { item_id: itemId, value };
+        return updated;
+      } else {
+        return [...prev, { item_id: itemId, value }];
+      }
+    });
+  }, []);
+
+  const handleEvaluatorResponseChange = useCallback((itemId: number, value: string | number) => {
+    setEvaluatorResponses(prev => {
       const existingIndex = prev.findIndex(response => response.item_id === itemId);
       
       if (existingIndex !== -1) {
@@ -174,7 +190,7 @@ const Evaluation = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [evaluatorId, approverId, responses]);
+  }, [evaluatorId, approverId, employeeResponses]);
   
   const handleSubmitEvaluation = useCallback(async () => {
     setIsSubmitting(true);
@@ -195,7 +211,7 @@ const Evaluation = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [responses]);
+  }, [evaluatorResponses]);
   
   const handleApprove = useCallback(async (approved: boolean, comment?: string) => {
     if (!approved && (!comment || comment.trim().length < 10)) {
@@ -286,8 +302,8 @@ const Evaluation = () => {
                     {currentStep === 1 && (
                       <EvaluationStepOne 
                         criteriaItems={criteriaItems || []}
-                        onResponseChange={handleResponseChange}
-                        responses={responses}
+                        onResponseChange={handleEmployeeResponseChange}
+                        responses={employeeResponses}
                         employees={employees || []}
                         onEvaluatorChange={setEvaluatorId}
                         onApproverChange={setApproverId}
@@ -299,8 +315,8 @@ const Evaluation = () => {
                     {currentStep === 2 && (
                       <EvaluationStepTwo 
                         criteriaItems={criteriaItems || []}
-                        onResponseChange={handleResponseChange}
-                        employeeResponses={responses}
+                        onResponseChange={handleEvaluatorResponseChange}
+                        employeeResponses={employeeResponses}
                         isLoading={itemsLoading || isSubmitting}
                         onSubmit={handleSubmitEvaluation}
                       />
@@ -309,8 +325,8 @@ const Evaluation = () => {
                     {currentStep === 3 && (
                       <EvaluationStepThree 
                         criteriaItems={criteriaItems || []}
-                        employeeResponses={responses}
-                        evaluatorResponses={responses}
+                        employeeResponses={employeeResponses}
+                        evaluatorResponses={evaluatorResponses}
                         isLoading={itemsLoading || isSubmitting}
                         onApprove={handleApprove}
                       />

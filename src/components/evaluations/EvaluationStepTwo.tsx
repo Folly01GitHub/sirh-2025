@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   isLoading,
   onSubmit
 }) => {
+  // Create a separate state for evaluator responses
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
   const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
@@ -45,16 +47,19 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
   }, [criteriaItems]);
   
+  // Get employee response values
   const getEmployeeResponseValue = (itemId: number) => {
     const response = employeeResponses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
   
+  // Get evaluator response values
   const getEvaluatorResponseValue = (itemId: number) => {
     const response = evaluatorResponses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
   
+  // Handle response changes for evaluator
   const handleEvaluatorResponseChange = (itemId: number, value: string | number) => {
     const stringValue = typeof value === 'number' ? value.toString() : value;
     
