@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -22,7 +21,7 @@ import EvaluationStepTwo from '@/components/evaluations/EvaluationStepTwo';
 import EvaluationStepThree from '@/components/evaluations/EvaluationStepThree';
 import EvaluationInstructions from '@/components/evaluations/EvaluationInstructions';
 import { toast } from 'sonner';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 // Types for our evaluation data
 export interface CriteriaGroup {
@@ -72,6 +71,7 @@ const fetchEmployees = async (): Promise<Employee[]> => {
 
 const Evaluation = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [currentGroupId, setCurrentGroupId] = useState<number>(1);
   const [employeeResponses, setEmployeeResponses] = useState<EvaluationResponse[]>([]);
@@ -79,6 +79,7 @@ const Evaluation = () => {
   const [evaluatorId, setEvaluatorId] = useState<number | null>(null);
   const [approverId, setApproverId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedMissionId, setSelectedMissionId] = useState<number | null>(null);
   
   const { 
     data: criteriaGroups, 
@@ -177,10 +178,6 @@ const Evaluation = () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast.success("Auto-évaluation soumise", {
-        description: "Votre évaluateur a été notifié"
-      });
-      
       setCurrentStep(2);
     } catch (error) {
       console.error("Erreur lors de la soumission de l'auto-évaluation:", error);
@@ -191,6 +188,10 @@ const Evaluation = () => {
       setIsSubmitting(false);
     }
   }, [evaluatorId, approverId, employeeResponses]);
+  
+  const handleMissionChange = useCallback((id: number) => {
+    setSelectedMissionId(id);
+  }, []);
   
   const handleSubmitEvaluation = useCallback(async () => {
     setIsSubmitting(true);
@@ -309,6 +310,8 @@ const Evaluation = () => {
                         onApproverChange={setApproverId}
                         isLoading={itemsLoading || isSubmitting}
                         onSubmit={handleSubmitSelfAssessment}
+                        onMissionChange={handleMissionChange}
+                        selectedMissionId={selectedMissionId}
                       />
                     )}
                     

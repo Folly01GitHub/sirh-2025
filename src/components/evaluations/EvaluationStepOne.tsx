@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, Employee } from '@/pages/Evaluation';
@@ -57,10 +56,12 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   onMissionChange,
   selectedMissionId
 }) => {
+  const navigate = useNavigate();
   const [missionQuery, setMissionQuery] = useState("");
   const [missionOptions, setMissionOptions] = useState<Mission[]>([]);
   const [missionsLoading, setMissionsLoading] = useState(false);
   const [missionsError, setMissionsError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const [evaluatorQuery, setEvaluatorQuery] = useState("");
   const [evaluatorOptions, setEvaluatorOptions] = useState<Employee[]>([]);
@@ -252,8 +253,52 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     }
 
     console.log('All validations passed, proceeding with submission');
-    if (onMissionChange) onMissionChange(Number(form.getValues("mission")));
-    onSubmit();
+    
+    const missionId = Number(form.getValues("mission"));
+    const evaluatorId = Number(form.getValues("evaluator"));
+    const approverId = Number(form.getValues("approver"));
+    
+    const submissionData = {
+      mission_id: missionId,
+      evaluator_id: evaluatorId,
+      approver_id: approverId,
+      responses: responses.map(r => ({
+        item_id: r.item_id,
+        value: r.value
+      }))
+    };
+    
+    setSubmitting(true);
+    
+    apiClient.post('/submit_auto_evaluation', submissionData)
+      .then(response => {
+        console.log('Auto-evaluation submitted successfully:', response.data);
+        toast.success("Auto-évaluation soumise", {
+          description: "Votre évaluateur a été notifié"
+        });
+        
+        if (onMissionChange) onMissionChange(missionId);
+        onSubmit();
+        
+        setTimeout(() => {
+          navigate('/evaluations');
+        }, 1000);
+      })
+      .catch(error => {
+        console.error("Erreur lors de la soumission de l'auto-évaluation:", error);
+        
+        let errorMessage = "Une erreur est survenue. Veuillez réessayer.";
+        if (error.response && error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+        
+        toast.error("Échec de la soumission", {
+          description: errorMessage
+        });
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
   });
 
   const renderStarRating = (itemId: number) => {
@@ -454,9 +499,9 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
           <Button 
             type="submit" 
             className="w-full md:w-auto" 
-            disabled={isLoading || allItemsLoading}
+            disabled={isLoading || allItemsLoading || submitting}
           >
-            Soumettre mon auto-évaluation
+            {submitting ? "Soumission en cours..." : "Soumettre mon auto-évaluation"}
           </Button>
         </form>
       </Form>
