@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
 }) => {
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   const [currentGroupId, setCurrentGroupId] = useState<string>("");
+  const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
+  const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
   
   const { data: groups } = useQuery({
     queryKey: ['criteriaGroups'],
@@ -186,14 +189,14 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const validateAllFields = (): boolean => {
-    if (!allItemsLoaded || !allCriteriaItems) {
+    if (!criteriaItems || criteriaItems.length === 0) {
       console.warn("Cannot validate form - all criteria items not loaded yet");
       return false;
     }
     
     const missing: { group?: string, label: string }[] = [];
 
-    allCriteriaItems.forEach(item => {
+    criteriaItems.forEach(item => {
       const response = evaluatorResponses.find(r => r.item_id === item.id);
       if (!isValidResponse(response, item.type)) {
         missing.push({
