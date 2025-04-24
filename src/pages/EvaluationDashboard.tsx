@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -35,49 +35,21 @@ interface EvaluationItem {
   niveau: 'Evaluateur' | 'Approbateur' | 'Terminé';
 }
 
-// Mock API functions - replace with real API calls later
 const fetchEvaluationStats = async (filter: string): Promise<EvaluationStats> => {
-  // Simulating API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  // Mock stats data
-  if (filter === 'self') {
-    return {
-      total: 12,
-      validees: 8,
-      en_cours: 4
-    };
-  } else {
-    return {
-      total: 25,
-      validees: 18,
-      en_cours: 7
-    };
-  }
+  const endpoint = filter === 'self' ? '/self_evaluations/stats' : '/team_evaluations/stats';
+  const response = await apiClient.get(endpoint);
+  return response.data;
 };
 
 const fetchEvaluations = async (filter: string, page: number = 1, limit: number = 10): Promise<EvaluationItem[]> => {
-  // Simulating API delay
-  await new Promise(resolve => setTimeout(resolve, 700));
-  
-  // Mock evaluation data
-  const selfEvaluations = [
-    { id: 1, mission: "Audit Financier", code: "AUD-2024-001", date_auto_eval: "15/11/2024", date_eval: "", date_validation: "", evaluateur: "Sophie Martin", demandeur: "Jean Dupont", statut: "En cours", niveau: "Evaluateur" as const },
-    { id: 2, mission: "Conseil Stratégique", code: "CST-2024-042", date_auto_eval: "12/10/2024", date_eval: "20/10/2024", date_validation: "", evaluateur: "Pierre Lemoine", demandeur: "Jean Dupont", statut: "En cours", niveau: "Approbateur" as const },
-    { id: 3, mission: "Audit Interne", code: "AIN-2024-115", date_auto_eval: "02/09/2024", date_eval: "15/09/2024", date_validation: "30/09/2024", evaluateur: "Marie Dubois", demandeur: "Jean Dupont", statut: "Terminé", niveau: "Terminé" as const },
-    { id: 4, mission: "Expertise Comptable", code: "EXP-2024-073", date_auto_eval: "05/08/2024", date_eval: "15/08/2024", date_validation: "25/08/2024", evaluateur: "Robert Garcia", demandeur: "Jean Dupont", statut: "Terminé", niveau: "Terminé" as const },
-    { id: 5, mission: "Conseil Fiscal", code: "CFI-2024-028", date_auto_eval: "01/07/2024", date_eval: "", date_validation: "", evaluateur: "Élodie Martin", demandeur: "Jean Dupont", statut: "En cours", niveau: "Evaluateur" as const }
-  ];
-  
-  const teamEvaluations = [
-    { id: 101, mission: "Audit Légal", code: "ALG-2024-056", date_auto_eval: "10/11/2024", date_eval: "", date_validation: "", evaluateur: "Jean Dupont", demandeur: "Thomas Laurent", statut: "En cours", niveau: "Evaluateur" as const },
-    { id: 102, mission: "Due Diligence", code: "DDL-2024-033", date_auto_eval: "05/10/2024", date_eval: "15/10/2024", date_validation: "", evaluateur: "Jean Dupont", demandeur: "Camille Petit", statut: "En cours", niveau: "Approbateur" as const },
-    { id: 103, mission: "Conseil Organisation", code: "COR-2024-089", date_auto_eval: "20/09/2024", date_eval: "30/09/2024", date_validation: "10/10/2024", evaluateur: "Jean Dupont", demandeur: "Alex Moreau", statut: "Terminé", niveau: "Terminé" as const },
-    { id: 104, mission: "Restructuration", code: "RES-2024-044", date_auto_eval: "15/08/2024", date_eval: "", date_validation: "", evaluateur: "Jean Dupont", demandeur: "Julie Blanc", statut: "En cours", niveau: "Evaluateur" as const },
-    { id: 105, mission: "Audit Qualité", code: "AQL-2024-077", date_auto_eval: "01/07/2024", date_eval: "10/07/2024", date_validation: "", evaluateur: "Jean Dupont", demandeur: "Paul Durand", statut: "En cours", niveau: "Approbateur" as const }
-  ];
-  
-  return filter === 'self' ? selfEvaluations : teamEvaluations;
+  const endpoint = filter === 'self' ? '/self_evaluations' : '/team_evaluations';
+  const response = await apiClient.get(endpoint, {
+    params: {
+      page,
+      limit
+    }
+  });
+  return response.data;
 };
 
 const EvaluationDashboard = () => {
