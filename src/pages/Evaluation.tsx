@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -151,7 +150,9 @@ const Evaluation = () => {
   
   const handleSubmitSelfAssessment = useCallback(async () => {
     if (!evaluatorId || !approverId) {
-      toast.error("Please select both an evaluator and an approver");
+      toast.error("Sélection incomplète", {
+        description: "Veuillez sélectionner un évaluateur et un approbateur"
+      });
       return;
     }
     
@@ -160,15 +161,15 @@ const Evaluation = () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast.success("Self-assessment submitted successfully", {
-        description: "Your evaluator has been notified"
+      toast.success("Auto-évaluation soumise", {
+        description: "Votre évaluateur a été notifié"
       });
       
       setCurrentStep(2);
     } catch (error) {
-      console.error("Error submitting self-assessment:", error);
-      toast.error("Failed to submit self-assessment", {
-        description: "Please try again later"
+      console.error("Erreur lors de la soumission de l'auto-évaluation:", error);
+      toast.error("Échec de la soumission de l'auto-évaluation", {
+        description: "Veuillez réessayer ultérieurement"
       });
     } finally {
       setIsSubmitting(false);
@@ -181,15 +182,15 @@ const Evaluation = () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast.success("Evaluation submitted successfully", {
-        description: "The approver has been notified"
+      toast.success("Évaluation soumise", {
+        description: "L'approbateur a été notifié"
       });
       
       setCurrentStep(3);
     } catch (error) {
-      console.error("Error submitting evaluation:", error);
-      toast.error("Failed to submit evaluation", {
-        description: "Please try again later"
+      console.error("Erreur lors de la soumission de l'évaluation:", error);
+      toast.error("Échec de la soumission de l'évaluation", {
+        description: "Veuillez réessayer ultérieurement"
       });
     } finally {
       setIsSubmitting(false);
@@ -198,7 +199,9 @@ const Evaluation = () => {
   
   const handleApprove = useCallback(async (approved: boolean, comment?: string) => {
     if (!approved && (!comment || comment.trim().length < 10)) {
-      toast.error("Please provide a detailed comment for rejection");
+      toast.error("Commentaire requis", {
+        description: "Veuillez fournir un commentaire détaillé pour le rejet"
+      });
       return;
     }
     
@@ -208,25 +211,25 @@ const Evaluation = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       if (approved) {
-        toast.success("Evaluation approved", {
-          description: "The evaluation process is now complete"
+        toast.success("Évaluation approuvée", {
+          description: "Le processus d'évaluation est maintenant terminé"
         });
       } else {
-        toast.success("Evaluation sent back for revision", {
-          description: "The evaluator has been notified"
+        toast.success("Évaluation renvoyée pour révision", {
+          description: "L'évaluateur a été notifié"
         });
       }
       
     } catch (error) {
-      console.error("Error finalizing evaluation:", error);
-      toast.error("Failed to finalize evaluation", {
-        description: "Please try again later"
+      console.error("Erreur lors de la finalisation de l'évaluation:", error);
+      toast.error("Échec de la finalisation de l'évaluation", {
+        description: "Veuillez réessayer ultérieurement"
       });
     } finally {
       setIsSubmitting(false);
     }
   }, []);
-  
+
   useEffect(() => {
     if (criteriaGroups && criteriaGroups.length > 0) {
       setCurrentGroupId(criteriaGroups[0].id);

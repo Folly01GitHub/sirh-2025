@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -207,7 +208,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   const handleSubmit = () => {
     if (!validateAllFields()) {
-      console.log("Form validation failed. Missing fields:", missingFields);
+      console.log("Échec de la validation du formulaire. Champs manquants :", missingFields);
       
       if (missingFields.length > 0) {
         toast.error("Formulaire incomplet", {
@@ -219,7 +220,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       return;
     }
 
-    console.log("Form validation successful, submitting evaluation");
+    console.log("Validation du formulaire réussie, soumission de l'évaluation");
     onSubmit();
   };
   
