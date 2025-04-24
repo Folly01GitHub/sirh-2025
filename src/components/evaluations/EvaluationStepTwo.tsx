@@ -1,13 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
-import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
+import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star } from 'lucide-react';
+import { Star, FileText } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import apiClient from '@/utils/apiClient';
 import { toast } from 'sonner';
 
@@ -32,24 +31,42 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   onSubmit
 }) => {
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
-  const [currentGroupId, setCurrentGroupId] = useState<string>("");
   const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
   const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
+  const [currentGroupId, setCurrentGroupId] = useState<number>(1);
   
-  const { data: groups } = useQuery({
+  const { data: allCriteriaItems, isSuccess: allItemsLoaded } = useQuery({
+    queryKey: ['allCriteriaItems'],
+    queryFn: fetchAllCriteriaItems
+  });
+
+  const { data: criteriaGroups } = useQuery({
     queryKey: ['criteriaGroups'],
     queryFn: async () => {
       const response = await apiClient.get('/groupe_items');
       return response.data;
     }
   });
-
+  
   useEffect(() => {
-    if (groups && groups.length > 0 && !currentGroupId) {
-      setCurrentGroupId(groups[0].id.toString());
+    if (criteriaGroups && criteriaGroups.length > 0) {
+      setCurrentGroupId(criteriaGroups[0].id);
     }
-  }, [groups]);
+  }, [criteriaGroups]);
+  
+  const handleGroupChange = (groupId: string) => {
+    setCurrentGroupId(parseInt(groupId));
+  };
 
+  const currentGroupItems = criteriaItems.filter(item => item.group_id === currentGroupId);
+  
+  useEffect(() => {
+    if (criteriaItems.length > 0) {
+      setCriteriaMissing(false);
+      setMissingFields([]);
+    }
+  }, [criteriaItems]);
+  
   const getEmployeeResponseValue = (itemId: number) => {
     const response = employeeResponses.find(r => r.item_id === itemId);
     return response ? response.value : "";
@@ -189,14 +206,14 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const validateAllFields = (): boolean => {
-    if (!criteriaItems || criteriaItems.length === 0) {
+    if (!allItemsLoaded || !allCriteriaItems) {
       console.warn("Cannot validate form - all criteria items not loaded yet");
       return false;
     }
     
     const missing: { group?: string, label: string }[] = [];
 
-    criteriaItems.forEach(item => {
+    allCriteriaItems.forEach(item => {
       const response = evaluatorResponses.find(r => r.item_id === item.id);
       if (!isValidResponse(response, item.type)) {
         missing.push({
@@ -233,14 +250,12 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       <div className="space-y-6">
         <Skeleton className="h-6 w-1/3" />
         <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-6 w-1/3" />
+        <Skeleton className="h-24 w-full" />
       </div>
     );
   }
-
-  const filteredItems = criteriaItems.filter(
-    item => item.group_id.toString() === currentGroupId
-  );
-
+  
   return (
     <div className="space-y-8">
       <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
@@ -250,98 +265,100 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         </p>
       </div>
 
-      {groups && groups.length > 0 && (
+      {criteriaGroups && criteriaGroups.length > 0 && (
         <Tabs 
-          value={currentGroupId} 
-          onValueChange={setCurrentGroupId}
-          className="w-full"
+          value={currentGroupId.toString()}
+          onValueChange={handleGroupChange}
         >
-          <TabsList className="w-full justify-start mb-6 bg-background border-b rounded-none h-auto flex-wrap gap-2 p-0">
-            {groups.map((group: any) => (
+          <TabsList className="w-full flex-wrap justify-start h-auto gap-2 bg-transparent p-0">
+            {criteriaGroups.map((group: CriteriaGroup) => (
               <TabsTrigger
                 key={group.id}
                 value={group.id.toString()}
-                className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
+                className="data-[state=active]:bg-primary data-[state=active]:text-white"
               >
+                <FileText className="h-4 w-4 mr-2" />
                 {group.name}
               </TabsTrigger>
             ))}
           </TabsList>
-
-          {groups.map((group: any) => (
-            <TabsContent key={group.id} value={group.id.toString()}>
-              <div className="space-y-6">
-                {filteredItems.map((item) => (
-                  <div key={item.id} className="p-4 border rounded-md shadow-sm">
-                    <h3 className="text-lg font-medium mb-4">{item.label}</h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2 bg-gray-50 p-4 rounded-md">
-                        <h4 className="font-medium text-gray-700">Auto-évaluation du collaborateur</h4>
-                        
-                        {item.type === 'numeric' ? (
-                          <div className="mt-4">
-                            {renderEmployeeStarRating(item.id)}
-                          </div>
-                        ) : item.type === 'boolean' ? (
-                          <div className="mt-4">
-                            {renderBooleanResponse(item.id, true)}
-                          </div>
-                        ) : (
-                          <div className="mt-2">
-                            <p className="p-3 bg-gray-100 rounded min-h-[120px] text-gray-600">
-                              {getEmployeeResponseValue(item.id) || "Aucune observation fournie"}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <h4 className="font-medium text-primary">Votre évaluation</h4>
-                        
-                        {item.type === 'numeric' ? (
-                          <div className="mt-4">
-                            {renderEvaluatorStarRating(item.id)}
-                            
-                            <div className="flex justify-between text-xs text-gray-500 mt-1">
-                              <span>Débutant</span>
-                              <span>Expert</span>
-                            </div>
-                          </div>
-                        ) : item.type === 'boolean' ? (
-                          <div className="mt-4">
-                            {renderBooleanResponse(item.id)}
-                          </div>
-                        ) : (
-                          <div className="mt-2">
-                            <p className="text-sm text-gray-500 mb-2">
-                              Minimum 50 caractères
-                            </p>
-                            <Textarea 
-                              value={getEvaluatorResponseValue(item.id).toString()}
-                              onChange={(e) => handleEvaluatorResponseChange(item.id, e.target.value)}
-                              placeholder="Entrez votre observation…"
-                              className="min-h-[120px]"
-                            />
-                            <div className="text-xs text-right">
-                              {typeof getEvaluatorResponseValue(item.id) === 'string' && (
-                                <span className={`${(getEvaluatorResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
-                                  {(getEvaluatorResponseValue(item.id) as string).length} / 50 caractères minimum
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </TabsContent>
-          ))}
         </Tabs>
       )}
-
+      
+      {currentGroupItems.map((item) => (
+        <div key={item.id} className="p-4 border rounded-md shadow-sm">
+          <h3 className="text-lg font-medium mb-4">{item.label}</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2 bg-gray-50 p-4 rounded-md">
+              <h4 className="font-medium text-gray-700">Auto-évaluation du collaborateur</h4>
+              
+              {item.type === 'numeric' && (
+                <div className="mt-4">
+                  {renderEmployeeStarRating(item.id)}
+                </div>
+              )}
+              
+              {item.type === 'boolean' && (
+                <div className="mt-4">
+                  {renderBooleanResponse(item.id, true)}
+                </div>
+              )}
+              
+              {item.type === 'observation' && (
+                <div className="mt-2">
+                  <p className="p-3 bg-gray-100 rounded min-h-[120px] text-gray-600">
+                    {getEmployeeResponseValue(item.id) || "Aucune observation fournie"}
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="font-medium text-primary">Votre évaluation</h4>
+              
+              {item.type === 'numeric' && (
+                <div className="mt-4">
+                  {renderEvaluatorStarRating(item.id)}
+                  
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Très insuffisant</span>
+                    <span>Excellent</span>
+                  </div>
+                </div>
+              )}
+              
+              {item.type === 'boolean' && (
+                <div className="mt-4">
+                  {renderBooleanResponse(item.id)}
+                </div>
+              )}
+              
+              {item.type === 'observation' && (
+                <div className="mt-2">
+                  <p className="text-sm text-gray-500 mb-2">
+                    Minimum 50 caractères
+                  </p>
+                  <Textarea 
+                    value={getEvaluatorResponseValue(item.id).toString()}
+                    onChange={(e) => handleEvaluatorResponseChange(item.id, e.target.value)}
+                    placeholder="Entrez votre observation…"
+                    className="min-h-[120px]"
+                  />
+                  <div className="text-xs text-right">
+                    {typeof getEvaluatorResponseValue(item.id) === 'string' && (
+                      <span className={`${(getEvaluatorResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
+                        {(getEvaluatorResponseValue(item.id) as string).length} / 50 caractères minimum
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+      
       <Button 
         onClick={handleSubmit} 
         className="w-full md:w-auto" 
