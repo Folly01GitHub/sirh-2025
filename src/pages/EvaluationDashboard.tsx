@@ -189,7 +189,10 @@ const EvaluationDashboard = () => {
                     if (currentPage > 1) handlePageChange(currentPage - 1);
                   }}
                   className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
-                />
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span>Précédent</span>
+                </PaginationPrevious>
               </PaginationItem>
               {[...Array(3)].map((_, i) => (
                 <PaginationItem key={i}>
@@ -213,7 +216,10 @@ const EvaluationDashboard = () => {
                     if (currentPage < 3) handlePageChange(currentPage + 1);
                   }}
                   className={currentPage >= 3 ? "pointer-events-none opacity-50" : ""}
-                />
+                >
+                  <span>Suivant</span>
+                  <ChevronRight className="h-4 w-4" />
+                </PaginationNext>
               </PaginationItem>
             </PaginationContent>
           </Pagination>
