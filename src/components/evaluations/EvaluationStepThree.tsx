@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Star, CheckCircle, XCircle } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Accordion,
   AccordionContent,
@@ -151,11 +152,22 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                         <div className="mt-4">
                           {renderStarRating(Number(getResponseValue(employeeResponses, item.id)) || 0)}
                         </div>
+                      ) : item.type === 'boolean' ? (
+                        <div className="mt-4">
+                          {/* Render boolean response (true/false) */}
+                          <div className="p-3 rounded">
+                            {getResponseValue(employeeResponses, item.id) === 'oui' ? 'Oui' : 
+                             getResponseValue(employeeResponses, item.id) === 'non' ? 'Non' : 
+                             'Non spécifié'}
+                          </div>
+                        </div>
                       ) : (
                         <div className="mt-2">
-                          <p className="p-3 bg-gray-100 rounded min-h-[100px] text-gray-600">
-                            {getResponseValue(employeeResponses, item.id) || "Aucune observation fournie"}
-                          </p>
+                          <ScrollArea className="h-[100px] w-full rounded-md">
+                            <div className="p-3 bg-gray-100 rounded text-gray-600 whitespace-pre-wrap">
+                              {getResponseValue(employeeResponses, item.id) || "Aucune observation fournie"}
+                            </div>
+                          </ScrollArea>
                         </div>
                       )}
                     </div>
@@ -168,11 +180,22 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                         <div className="mt-4">
                           {renderStarRating(Number(getResponseValue(evaluatorResponses, item.id)) || 0)}
                         </div>
+                      ) : item.type === 'boolean' ? (
+                        <div className="mt-4">
+                          {/* Render boolean response (true/false) */}
+                          <div className="p-3 rounded">
+                            {getResponseValue(evaluatorResponses, item.id) === 'oui' ? 'Oui' : 
+                             getResponseValue(evaluatorResponses, item.id) === 'non' ? 'Non' : 
+                             'Non spécifié'}
+                          </div>
+                        </div>
                       ) : (
                         <div className="mt-2">
-                          <p className="p-3 bg-blue-100 rounded min-h-[100px] text-blue-800">
-                            {getResponseValue(evaluatorResponses, item.id) || "Aucune observation fournie"}
-                          </p>
+                          <ScrollArea className="h-[100px] w-full rounded-md">
+                            <div className="p-3 bg-blue-100 rounded text-blue-800 whitespace-pre-wrap">
+                              {getResponseValue(evaluatorResponses, item.id) || "Aucune observation fournie"}
+                            </div>
+                          </ScrollArea>
                         </div>
                       )}
                     </div>
@@ -198,6 +221,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
               onChange={(e) => setComment(e.target.value)}
               placeholder="Détaillez les raisons du rejet et les axes d'amélioration…"
               className="min-h-[150px]"
+              scrollable
             />
             <div className="flex flex-col sm:flex-row gap-4 mt-4">
               <Button 

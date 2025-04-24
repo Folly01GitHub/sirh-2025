@@ -9,6 +9,7 @@ import { Star, AlertTriangle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
 import { toast } from 'sonner';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface EvaluationStepTwoProps {
   criteriaItems: CriteriaItem[];
@@ -266,9 +267,11 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
                 </div>
               ) : (
                 <div className="mt-2">
-                  <p className="p-3 bg-gray-100 rounded min-h-[120px] text-gray-600">
-                    {getEmployeeResponseValue(item.id) || "Aucune observation fournie"}
-                  </p>
+                  <ScrollArea className="h-[120px] w-full rounded-md">
+                    <div className="p-3 bg-gray-100 rounded text-gray-600 whitespace-pre-wrap">
+                      {getEmployeeResponseValue(item.id) || "Aucune observation fournie"}
+                    </div>
+                  </ScrollArea>
                 </div>
               )}
             </div>
@@ -298,7 +301,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
                     value={getEvaluatorResponseValue(item.id).toString()}
                     onChange={(e) => handleEvaluatorResponseChange(item.id, e.target.value)}
                     placeholder="Entrez votre observation…"
-                    className="min-h-[120px]"
+                    className="min-h-[120px] max-h-[120px] overflow-y-auto"
                   />
                   <div className="text-xs text-right">
                     {typeof getEvaluatorResponseValue(item.id) === 'string' && (
