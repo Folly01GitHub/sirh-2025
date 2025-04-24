@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { CriteriaItem, EvaluationResponse, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -416,11 +417,15 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                     <span>Excellent</span>
                   </div>
                 </div>
-              ) : item.type === 'boolean' ? (
+              )}
+
+              {item.type === 'boolean' && (
                 <div className="space-y-2">
                   {renderBooleanResponse(item.id)}
                 </div>
-              ) : (
+              )}
+
+              {item.type === 'observation' && (
                 <div className="space-y-2">
                   <p className="text-sm text-gray-500 mb-2">
                     Minimum 50 caractères
