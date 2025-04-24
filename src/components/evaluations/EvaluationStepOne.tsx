@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { CriteriaItem, EvaluationResponse, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -408,24 +407,20 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
             <div key={item.id} className="p-4 border rounded-md shadow-sm">
               <h3 className="text-lg font-medium mb-3">{item.label}</h3>
               
-              {item.type === 'numeric' && (
+              {item.type === 'numeric' ? (
                 <div className="space-y-2">
                   <p className="text-sm text-gray-500 mb-2">Évaluez de 1 à 5 étoiles</p>
                   {renderStarRating(item.id)}
                   <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Très insuffisant</span>
-                    <span>Excellent</span>
+                    <span>Débutant</span>
+                    <span>Expert</span>
                   </div>
                 </div>
-              )}
-
-              {item.type === 'boolean' && (
+              ) : item.type === 'boolean' ? (
                 <div className="space-y-2">
                   {renderBooleanResponse(item.id)}
                 </div>
-              )}
-
-              {item.type === 'observation' && (
+              ) : (
                 <div className="space-y-2">
                   <p className="text-sm text-gray-500 mb-2">
                     Minimum 50 caractères
