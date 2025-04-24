@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -58,6 +59,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     setCurrentGroupId(parseInt(groupId));
   };
 
+  // Filter items based on the current selected group
   const currentGroupItems = criteriaItems.filter(item => item.group_id === currentGroupId);
   
   useEffect(() => {
