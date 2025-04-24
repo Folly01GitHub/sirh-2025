@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -277,8 +276,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
                   {renderEvaluatorStarRating(item.id)}
                   
                   <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Débutant</span>
-                    <span>Expert</span>
+                    <span>Très insuffisant</span>
+                    <span>Excellent</span>
                   </div>
                 </div>
               ) : item.type === 'boolean' ? (

@@ -412,8 +412,8 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                   <p className="text-sm text-gray-500 mb-2">Évaluez de 1 à 5 étoiles</p>
                   {renderStarRating(item.id)}
                   <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Débutant</span>
-                    <span>Expert</span>
+                    <span>Très insuffisant</span>
+                    <span>Excellent</span>
                   </div>
                 </div>
               ) : item.type === 'boolean' ? (
