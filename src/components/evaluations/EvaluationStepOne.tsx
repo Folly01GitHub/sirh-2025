@@ -5,6 +5,7 @@ import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Star } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -67,6 +68,21 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const [approverQuery, setApproverQuery] = useState("");
   const [approverOptions, setApproverOptions] = useState<Employee[]>([]);
   const [approverLoading, setApproverLoading] = useState(false);
+
+  const [currentGroupId, setCurrentGroupId] = useState<string>("");
+  const { data: groups } = useQuery({
+    queryKey: ['criteriaGroups'],
+    queryFn: async () => {
+      const response = await apiClient.get('/groupe_items');
+      return response.data;
+    }
+  });
+
+  useEffect(() => {
+    if (groups && groups.length > 0 && !currentGroupId) {
+      setCurrentGroupId(groups[0].id.toString());
+    }
+  }, [groups]);
 
   const { data: allCriteriaItems, isLoading: allItemsLoading } = useQuery({
     queryKey: ['allCriteriaItems'],
@@ -315,18 +331,16 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     label: m.nom,
   }));
 
+  const filteredItems = criteriaItems.filter(
+    item => item.group_id.toString() === currentGroupId
+  );
+
   if (isLoading && criteriaItems.length === 0) {
     return (
       <div className="space-y-6">
         <div className="space-y-4">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-10 w-full" />
-        </div>
-        <div className="space-y-4">
-          <Skeleton className="h-6 w-1/3" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-6 w-1/3" />
-          <Skeleton className="h-24 w-full" />
         </div>
       </div>
     );
@@ -403,46 +417,74 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
             />
           </div>
           
-          {criteriaItems.map((item) => (
-            <div key={item.id} className="p-4 border rounded-md shadow-sm">
-              <h3 className="text-lg font-medium mb-3">{item.label}</h3>
-              
-              {item.type === 'numeric' ? (
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-500 mb-2">Évaluez de 1 à 5 étoiles</p>
-                  {renderStarRating(item.id)}
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Débutant</span>
-                    <span>Expert</span>
-                  </div>
-                </div>
-              ) : item.type === 'boolean' ? (
-                <div className="space-y-2">
-                  {renderBooleanResponse(item.id)}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-500 mb-2">
-                    Minimum 50 caractères
-                  </p>
-                  <Textarea 
-                    value={getResponseValue(item.id) as string}
-                    onChange={(e) => onResponseChange(item.id, e.target.value)}
-                    placeholder="Entrez votre observation…"
-                    className="min-h-[120px]"
-                  />
-                  <div className="text-xs text-right">
-                    {typeof getResponseValue(item.id) === 'string' && (
-                      <span className={`${(getResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
-                        {(getResponseValue(item.id) as string).length} / 50 caractères minimum
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-          
+          <div className="mt-8">
+            {groups && groups.length > 0 && (
+              <Tabs 
+                value={currentGroupId} 
+                onValueChange={setCurrentGroupId}
+                className="w-full"
+              >
+                <TabsList className="w-full justify-start mb-6 bg-background border-b rounded-none h-auto flex-wrap gap-2 p-0">
+                  {groups.map((group: any) => (
+                    <TabsTrigger
+                      key={group.id}
+                      value={group.id.toString()}
+                      className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
+                    >
+                      {group.name}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+
+                {groups.map((group: any) => (
+                  <TabsContent key={group.id} value={group.id.toString()}>
+                    <div className="space-y-6">
+                      {filteredItems.map((item) => (
+                        <div key={item.id} className="p-4 border rounded-md shadow-sm">
+                          <h3 className="text-lg font-medium mb-3">{item.label}</h3>
+                          
+                          {item.type === 'numeric' ? (
+                            <div className="space-y-2">
+                              <p className="text-sm text-gray-500 mb-2">Évaluez de 1 à 5 étoiles</p>
+                              {renderStarRating(item.id)}
+                              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>Débutant</span>
+                                <span>Expert</span>
+                              </div>
+                            </div>
+                          ) : item.type === 'boolean' ? (
+                            <div className="space-y-2">
+                              {renderBooleanResponse(item.id)}
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <p className="text-sm text-gray-500 mb-2">
+                                Minimum 50 caractères
+                              </p>
+                              <Textarea 
+                                value={getResponseValue(item.id) as string}
+                                onChange={(e) => onResponseChange(item.id, e.target.value)}
+                                placeholder="Entrez votre observation…"
+                                className="min-h-[120px]"
+                              />
+                              <div className="text-xs text-right">
+                                {typeof getResponseValue(item.id) === 'string' && (
+                                  <span className={`${(getResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {(getResponseValue(item.id) as string).length} / 50 caractères minimum
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </TabsContent>
+                ))}
+              </Tabs>
+            )}
+          </div>
+
           {form.formState.errors.root && (
             <p className="text-sm font-medium text-destructive">
               {form.formState.errors.root.message}
