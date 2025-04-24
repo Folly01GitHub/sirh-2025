@@ -16,6 +16,7 @@ import Activate from "./pages/Activate";
 import ForgotPassword from "./pages/ForgotPassword";
 import Permissions from "./pages/Permissions";
 import Evaluation from "./pages/Evaluation";
+import EvaluationDashboard from "./pages/EvaluationDashboard";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/leave" element={<Home />} />
               <Route path="/assessments" element={<Home />} />
               <Route path="/permissions" element={<Permissions />} />
+              <Route path="/evaluations" element={<EvaluationDashboard />} />
               <Route path="/evaluation" element={<Evaluation />} />
               <Route path="/cashout" element={<Home />} />
               <Route path="/certificates" element={<Home />} />
