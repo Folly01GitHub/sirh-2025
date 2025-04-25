@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
@@ -33,6 +33,22 @@ interface EvaluationStepOneProps {
   selectedMissionId?: number | null;
 }
 
+interface EvaluationResponse {
+  item_id: number;
+  value: string | number;
+}
+
+interface CollabResponse {
+  mission_id: string;
+  evaluator_id: string;
+  approver_id: string;
+  responses: {
+    id_item: string;
+    reponse_item: string;
+    type_item: string;
+  }[];
+}
+
 const formSchema = z.object({
   evaluator: z.string().min(1, "Veuillez sélectionner un évaluateur"),
   approver: z.string().min(1, "Veuillez sélectionner un approbateur"),
@@ -56,7 +72,11 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   onMissionChange,
   selectedMissionId
 }) => {
+  const location = useLocation();
   const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const evaluationId = searchParams.get('id');
+  
   const [missionQuery, setMissionQuery] = useState("");
   const [missionOptions, setMissionOptions] = useState<Mission[]>([]);
   const [missionsLoading, setMissionsLoading] = useState(false);
@@ -141,6 +161,33 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       form.setValue("mission", selectedMissionId.toString());
     }
   }, [selectedMissionId, form]);
+
+  useEffect(() => {
+    if (evaluationId) {
+      apiClient.get<CollabResponse>(`/collab_responses?evaluation_id=${evaluationId}`)
+        .then(response => {
+          form.setValue("evaluator", response.data.evaluator_id);
+          form.setValue("approver", response.data.approver_id);
+          form.setValue("mission", response.data.mission_id);
+          
+          onEvaluatorChange(Number(response.data.evaluator_id));
+          onApproverChange(Number(response.data.approver_id));
+          if (onMissionChange) {
+            onMissionChange(Number(response.data.mission_id));
+          }
+          
+          response.data.responses.forEach(resp => {
+            onResponseChange(Number(resp.id_item), resp.reponse_item);
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching responses:', error);
+          toast.error("Erreur lors du chargement des réponses", {
+            description: "Impossible de charger les réponses existantes"
+          });
+        });
+    }
+  }, [evaluationId]);
 
   const getResponseValue = (itemId: number) => {
     const response = responses.find(r => r.item_id === itemId);
@@ -262,6 +309,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       mission_id: missionId,
       evaluator_id: evaluatorId,
       approver_id: approverId,
+      evaluation_id: evaluationId ? Number(evaluationId) : null,
       responses: responses.map(r => ({
         item_id: r.item_id,
         value: r.value
@@ -273,11 +321,11 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     apiClient.post('/submit_auto_evaluation', submissionData)
       .then(response => {
         console.log('Auto-evaluation submitted successfully:', response.data);
-        toast.success("Auto-évaluation soumise", {
+        toast.success(evaluationId ? "Auto-évaluation mise à jour" : "Auto-évaluation soumise", {
           description: "Votre évaluateur a été notifié"
         });
         
-        if (onMissionChange) onMissionChange(missionId);
+        if (onMissionChange) onMissionChange(submissionData.mission_id);
         onSubmit();
         
         setTimeout(() => {
@@ -288,7 +336,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         console.error("Erreur lors de la soumission de l'auto-évaluation:", error);
         
         let errorMessage = "Une erreur est survenue. Veuillez réessayer.";
-        if (error.response && error.response.data && error.response.data.message) {
+        if (error.response?.data?.message) {
           errorMessage = error.response.data.message;
         }
         
