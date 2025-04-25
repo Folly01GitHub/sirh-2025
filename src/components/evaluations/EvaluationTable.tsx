@@ -18,6 +18,7 @@ interface EvaluationItem {
   evaluateur: string;
   demandeur: string;
   statut: string;
+  niveau: 'Evaluateur' | 'Approbateur' | 'Terminé';
 }
 
 interface EvaluationTableProps {
@@ -47,6 +48,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
             <TableHead>Evaluateur</TableHead>
             <TableHead>Demandeur</TableHead>
             <TableHead>Statut</TableHead>
+            <TableHead>Niveau</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -62,12 +64,13 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                 <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
                 <TableCell className="text-right"><Skeleton className="h-4 w-[100px]" /></TableCell>
               </TableRow>
             ))
           ) : evaluations.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={9} className="text-center py-6">Aucune évaluation trouvée.</TableCell>
+              <TableCell colSpan={10} className="text-center py-6">Aucune évaluation trouvée.</TableCell>
             </TableRow>
           ) : (
             evaluations.map((evaluation) => (
@@ -89,6 +92,9 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                   ) : (
                     <Badge>{evaluation.statut}</Badge>
                   )}
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline">{evaluation.niveau}</Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <Button
