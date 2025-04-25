@@ -1,76 +1,559 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { CriteriaItem, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
+import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CriteriaItem, EvaluationResponse, Employee } from '@/types/evaluation.types';
-import StaffSelector from './selectors/StaffSelector';
-import MissionSelector from './selectors/MissionSelector';
-import CriteriaResponseForm from './forms/CriteriaResponseForm';
+import { Star } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import apiClient from '@/utils/apiClient';
+import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
+
+interface Mission {
+  id: number;
+  nom: string;
+}
 
 interface EvaluationStepOneProps {
   criteriaItems: CriteriaItem[];
-  onResponseChange: (itemId: number, value: string | number | boolean) => void;
+  onResponseChange: (itemId: number, value: string | number) => void;
+  responses: EvaluationResponse[];
   employees: Employee[];
-  onEvaluatorChange: (employeeId: number) => void;
-  onApproverChange: (employeeId: number) => void;
+  onEvaluatorChange: (id: number) => void;
+  onApproverChange: (id: number) => void;
   isLoading: boolean;
   onSubmit: () => void;
-  onMissionChange: (id: number) => void;
-  selectedMissionId: number | null;
-  responses: EvaluationResponse[];
+  onMissionChange?: (id: number) => void;
+  selectedMissionId?: number | null;
 }
+
+interface EvaluationResponse {
+  item_id: number;
+  value: string | number;
+}
+
+interface CollabResponse {
+  mission_id: string;
+  evaluator_id: string;
+  approver_id: string;
+  responses: {
+    id_item: string;
+    reponse_item: string;
+    type_item: string;
+  }[];
+}
+
+const formSchema = z.object({
+  evaluator: z.string().min(1, "Veuillez sélectionner un évaluateur"),
+  approver: z.string().min(1, "Veuillez sélectionner un approbateur"),
+  mission: z.string().min(1, "Veuillez sélectionner une mission"),
+});
+
+const fetchAllCriteriaItems = async (): Promise<CriteriaItem[]> => {
+  const response = await apiClient.get('/items');
+  return response.data;
+};
 
 const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   criteriaItems,
   onResponseChange,
+  responses,
   employees,
   onEvaluatorChange,
   onApproverChange,
   isLoading,
   onSubmit,
   onMissionChange,
-  selectedMissionId,
-  responses
+  selectedMissionId
 }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const evaluationId = searchParams.get('id');
+  
+  const [missionQuery, setMissionQuery] = useState("");
+  const [missionOptions, setMissionOptions] = useState<Mission[]>([]);
+  const [missionsLoading, setMissionsLoading] = useState(false);
+  const [missionsError, setMissionsError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [evaluatorQuery, setEvaluatorQuery] = useState("");
+  const [evaluatorOptions, setEvaluatorOptions] = useState<Employee[]>([]);
+  const [evaluatorLoading, setEvaluatorLoading] = useState(false);
+
+  const [approverQuery, setApproverQuery] = useState("");
+  const [approverOptions, setApproverOptions] = useState<Employee[]>([]);
+  const [approverLoading, setApproverLoading] = useState(false);
+
+  const { data: allCriteriaItems, isLoading: allItemsLoading } = useQuery({
+    queryKey: ['allCriteriaItems'],
+    queryFn: fetchAllCriteriaItems
+  });
+
+  useEffect(() => {
+    setMissionsLoading(true);
+    setMissionsError(null);
+    const handler = setTimeout(() => {
+      apiClient.get(`/liste_missions?search=${encodeURIComponent(missionQuery)}`)
+        .then(res => {
+          setMissionOptions(Array.isArray(res.data) ? res.data : []);
+        })
+        .catch(() => {
+          setMissionsError("Erreur lors du chargement des missions");
+          setMissionOptions([]);
+        })
+        .finally(() => setMissionsLoading(false));
+    }, 250);
+    return () => clearTimeout(handler);
+  }, [missionQuery]);
+
+  useEffect(() => {
+    if (!missionQuery) setMissionOptions([]);
+  }, [missionQuery]);
+
+  useEffect(() => {
+    setEvaluatorLoading(true);
+    const handler = setTimeout(() => {
+      apiClient.get(`/employees_list?search=${encodeURIComponent(evaluatorQuery)}`)
+        .then(res => {
+          setEvaluatorOptions(Array.isArray(res.data) ? res.data : []);
+        })
+        .catch(() => {
+          setEvaluatorOptions([]);
+        })
+        .finally(() => setEvaluatorLoading(false));
+    }, 250);
+    return () => clearTimeout(handler);
+  }, [evaluatorQuery]);
+
+  useEffect(() => {
+    setApproverLoading(true);
+    const handler = setTimeout(() => {
+      apiClient.get(`/employees_list?search=${encodeURIComponent(approverQuery)}`)
+        .then(res => {
+          setApproverOptions(Array.isArray(res.data) ? res.data : []);
+        })
+        .catch(() => {
+          setApproverOptions([]);
+        })
+        .finally(() => setApproverLoading(false));
+    }, 250);
+    return () => clearTimeout(handler);
+  }, [approverQuery]);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      evaluator: "",
+      approver: "",
+      mission: selectedMissionId ? selectedMissionId.toString() : "",
+    },
+  });
+
+  useEffect(() => {
+    if (selectedMissionId) {
+      form.setValue("mission", selectedMissionId.toString());
+    }
+  }, [selectedMissionId, form]);
+
+  useEffect(() => {
+    if (evaluationId) {
+      apiClient.get<CollabResponse>(`/collab_responses?evaluation_id=${evaluationId}`)
+        .then(response => {
+          form.setValue("evaluator", response.data.evaluator_id);
+          form.setValue("approver", response.data.approver_id);
+          form.setValue("mission", response.data.mission_id);
+          
+          onEvaluatorChange(Number(response.data.evaluator_id));
+          onApproverChange(Number(response.data.approver_id));
+          if (onMissionChange) {
+            onMissionChange(Number(response.data.mission_id));
+          }
+          
+          response.data.responses.forEach(resp => {
+            onResponseChange(Number(resp.id_item), resp.reponse_item);
+          });
+        })
+        .catch(error => {
+          console.error('Error fetching responses:', error);
+          toast.error("Erreur lors du chargement des réponses", {
+            description: "Impossible de charger les réponses existantes"
+          });
+        });
+    }
+  }, [evaluationId]);
+
+  const getResponseValue = (itemId: number) => {
+    const response = responses.find(r => r.item_id === itemId);
+    return response ? response.value : "";
+  };
+
+  const isValidResponse = (response: EvaluationResponse | undefined, type: string): boolean => {
+    console.log(`Validating response for ${type}:`, response);
+    
+    if (!response) {
+      console.log('No response found');
+      return false;
+    }
+    
+    switch (type) {
+      case 'numeric':
+        const numericValue = typeof response.value === 'number' ? response.value : 
+                          (typeof response.value === 'string' ? Number(response.value) : 0);
+        const isNumericValid = numericValue >= 1 && numericValue <= 5;
+        console.log(`Numeric validation: ${isNumericValid} (value: ${numericValue})`);
+        return isNumericValid;
+      case 'observation':
+        if (typeof response.value !== 'string') {
+          console.log('Observation value is not a string');
+          return false;
+        }
+        const isObservationValid = response.value.length >= 50;
+        console.log(`Observation validation: ${isObservationValid} (length: ${response.value.length})`);
+        return isObservationValid;
+      case 'boolean':
+        if (typeof response.value !== 'string') {
+          console.log('Boolean value is not a string');
+          return false;
+        }
+        const isBooleanValid = ['oui', 'non'].includes(response.value);
+        console.log(`Boolean validation: ${isBooleanValid} (value: ${response.value})`);
+        return isBooleanValid;
+      default:
+        console.log('Unknown type');
+        return false;
+    }
+  };
+
+  const validateAllFields = (): boolean => {
+    console.log('Starting full form validation');
+    
+    if (!allCriteriaItems || allCriteriaItems.length === 0) {
+      console.warn("Cannot validate form - all criteria items not loaded yet");
+      toast.error("Erreur de validation", { 
+        description: "Impossible de valider tous les champs. Veuillez réessayer."
+      });
+      return false;
+    }
+    
+    console.log(`Total criteria items to validate: ${allCriteriaItems.length}`);
+    console.log(`Total responses: ${responses.length}`);
+    
+    const missing: { group?: string, label: string }[] = [];
+
+    const formValues = form.getValues();
+    if (!formValues.evaluator) {
+      missing.push({ label: 'Évaluateur', group: 'Informations générales' });
+    }
+    if (!formValues.approver) {
+      missing.push({ label: 'Approbateur', group: 'Informations générales' });
+    }
+    if (!formValues.mission) {
+      missing.push({ label: 'Mission', group: 'Informations générales' });
+    }
+
+    allCriteriaItems.forEach(item => {
+      const response = responses.find(r => r.item_id === item.id);
+      console.log(`Checking item: ${item.label} (type: ${item.type}, group: ${item.group_name || item.group_id})`);
+      
+      if (!isValidResponse(response, item.type)) {
+        missing.push({
+          label: item.label,
+          group: item.group_name || `Group ${item.group_id}`
+        });
+        console.log(`❌ FAILED: ${item.label} in ${item.group_name || `Group ${item.group_id}`}`);
+      } else {
+        console.log(`✅ PASSED: ${item.label}`);
+      }
+    });
+
+    if (missing.length > 0) {
+      console.log('Validation failed with missing items:', missing);
+      const message = `Veuillez compléter tous les champs obligatoires avant de soumettre votre auto-évaluation:\n\n${
+        missing.map(item => `- ${item.group ? `${item.group}: ` : ''}${item.label}`).join('\n')
+      }`;
+      console.error('Validation failed:', message);
+      toast.error("Formulaire incomplet", {
+        description: `${missing.length} champ(s) obligatoire(s) non rempli(s)`,
+        duration: 5000
+      });
+      return false;
+    }
+
+    console.log('All fields validated successfully');
+    return true;
+  };
+
+  const handleSubmit = form.handleSubmit((data) => {
+    console.log('Form submit handler triggered');
+    console.log('Form data:', data);
+    
+    if (!validateAllFields()) {
+      console.error('Field validation failed');
+      return;
+    }
+
+    console.log('All validations passed, proceeding with submission');
+    
+    const missionId = Number(form.getValues("mission"));
+    const evaluatorId = Number(form.getValues("evaluator"));
+    const approverId = Number(form.getValues("approver"));
+    
+    const submissionData = {
+      mission_id: missionId,
+      evaluator_id: evaluatorId,
+      approver_id: approverId,
+      evaluation_id: evaluationId ? Number(evaluationId) : null,
+      responses: responses.map(r => ({
+        item_id: r.item_id,
+        value: r.value
+      }))
+    };
+    
+    setSubmitting(true);
+    
+    apiClient.post('/submit_auto_evaluation', submissionData)
+      .then(response => {
+        console.log('Auto-evaluation submitted successfully:', response.data);
+        toast.success(evaluationId ? "Auto-évaluation mise à jour" : "Auto-évaluation soumise", {
+          description: "Votre évaluateur a été notifié"
+        });
+        
+        if (onMissionChange) onMissionChange(submissionData.mission_id);
+        onSubmit();
+        
+        setTimeout(() => {
+          navigate('/evaluations');
+        }, 1000);
+      })
+      .catch(error => {
+        console.error("Erreur lors de la soumission de l'auto-évaluation:", error);
+        
+        let errorMessage = "Une erreur est survenue. Veuillez réessayer.";
+        if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+        
+        toast.error("Échec de la soumission", {
+          description: errorMessage
+        });
+      })
+      .finally(() => {
+        setSubmitting(false);
+      });
+  });
+
+  const renderStarRating = (itemId: number) => {
+    const currentValue = Number(getResponseValue(itemId)) || 0;
+    return (
+      <div className="flex space-x-2">
+        {[1, 2, 3, 4, 5].map((value) => (
+          <label key={value} htmlFor={`rating-${itemId}-${value}`} className="cursor-pointer flex flex-col items-center">
+            <input
+              type="radio"
+              id={`rating-${itemId}-${value}`}
+              value={value}
+              checked={currentValue === value}
+              onChange={() => onResponseChange(itemId, value)}
+              className="sr-only"
+            />
+            <Star className={`h-6 w-6 transition-all ${value <= currentValue ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
+          </label>
+        ))}
+      </div>
+    );
+  };
+
+  const renderBooleanResponse = (itemId: number) => {
+    const currentValue = getResponseValue(itemId) as string;
+    
+    return (
+      <RadioGroup
+        value={currentValue}
+        onValueChange={(value) => onResponseChange(itemId, value)}
+        className="flex gap-6"
+      >
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="oui" id={`oui-${itemId}`} />
+          <label htmlFor={`oui-${itemId}`} className="text-sm font-medium">
+            Oui
+          </label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="non" id={`non-${itemId}`} />
+          <label htmlFor={`non-${itemId}`} className="text-sm font-medium">
+            Non
+          </label>
+        </div>
+      </RadioGroup>
+    );
+  };
+
+  const evaluatorSelectOptions = evaluatorOptions.map(e => ({
+    value: e.id.toString(),
+    label: `${e.name} - ${e.position}`,
+  }));
+
+  const approverSelectOptions = approverOptions.map(e => ({
+    value: e.id.toString(),
+    label: `${e.name} - ${e.position}`,
+  }));
+
+  const missionSelectOptions = missionOptions.map(m => ({
+    value: m.id.toString(),
+    label: m.nom,
+  }));
+
   if (isLoading && criteriaItems.length === 0) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-6 w-1/3" />
-        <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-6 w-1/3" />
-        <Skeleton className="h-24 w-full" />
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-6 w-1/3" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-6 w-1/3" />
+          <Skeleton className="h-24 w-full" />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <StaffSelector
-          label="Évaluateur"
-          employees={employees}
-          onSelect={onEvaluatorChange}
-        />
-        <StaffSelector
-          label="Approbateur"
-          employees={employees}
-          onSelect={onApproverChange}
-        />
-        <MissionSelector
-          onSelect={onMissionChange}
-          defaultValue={selectedMissionId?.toString()}
-        />
-      </div>
-
-      <CriteriaResponseForm
-        criteriaItems={criteriaItems}
-        onResponseChange={onResponseChange}
-        responses={responses}
-      />
-
-      <Button onClick={onSubmit} className="w-full md:w-auto" disabled={isLoading}>
-        Soumettre l'auto-évaluation
-      </Button>
+      <Form {...form}>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <FormField
+              control={form.control}
+              name="evaluator"
+              render={({ field }) => (
+                <FormItem>
+                  <SearchableSelect
+                    label="Évaluateur"
+                    placeholder="Sélectionnez ou cherchez…"
+                    value={field.value}
+                    onChange={value => {
+                      field.onChange(value);
+                      onEvaluatorChange(Number(value));
+                    }}
+                    onSearch={setEvaluatorQuery}
+                    options={evaluatorSelectOptions}
+                    loading={evaluatorLoading}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="approver"
+              render={({ field }) => (
+                <FormItem>
+                  <SearchableSelect
+                    label="Approbateur"
+                    placeholder="Sélectionnez ou cherchez…"
+                    value={field.value}
+                    onChange={value => {
+                      field.onChange(value);
+                      onApproverChange(Number(value));
+                    }}
+                    onSearch={setApproverQuery}
+                    options={approverSelectOptions}
+                    loading={approverLoading}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="mission"
+              render={({ field }) => (
+                <FormItem>
+                  <SearchableSelect
+                    label="Mission"
+                    placeholder="Sélectionnez ou cherchez…"
+                    value={field.value}
+                    onChange={val => {
+                      field.onChange(val);
+                      if (onMissionChange) onMissionChange(Number(val));
+                    }}
+                    onSearch={setMissionQuery}
+                    options={missionSelectOptions}
+                    loading={missionsLoading}
+                    disabled={!!missionsError}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          {criteriaItems.map((item) => (
+            <div key={item.id} className="p-4 border rounded-md shadow-sm">
+              <h3 className="text-lg font-medium mb-3">{item.label}</h3>
+              
+              {item.type === 'numeric' ? (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-500 mb-2">Évaluez de 1 à 5 étoiles</p>
+                  {renderStarRating(item.id)}
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Très insuffisant</span>
+                    <span>Excellent</span>
+                  </div>
+                </div>
+              ) : item.type === 'boolean' ? (
+                <div className="space-y-2">
+                  {renderBooleanResponse(item.id)}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-500 mb-2">
+                    Minimum 50 caractères
+                  </p>
+                  <Textarea 
+                    value={getResponseValue(item.id) as string}
+                    onChange={(e) => onResponseChange(item.id, e.target.value)}
+                    placeholder="Entrez votre observation…"
+                    className="min-h-[120px]"
+                  />
+                  <div className="text-xs text-right">
+                    {typeof getResponseValue(item.id) === 'string' && (
+                      <span className={`${(getResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
+                        {(getResponseValue(item.id) as string).length} / 50 caractères minimum
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+          
+          {form.formState.errors.root && (
+            <p className="text-sm font-medium text-destructive">
+              {form.formState.errors.root.message}
+            </p>
+          )}
+          
+          <Button 
+            type="submit" 
+            className="w-full md:w-auto" 
+            disabled={isLoading || allItemsLoading || submitting}
+          >
+            {submitting ? "Soumission en cours..." : "Soumettre mon auto-évaluation"}
+          </Button>
+        </form>
+      </Form>
     </div>
   );
 };
