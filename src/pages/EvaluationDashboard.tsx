@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import EvaluationStatsSection from '@/components/evaluations/EvaluationStatsSection';
 import EvaluationTable from '@/components/evaluations/EvaluationTable';
 
-// Types
 interface EvaluationStats {
   total: number;
   validees: number;
@@ -47,7 +45,6 @@ const EvaluationDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  // Fetch statistics data
   const { 
     data: stats,
     isLoading: statsLoading 
@@ -56,7 +53,6 @@ const EvaluationDashboard = () => {
     queryFn: () => fetchEvaluationStats(activeFilter)
   });
   
-  // Fetch evaluations list
   const {
     data: evaluations,
     isLoading: evaluationsLoading
@@ -69,11 +65,15 @@ const EvaluationDashboard = () => {
     setActiveFilter(value);
   };
   
-  const handleActionClick = (id: number) => {
+  const handleActionClick = (id: number, niveau: string) => {
     if (activeFilter === 'self') {
       navigate(`/evaluation?id=${id}`);
     } else {
-      navigate(`/evaluation?id=${id}&mode=validation`);
+      if (niveau === 'Evaluateur') {
+        navigate(`/evaluation?id=${id}&step=2`);
+      } else {
+        navigate(`/evaluation?id=${id}&mode=validation`);
+      }
     }
   };
   
@@ -86,7 +86,6 @@ const EvaluationDashboard = () => {
       <HRISNavbar />
       
       <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-fade-in">
-        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-800 mb-2">Évaluations</h1>
@@ -100,7 +99,6 @@ const EvaluationDashboard = () => {
           </Button>
         </div>
         
-        {/* Filter Selector */}
         <div className="bg-white rounded-lg shadow-md p-4 mb-6">
           <Select 
             value={activeFilter} 
@@ -116,14 +114,12 @@ const EvaluationDashboard = () => {
           </Select>
         </div>
         
-        {/* Stats Section */}
         <EvaluationStatsSection 
           stats={stats}
           isLoading={statsLoading}
           activeFilter={activeFilter}
         />
         
-        {/* Table Section */}
         <EvaluationTable 
           evaluations={evaluations || []}
           isLoading={evaluationsLoading}
