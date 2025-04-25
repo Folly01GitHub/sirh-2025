@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { CriteriaItem, Employee } from '@/pages/Evaluation';
+import { CriteriaItem, Employee, EvaluationResponse } from '@/types/evaluation.types';
 import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';

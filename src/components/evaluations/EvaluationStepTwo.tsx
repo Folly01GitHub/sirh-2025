@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
+import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/types/evaluation.types';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';

@@ -1,6 +1,8 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { EvaluationResponse } from '@/types/evaluation.types';
+import apiClient from '@/utils/apiClient';
+import { toast } from 'sonner';
 
 interface EvaluationContextType {
   currentStep: 1 | 2 | 3;
@@ -19,6 +21,10 @@ interface EvaluationContextType {
   setSelectedMissionId: (id: number | null) => void;
   isSubmitting: boolean;
   setIsSubmitting: (isSubmitting: boolean) => void;
+  handleSubmitSelfAssessment: () => void;
+  handleSubmitEvaluation: () => void;
+  handleApprove: (approved: boolean, comment?: string) => void;
+  handleResponseChange: (itemId: number, value: string | number | boolean) => void;
 }
 
 const EvaluationContext = createContext<EvaluationContextType | undefined>(undefined);
@@ -33,6 +39,74 @@ export function EvaluationProvider({ children }: { children: ReactNode }) {
   const [selectedMissionId, setSelectedMissionId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Handle response changes for both employee and evaluator
+  const handleResponseChange = (itemId: number, value: string | number | boolean) => {
+    // For step 1, update employee responses
+    if (currentStep === 1) {
+      setEmployeeResponses(prev => {
+        const existingIndex = prev.findIndex(r => r.item_id === itemId);
+        if (existingIndex !== -1) {
+          const updated = [...prev];
+          updated[existingIndex] = { item_id: itemId, value };
+          return updated;
+        } else {
+          return [...prev, { item_id: itemId, value }];
+        }
+      });
+    }
+    // For step 2, update evaluator responses
+    else if (currentStep === 2) {
+      setEvaluatorResponses(prev => {
+        const existingIndex = prev.findIndex(r => r.item_id === itemId);
+        if (existingIndex !== -1) {
+          const updated = [...prev];
+          updated[existingIndex] = { item_id: itemId, value };
+          return updated;
+        } else {
+          return [...prev, { item_id: itemId, value }];
+        }
+      });
+    }
+  };
+
+  // Handle employee self-assessment submission
+  const handleSubmitSelfAssessment = () => {
+    setIsSubmitting(true);
+    // This is just a placeholder - the actual implementation would be in EvaluationStepOne
+    setTimeout(() => {
+      setCurrentStep(2);
+      setIsSubmitting(false);
+      toast.success("Auto-évaluation soumise avec succès");
+    }, 1000);
+  };
+
+  // Handle evaluator assessment submission
+  const handleSubmitEvaluation = () => {
+    setIsSubmitting(true);
+    // This is just a placeholder - the actual implementation would be in EvaluationStepTwo
+    setTimeout(() => {
+      setCurrentStep(3);
+      setIsSubmitting(false);
+      toast.success("Évaluation soumise avec succès");
+    }, 1000);
+  };
+
+  // Handle final approval/rejection
+  const handleApprove = (approved: boolean, comment?: string) => {
+    setIsSubmitting(true);
+    // This is just a placeholder - the actual implementation would be in EvaluationStepThree
+    setTimeout(() => {
+      setIsSubmitting(false);
+      if (approved) {
+        toast.success("Évaluation approuvée avec succès");
+      } else {
+        toast.error("Évaluation rejetée", { 
+          description: comment || "Aucun commentaire fourni"
+        });
+      }
+    }, 1000);
+  };
+
   return (
     <EvaluationContext.Provider value={{
       currentStep, setCurrentStep,
@@ -42,7 +116,11 @@ export function EvaluationProvider({ children }: { children: ReactNode }) {
       evaluatorId, setEvaluatorId,
       approverId, setApproverId,
       selectedMissionId, setSelectedMissionId,
-      isSubmitting, setIsSubmitting
+      isSubmitting, setIsSubmitting,
+      handleSubmitSelfAssessment,
+      handleSubmitEvaluation,
+      handleApprove,
+      handleResponseChange
     }}>
       {children}
     </EvaluationContext.Provider>

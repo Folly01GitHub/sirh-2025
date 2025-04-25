@@ -10,6 +10,8 @@ import EvaluationStepThree from '@/components/evaluations/EvaluationStepThree';
 import EvaluationInstructions from '@/components/evaluations/EvaluationInstructions';
 import { useEvaluation } from '@/contexts/EvaluationContext';
 import { CriteriaItem } from '@/types/evaluation.types';
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '@/utils/apiClient';
 
 interface EvaluationContentProps {
   criteriaItems?: CriteriaItem[];
@@ -19,6 +21,11 @@ interface EvaluationContentProps {
   canNavigatePrevious: boolean;
   canNavigateNext: boolean;
 }
+
+const fetchEmployeesList = async () => {
+  const response = await apiClient.get('/employees_list');
+  return response.data;
+};
 
 export const EvaluationContent = ({
   criteriaItems,
@@ -35,8 +42,18 @@ export const EvaluationContent = ({
     isSubmitting,
     handleSubmitSelfAssessment,
     handleSubmitEvaluation,
-    handleApprove
+    handleApprove,
+    handleResponseChange,
+    setEvaluatorId,
+    setApproverId,
+    setSelectedMissionId
   } = useEvaluation();
+
+  // Fetch employees for dropdowns
+  const { data: employees = [] } = useQuery({
+    queryKey: ['employees'],
+    queryFn: fetchEmployeesList
+  });
 
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-fade-in">
@@ -55,6 +72,12 @@ export const EvaluationContent = ({
                 criteriaItems={criteriaItems || []}
                 isLoading={isLoading || isSubmitting}
                 onSubmit={handleSubmitSelfAssessment}
+                onResponseChange={handleResponseChange}
+                responses={employeeResponses}
+                employees={employees}
+                onEvaluatorChange={setEvaluatorId}
+                onApproverChange={setApproverId}
+                onMissionChange={setSelectedMissionId}
               />
             )}
             
@@ -63,6 +86,8 @@ export const EvaluationContent = ({
                 criteriaItems={criteriaItems || []}
                 isLoading={isLoading || isSubmitting}
                 onSubmit={handleSubmitEvaluation}
+                onResponseChange={handleResponseChange}
+                employeeResponses={employeeResponses}
               />
             )}
             
