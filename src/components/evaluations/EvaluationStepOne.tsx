@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
@@ -74,15 +73,11 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   selectedMissionId
 }) => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const searchParams = new URLSearchParams(location.search);
-  const evaluationId = searchParams.get('id');
-  
   const [missionQuery, setMissionQuery] = useState("");
   const [missionOptions, setMissionOptions] = useState<Mission[]>([]);
   const [missionsLoading, setMissionsLoading] = useState(false);
   const [missionsError, setMissionsError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting, setIsSubmitting] = useState(false);
 
   const [evaluatorQuery, setEvaluatorQuery] = useState("");
   const [evaluatorOptions, setEvaluatorOptions] = useState<Employee[]>([]);
@@ -165,6 +160,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
 
   useEffect(() => {
     if (evaluationId) {
+      setIsSubmitting(true);
       apiClient.get<CollabResponse>(`/collab_responses?evaluation_id=${evaluationId}`)
         .then(response => {
           form.setValue("evaluator", response.data.evaluator_id);
@@ -180,15 +176,39 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
           response.data.responses.forEach(resp => {
             onResponseChange(Number(resp.id_item), resp.reponse_item);
           });
+
+          Promise.all([
+            apiClient.get(`/employees_list?id=${response.data.evaluator_id}`),
+            apiClient.get(`/employees_list?id=${response.data.approver_id}`),
+            apiClient.get(`/liste_missions?id=${response.data.mission_id}`)
+          ]).then(([evaluatorRes, approverRes, missionRes]) => {
+            if (evaluatorRes.data.length > 0) {
+              setEvaluatorOptions([evaluatorRes.data[0]]);
+            }
+            if (approverRes.data.length > 0) {
+              setApproverOptions([approverRes.data[0]]);
+            }
+            if (missionRes.data.length > 0) {
+              setMissionOptions([missionRes.data[0]]);
+            }
+          }).catch(error => {
+            console.error('Error loading select options:', error);
+            toast.error("Erreur lors du chargement des données", {
+              description: "Impossible de charger certaines informations"
+            });
+          });
         })
         .catch(error => {
           console.error('Error fetching responses:', error);
           toast.error("Erreur lors du chargement des réponses", {
             description: "Impossible de charger les réponses existantes"
           });
+        })
+        .finally(() => {
+          setIsSubmitting(false);
         });
     }
-  }, [evaluationId]);
+  }, [evaluationId, form, onEvaluatorChange, onApproverChange, onMissionChange, onResponseChange]);
 
   const getResponseValue = (itemId: number) => {
     const response = responses.find(r => r.item_id === itemId);
