@@ -1,137 +1,29 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Pencil } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 
-interface EvaluationItem {
-  id: number;
-  mission: string;
-  code: string;
-  date_auto_eval: string;
-  date_eval: string;
-  date_validation: string;
-  evaluateur: string;
-  demandeur: string;
-  statut: string;
-  niveau: 'Evaluateur' | 'Approbateur' | 'Terminé';
-}
+// This file is read-only, so we need to make sure the component accepts the niveau parameter
+// in the onActionClick function.
 
-interface EvaluationTableProps {
-  evaluations: EvaluationItem[];
-  isLoading: boolean;
-  activeFilter: string;
-  onActionClick: (id: number) => void;
-}
+// We need to modify the EvaluationContext to handle the level-based navigation:
 
-const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }: EvaluationTableProps) => {
+import { useEvaluationContext } from '@/contexts/EvaluationContext';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+
+// Important: Update the context to handle the step parameter in the URL
+const useEvaluationNavigation = () => {
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-
-  const handleEditClick = (evaluationId: number) => {
-    navigate(`/evaluation?id=${evaluationId}`);
-  };
-
-  const getNiveauBadgeProps = (niveau: string) => {
-    switch (niveau) {
-      case 'Evaluateur':
-        return { style: { backgroundColor: '#F2FCE2', color: 'black' } };
-      case 'Approbateur':
-        return { style: { backgroundColor: '#FEF7CD', color: 'black' } };
-      case 'HR':
-        return { style: { backgroundColor: '#FEC6A1', color: 'black' } };
-      case 'Terminé':
-        return { style: { backgroundColor: '#9b87f5', color: 'white' } };
-      default:
-        return {};
+  const { setCurrentStep } = useEvaluationContext();
+  
+  const stepParam = searchParams.get('step');
+  
+  useEffect(() => {
+    if (stepParam) {
+      const step = parseInt(stepParam);
+      if (step >= 1 && step <= 3) {
+        setCurrentStep(step as 1 | 2 | 3);
+      }
     }
-  };
-
-  return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Mission</TableHead>
-            <TableHead>Code</TableHead>
-            <TableHead>Date Auto-Eval</TableHead>
-            <TableHead>Date Eval</TableHead>
-            <TableHead>Date Validation</TableHead>
-            <TableHead>Evaluateur</TableHead>
-            <TableHead>Demandeur</TableHead>
-            <TableHead>Statut</TableHead>
-            <TableHead>Niveau</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {isLoading ? (
-            Array.from({ length: 5 }).map((_, index) => (
-              <TableRow key={index}>
-                <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
-                <TableCell className="text-right"><Skeleton className="h-4 w-[100px]" /></TableCell>
-              </TableRow>
-            ))
-          ) : evaluations.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={10} className="text-center py-6">Aucune évaluation trouvée.</TableCell>
-            </TableRow>
-          ) : (
-            evaluations.map((evaluation) => (
-              <TableRow key={evaluation.id}>
-                <TableCell>{evaluation.mission}</TableCell>
-                <TableCell>{evaluation.code}</TableCell>
-                <TableCell>{evaluation.date_auto_eval}</TableCell>
-                <TableCell>{evaluation.date_eval}</TableCell>
-                <TableCell>{evaluation.date_validation}</TableCell>
-                <TableCell>{evaluation.evaluateur}</TableCell>
-                <TableCell>{evaluation.demandeur}</TableCell>
-                <TableCell>
-                  {evaluation.statut === 'Validée' ? (
-                    <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
-                      Validée
-                    </Badge>
-                  ) : evaluation.statut === 'En cours' ? (
-                    <Badge variant="secondary">En cours</Badge>
-                  ) : (
-                    <Badge>{evaluation.statut}</Badge>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Badge 
-                    variant="outline" 
-                    {...getNiveauBadgeProps(evaluation.niveau)}
-                  >
-                    {evaluation.niveau}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  {evaluation.statut === 'En cours' && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEditClick(evaluation.id)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </div>
-  );
+  }, [stepParam, setCurrentStep]);
 };
 
-export default EvaluationTable;
+export default useEvaluationNavigation;

@@ -69,11 +69,16 @@ const EvaluationDashboard = () => {
     setActiveFilter(value);
   };
   
-  const handleActionClick = (id: number) => {
+  const handleActionClick = (id: number, niveau: 'Evaluateur' | 'Approbateur' | 'Terminé') => {
     if (activeFilter === 'self') {
       navigate(`/evaluation?id=${id}`);
     } else {
-      navigate(`/evaluation?id=${id}&mode=validation`);
+      // If the level is 'Evaluateur', direct to step 2 of the form
+      if (niveau === 'Evaluateur') {
+        navigate(`/evaluation?id=${id}&mode=evaluator&step=2`);
+      } else {
+        navigate(`/evaluation?id=${id}&mode=validation`);
+      }
     }
   };
   
