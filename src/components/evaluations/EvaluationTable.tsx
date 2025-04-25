@@ -1,16 +1,9 @@
-
 import React from 'react';
-import { 
-  Table, 
-  TableHeader, 
-  TableBody, 
-  TableRow, 
-  TableHead, 
-  TableCell 
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { ClipboardEdit, CheckCircle, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Pencil } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface EvaluationItem {
@@ -30,52 +23,28 @@ interface EvaluationTableProps {
   evaluations: EvaluationItem[];
   isLoading: boolean;
   activeFilter: string;
-  onActionClick: (id: number, niveau: 'Evaluateur' | 'Approbateur' | 'Terminé') => void;
+  onActionClick: (id: number) => void;
 }
 
-const EvaluationTable: React.FC<EvaluationTableProps> = ({ 
-  evaluations, 
-  isLoading, 
-  activeFilter,
-  onActionClick 
-}) => {
-  if (isLoading) {
-    return (
-      <div className="bg-white rounded-lg shadow-md p-4">
-        <Skeleton className="h-8 w-2/3 mb-4" />
-        <Skeleton className="h-10 w-full mb-3" />
-        <Skeleton className="h-10 w-full mb-3" />
-        <Skeleton className="h-10 w-full mb-3" />
-      </div>
-    );
-  }
+const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }: EvaluationTableProps) => {
+  const navigate = useNavigate();
 
-  if (evaluations.length === 0) {
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6 text-center">
-        <AlertCircle className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-        <h3 className="text-lg font-medium text-gray-700 mb-2">Aucune évaluation trouvée</h3>
-        <p className="text-gray-500">
-          {activeFilter === 'self' 
-            ? "Vous n'avez pas encore d'évaluations en cours."
-            : "Aucune évaluation à consulter pour vos collaborateurs."}
-        </p>
-      </div>
-    );
-  }
+  const handleEditClick = (evaluationId: number) => {
+    navigate(`/evaluation?id=${evaluationId}`);
+  };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'En attente':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">En attente</Badge>;
-      case 'Validé':
-        return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Validé</Badge>;
-      case 'Refusé':
-        return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Refusé</Badge>;
-      case 'En cours':
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">En cours</Badge>;
+  const getNiveauBadgeProps = (niveau: string) => {
+    switch (niveau) {
+      case 'Evaluateur':
+        return { style: { backgroundColor: '#F2FCE2', color: 'black' } };
+      case 'Approbateur':
+        return { style: { backgroundColor: '#FEF7CD', color: 'black' } };
+      case 'HR':
+        return { style: { backgroundColor: '#FEC6A1', color: 'black' } };
+      case 'Terminé':
+        return { style: { backgroundColor: '#9b87f5', color: 'white' } };
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return {};
     }
   };
 
@@ -86,46 +55,79 @@ const EvaluationTable: React.FC<EvaluationTableProps> = ({
           <TableRow>
             <TableHead>Mission</TableHead>
             <TableHead>Code</TableHead>
-            <TableHead className="hidden md:table-cell">Demandeur</TableHead>
-            {activeFilter === 'team' && (
-              <TableHead className="hidden md:table-cell">Évaluateur</TableHead>
-            )}
-            <TableHead className="hidden lg:table-cell">Date</TableHead>
+            <TableHead>Date Auto-Eval</TableHead>
+            <TableHead>Date Eval</TableHead>
+            <TableHead>Date Validation</TableHead>
+            <TableHead>Evaluateur</TableHead>
+            <TableHead>Demandeur</TableHead>
             <TableHead>Statut</TableHead>
-            <TableHead className="text-right">Action</TableHead>
+            <TableHead>Niveau</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {evaluations.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell className="font-medium">{item.mission}</TableCell>
-              <TableCell>{item.code}</TableCell>
-              <TableCell className="hidden md:table-cell">{item.demandeur}</TableCell>
-              {activeFilter === 'team' && (
-                <TableCell className="hidden md:table-cell">{item.evaluateur}</TableCell>
-              )}
-              <TableCell className="hidden lg:table-cell">
-                {item.statut === 'Validé' ? item.date_validation : 
-                 item.statut === 'En cours' ? item.date_eval : item.date_auto_eval}
-              </TableCell>
-              <TableCell>{getStatusBadge(item.statut)}</TableCell>
-              <TableCell className="text-right">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => onActionClick(item.id, item.niveau)}
-                  className="space-x-1"
-                >
-                  {item.niveau === 'Terminé' ? (
-                    <CheckCircle className="h-4 w-4" />
-                  ) : (
-                    <ClipboardEdit className="h-4 w-4" />
-                  )}
-                  <span>Voir</span>
-                </Button>
-              </TableCell>
+          {isLoading ? (
+            Array.from({ length: 5 }).map((_, index) => (
+              <TableRow key={index}>
+                <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                <TableCell className="text-right"><Skeleton className="h-4 w-[100px]" /></TableCell>
+              </TableRow>
+            ))
+          ) : evaluations.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={10} className="text-center py-6">Aucune évaluation trouvée.</TableCell>
             </TableRow>
-          ))}
+          ) : (
+            evaluations.map((evaluation) => (
+              <TableRow key={evaluation.id}>
+                <TableCell>{evaluation.mission}</TableCell>
+                <TableCell>{evaluation.code}</TableCell>
+                <TableCell>{evaluation.date_auto_eval}</TableCell>
+                <TableCell>{evaluation.date_eval}</TableCell>
+                <TableCell>{evaluation.date_validation}</TableCell>
+                <TableCell>{evaluation.evaluateur}</TableCell>
+                <TableCell>{evaluation.demandeur}</TableCell>
+                <TableCell>
+                  {evaluation.statut === 'Validée' ? (
+                    <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
+                      Validée
+                    </Badge>
+                  ) : evaluation.statut === 'En cours' ? (
+                    <Badge variant="secondary">En cours</Badge>
+                  ) : (
+                    <Badge>{evaluation.statut}</Badge>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Badge 
+                    variant="outline" 
+                    {...getNiveauBadgeProps(evaluation.niveau)}
+                  >
+                    {evaluation.niveau}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  {evaluation.statut === 'En cours' && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEditClick(evaluation.id)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </div>

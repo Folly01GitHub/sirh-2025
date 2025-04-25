@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { CriteriaItem, EvaluationResponse } from '@/types/evaluation.types';
+import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,7 +10,6 @@ import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useSearchParams } from 'react-router-dom';
 
 interface EvaluationStepTwoProps {
   criteriaItems: CriteriaItem[];
@@ -25,20 +24,6 @@ const fetchAllCriteriaItems = async (): Promise<CriteriaItem[]> => {
   return response.data;
 };
 
-const fetchCollaboratorResponses = async (evaluationId: string): Promise<EvaluationResponse[]> => {
-  if (!evaluationId) return [];
-  
-  const response = await apiClient.get(`/collab_responses?evaluation_id=${evaluationId}`);
-  return response.data;
-};
-
-const fetchEvaluatorResponses = async (evaluationId: string): Promise<EvaluationResponse[]> => {
-  if (!evaluationId) return [];
-  
-  const response = await apiClient.get(`/evaluator_responses?evaluation_id=${evaluationId}`);
-  return response.data;
-};
-
 const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   criteriaItems,
   onResponseChange,
@@ -46,61 +31,15 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   isLoading,
   onSubmit
 }) => {
-  const [searchParams] = useSearchParams();
-  const evaluationId = searchParams.get('id');
-  const mode = searchParams.get('mode');
-  const isEvaluatorMode = mode === 'evaluator';
-  
   // Create a separate state for evaluator responses
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
   const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
   
-  // Fetch all criteria items
   const { data: allCriteriaItems, isSuccess: allItemsLoaded } = useQuery({
     queryKey: ['allCriteriaItems'],
     queryFn: fetchAllCriteriaItems
   });
-  
-  // Fetch collaborator responses if in evaluator mode
-  const { 
-    data: fetchedCollabResponses,
-    isLoading: collabResponsesLoading 
-  } = useQuery({
-    queryKey: ['collabResponses', evaluationId],
-    queryFn: () => fetchCollaboratorResponses(evaluationId || ''),
-    enabled: !!evaluationId && isEvaluatorMode
-  });
-  
-  // Fetch evaluator responses if they exist
-  const { 
-    data: fetchedEvalResponses,
-    isLoading: evalResponsesLoading 
-  } = useQuery({
-    queryKey: ['evaluatorResponses', evaluationId],
-    queryFn: () => fetchEvaluatorResponses(evaluationId || ''),
-    enabled: !!evaluationId && isEvaluatorMode
-  });
-  
-  // Update employee responses with fetched collaborator responses
-  useEffect(() => {
-    if (isEvaluatorMode && fetchedCollabResponses && fetchedCollabResponses.length > 0) {
-      // We don't update the employeeResponses state directly as it's passed as a prop
-      console.log('Collaborator responses loaded:', fetchedCollabResponses);
-    }
-  }, [fetchedCollabResponses, isEvaluatorMode]);
-  
-  // Pre-fill evaluator responses if they exist
-  useEffect(() => {
-    if (isEvaluatorMode && fetchedEvalResponses && fetchedEvalResponses.length > 0) {
-      setEvaluatorResponses(fetchedEvalResponses);
-      // Also update the parent state
-      fetchedEvalResponses.forEach(response => {
-        onResponseChange(response.item_id, response.value.toString());
-      });
-      console.log('Evaluator responses pre-filled:', fetchedEvalResponses);
-    }
-  }, [fetchedEvalResponses, isEvaluatorMode, onResponseChange]);
   
   useEffect(() => {
     if (criteriaItems.length > 0) {
@@ -109,15 +48,10 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
   }, [criteriaItems]);
   
-  // Get employee response values - use fetched responses in evaluator mode
+  // Get employee response values
   const getEmployeeResponseValue = (itemId: number) => {
-    if (isEvaluatorMode && fetchedCollabResponses) {
-      const response = fetchedCollabResponses.find(r => r.item_id === itemId);
-      return response ? response.value : "";
-    } else {
-      const response = employeeResponses.find(r => r.item_id === itemId);
-      return response ? response.value : "";
-    }
+    const response = employeeResponses.find(r => r.item_id === itemId);
+    return response ? response.value : "";
   };
   
   // Get evaluator response values
@@ -277,7 +211,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     return missing.length === 0;
   };
   
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!validateAllFields()) {
       console.log("Échec de la validation du formulaire. Champs manquants :", missingFields);
       
@@ -292,27 +226,10 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
 
     console.log("Validation du formulaire réussie, soumission de l'évaluation");
-    
-    if (isEvaluatorMode && evaluationId) {
-      try {
-        // Submit evaluator responses
-        await apiClient.post('/submit_evaluator', {
-          evaluation_id: evaluationId,
-          responses: evaluatorResponses
-        });
-        
-        toast.success("Évaluation soumise avec succès");
-      } catch (error) {
-        console.error("Erreur lors de la soumission:", error);
-        toast.error("Erreur lors de la soumission");
-        return;
-      }
-    }
-    
     onSubmit();
   };
   
-  if (isLoading || collabResponsesLoading) {
+  if (isLoading && criteriaItems.length === 0) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-6 w-1/3" />
