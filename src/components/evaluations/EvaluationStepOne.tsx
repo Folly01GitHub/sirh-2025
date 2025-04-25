@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
@@ -165,7 +166,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   useEffect(() => {
     if (evaluationId) {
       apiClient.get<CollabResponse>(`/collab_responses?evaluation_id=${evaluationId}`)
-        .then(async response => {
+        .then(response => {
           form.setValue("evaluator", response.data.evaluator_id);
           form.setValue("approver", response.data.approver_id);
           form.setValue("mission", response.data.mission_id);
@@ -174,22 +175,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
           onApproverChange(Number(response.data.approver_id));
           if (onMissionChange) {
             onMissionChange(Number(response.data.mission_id));
-          }
-
-          try {
-            const [evaluatorRes, approverRes] = await Promise.all([
-              apiClient.get(`/employees_list?id=${response.data.evaluator_id}`),
-              apiClient.get(`/employees_list?id=${response.data.approver_id}`)
-            ]);
-
-            if (evaluatorRes.data.length > 0) {
-              setEvaluatorOptions([evaluatorRes.data[0]]);
-            }
-            if (approverRes.data.length > 0) {
-              setApproverOptions([approverRes.data[0]]);
-            }
-          } catch (error) {
-            console.error('Error fetching evaluator/approver details:', error);
           }
           
           response.data.responses.forEach(resp => {
