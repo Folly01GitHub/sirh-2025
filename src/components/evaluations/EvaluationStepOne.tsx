@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
@@ -92,6 +91,9 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const [approverOptions, setApproverOptions] = useState<Employee[]>([]);
   const [approverLoading, setApproverLoading] = useState(false);
 
+  const [evaluatorDetails, setEvaluatorDetails] = useState<Employee | null>(null);
+  const [approverDetails, setApproverDetails] = useState<Employee | null>(null);
+
   const { data: allCriteriaItems, isLoading: allItemsLoading } = useQuery({
     queryKey: ['allCriteriaItems'],
     queryFn: fetchAllCriteriaItems
@@ -148,28 +150,29 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     return () => clearTimeout(handler);
   }, [approverQuery]);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      evaluator: "",
-      approver: "",
-      mission: selectedMissionId ? selectedMissionId.toString() : "",
-    },
-  });
-
-  useEffect(() => {
-    if (selectedMissionId) {
-      form.setValue("mission", selectedMissionId.toString());
-    }
-  }, [selectedMissionId, form]);
-
   useEffect(() => {
     if (evaluationId) {
       apiClient.get<CollabResponse>(`/collab_responses?evaluation_id=${evaluationId}`)
-        .then(response => {
+        .then(async response => {
           form.setValue("evaluator", response.data.evaluator_id);
           form.setValue("approver", response.data.approver_id);
           form.setValue("mission", response.data.mission_id);
+          
+          try {
+            const evaluatorResponse = await apiClient.get(`/employees/${response.data.evaluator_id}`);
+            setEvaluatorDetails(evaluatorResponse.data);
+            setEvaluatorOptions([evaluatorResponse.data]);
+          } catch (error) {
+            console.error('Error fetching evaluator details:', error);
+          }
+          
+          try {
+            const approverResponse = await apiClient.get(`/employees/${response.data.approver_id}`);
+            setApproverDetails(approverResponse.data);
+            setApproverOptions([approverResponse.data]);
+          } catch (error) {
+            console.error('Error fetching approver details:', error);
+          }
           
           onEvaluatorChange(Number(response.data.evaluator_id));
           onApproverChange(Number(response.data.approver_id));
@@ -189,6 +192,33 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         });
     }
   }, [evaluationId]);
+
+  useEffect(() => {
+    if (!evaluatorQuery && evaluatorDetails) {
+      setEvaluatorOptions([evaluatorDetails]);
+    }
+  }, [evaluatorQuery, evaluatorDetails]);
+
+  useEffect(() => {
+    if (!approverQuery && approverDetails) {
+      setApproverOptions([approverDetails]);
+    }
+  }, [approverQuery, approverDetails]);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      evaluator: "",
+      approver: "",
+      mission: selectedMissionId ? selectedMissionId.toString() : "",
+    },
+  });
+
+  useEffect(() => {
+    if (selectedMissionId) {
+      form.setValue("mission", selectedMissionId.toString());
+    }
+  }, [selectedMissionId, form]);
 
   const getResponseValue = (itemId: number) => {
     const response = responses.find(r => r.item_id === itemId);
