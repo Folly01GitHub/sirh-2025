@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -115,15 +116,17 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEditClick(evaluation.id)}
-                    className="gap-2"
-                  >
-                    <Pencil className="h-4 w-4" />
-                    Modifier
-                  </Button>
+                  {evaluation.statut === 'En cours' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditClick(evaluation.id)}
+                      className="gap-2"
+                    >
+                      <Pencil className="h-4 w-4" />
+                      Modifier
+                    </Button>
+                  )}
                 </TableCell>
               </TableRow>
             ))
