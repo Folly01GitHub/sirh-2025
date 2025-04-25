@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -5,13 +6,6 @@ import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Pencil, ChevronLeft, ChevronRight, BarChart4, CheckCircle, Clock } from 'lucide-react';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { Skeleton } from '@/components/ui/skeleton';
-import StatsCard from '@/components/hris/StatsCard';
 import EvaluationStatsSection from '@/components/evaluations/EvaluationStatsSection';
 import EvaluationTable from '@/components/evaluations/EvaluationTable';
 
@@ -41,21 +35,14 @@ const fetchEvaluationStats = async (filter: string): Promise<EvaluationStats> =>
   return response.data;
 };
 
-const fetchEvaluations = async (filter: string, page: number = 1, limit: number = 10): Promise<EvaluationItem[]> => {
+const fetchEvaluations = async (filter: string): Promise<EvaluationItem[]> => {
   const endpoint = filter === 'self' ? '/self_evaluations' : '/team_evaluations';
-  const response = await apiClient.get(endpoint, {
-    params: {
-      page,
-      limit
-    }
-  });
+  const response = await apiClient.get(endpoint);
   return response.data;
 };
 
 const EvaluationDashboard = () => {
   const [activeFilter, setActiveFilter] = useState<string>('self');
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const itemsPerPage = 10;
   const { user } = useAuth();
   const navigate = useNavigate();
   
@@ -73,17 +60,12 @@ const EvaluationDashboard = () => {
     data: evaluations,
     isLoading: evaluationsLoading
   } = useQuery({
-    queryKey: ['evaluations', activeFilter, currentPage, itemsPerPage],
-    queryFn: () => fetchEvaluations(activeFilter, currentPage, itemsPerPage)
+    queryKey: ['evaluations', activeFilter],
+    queryFn: () => fetchEvaluations(activeFilter)
   });
   
   const handleFilterChange = (value: string) => {
     setActiveFilter(value);
-    setCurrentPage(1); // Reset to first page on filter change
-  };
-  
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
   };
   
   const handleActionClick = (id: number) => {
@@ -147,54 +129,6 @@ const EvaluationDashboard = () => {
           activeFilter={activeFilter}
           onActionClick={handleActionClick}
         />
-        
-        {/* Pagination */}
-        <div className="mt-6">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious 
-                  href="#" 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage > 1) handlePageChange(currentPage - 1);
-                  }}
-                  className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  <span>Précédent</span>
-                </PaginationPrevious>
-              </PaginationItem>
-              {[...Array(3)].map((_, i) => (
-                <PaginationItem key={i}>
-                  <PaginationLink 
-                    href="#" 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handlePageChange(i + 1);
-                    }}
-                    isActive={currentPage === i + 1}
-                  >
-                    {i + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              <PaginationItem>
-                <PaginationNext 
-                  href="#" 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage < 3) handlePageChange(currentPage + 1);
-                  }}
-                  className={currentPage >= 3 ? "pointer-events-none opacity-50" : ""}
-                >
-                  <span>Suivant</span>
-                  <ChevronRight className="h-4 w-4" />
-                </PaginationNext>
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
       </div>
     </div>
   );
