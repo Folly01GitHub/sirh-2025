@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -23,14 +24,14 @@ interface EvaluationTableProps {
   evaluations: EvaluationItem[];
   isLoading: boolean;
   activeFilter: string;
-  onActionClick: (id: number) => void;
+  onActionClick: (id: number, niveau: string) => void;
 }
 
 const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }: EvaluationTableProps) => {
   const navigate = useNavigate();
 
-  const handleEditClick = (evaluationId: number) => {
-    navigate(`/evaluation?id=${evaluationId}`);
+  const handleEditClick = (evaluation: EvaluationItem) => {
+    onActionClick(evaluation.id, evaluation.niveau);
   };
 
   const getNiveauBadgeProps = (niveau: string) => {
@@ -119,7 +120,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleEditClick(evaluation.id)}
+                      onClick={() => handleEditClick(evaluation)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>

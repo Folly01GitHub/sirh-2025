@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -21,7 +22,7 @@ import EvaluationStepTwo from '@/components/evaluations/EvaluationStepTwo';
 import EvaluationStepThree from '@/components/evaluations/EvaluationStepThree';
 import EvaluationInstructions from '@/components/evaluations/EvaluationInstructions';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 // Types for our evaluation data
 export interface CriteriaGroup {
@@ -39,7 +40,7 @@ export interface CriteriaItem {
 
 export interface EvaluationResponse {
   item_id: number;
-  value: string | number;
+  value: string | number | boolean;
 }
 
 export interface Employee {
@@ -69,10 +70,35 @@ const fetchEmployees = async (): Promise<Employee[]> => {
   ];
 };
 
+const fetchCollabResponses = async (evaluationId: number): Promise<EvaluationResponse[]> => {
+  try {
+    const response = await apiClient.get(`/collab_responses?id=${evaluationId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching collaborator responses:', error);
+    return [];
+  }
+};
+
+const fetchEvaluatorResponses = async (evaluationId: number): Promise<EvaluationResponse[]> => {
+  try {
+    const response = await apiClient.get(`/evaluator_responses?id=${evaluationId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching evaluator responses:', error);
+    return [];
+  }
+};
+
 const Evaluation = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [searchParams] = useSearchParams();
+  const evaluationId = searchParams.get('id') ? parseInt(searchParams.get('id') as string) : null;
+  const initialStep = searchParams.get('step') ? parseInt(searchParams.get('step') as string) : 1;
+  const viewMode = searchParams.get('mode') === 'view';
+  
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(initialStep as 1 | 2 | 3);
   const [currentGroupId, setCurrentGroupId] = useState<number>(1);
   const [employeeResponses, setEmployeeResponses] = useState<EvaluationResponse[]>([]);
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
@@ -105,6 +131,39 @@ const Evaluation = () => {
     queryKey: ['employees'],
     queryFn: fetchEmployees
   });
+  
+  // Fetch collaborator responses if evaluation ID is provided
+  const {
+    data: collabResponsesData,
+    isLoading: collabResponsesLoading
+  } = useQuery({
+    queryKey: ['collabResponses', evaluationId],
+    queryFn: () => fetchCollabResponses(evaluationId as number),
+    enabled: !!evaluationId
+  });
+  
+  // Fetch evaluator responses if evaluation ID is provided and we're in step 3 
+  const {
+    data: evaluatorResponsesData,
+    isLoading: evaluatorResponsesLoading
+  } = useQuery({
+    queryKey: ['evaluatorResponses', evaluationId],
+    queryFn: () => fetchEvaluatorResponses(evaluationId as number),
+    enabled: !!evaluationId && (currentStep === 3 || currentStep === 2)
+  });
+  
+  // Set the responses from API when they are loaded
+  useEffect(() => {
+    if (collabResponsesData && collabResponsesData.length > 0) {
+      setEmployeeResponses(collabResponsesData);
+    }
+  }, [collabResponsesData]);
+  
+  useEffect(() => {
+    if (evaluatorResponsesData && evaluatorResponsesData.length > 0) {
+      setEvaluatorResponses(evaluatorResponsesData);
+    }
+  }, [evaluatorResponsesData]);
   
   const calculateProgress = useCallback(() => {
     if (!criteriaGroups || criteriaGroups.length === 0) return 0;
@@ -197,13 +256,18 @@ const Evaluation = () => {
     setIsSubmitting(true);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Submit evaluator responses
+      await apiClient.post('/submit_evaluator', {
+        evaluation_id: evaluationId,
+        responses: evaluatorResponses
+      });
       
       toast.success("Évaluation soumise", {
         description: "L'approbateur a été notifié"
       });
       
-      setCurrentStep(3);
+      // Redirect to evaluations dashboard
+      navigate('/evaluations');
     } catch (error) {
       console.error("Erreur lors de la soumission de l'évaluation:", error);
       toast.error("Échec de la soumission de l'évaluation", {
@@ -212,7 +276,7 @@ const Evaluation = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [evaluatorResponses]);
+  }, [evaluatorResponses, evaluationId, navigate]);
   
   const handleApprove = useCallback(async (approved: boolean, comment?: string) => {
     if (!approved && (!comment || comment.trim().length < 10)) {
@@ -225,7 +289,12 @@ const Evaluation = () => {
     setIsSubmitting(true);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Submit approver response
+      await apiClient.post('/submit_approver', {
+        evaluation_id: evaluationId,
+        approved,
+        comment
+      });
       
       if (approved) {
         toast.success("Évaluation approuvée", {
@@ -237,6 +306,8 @@ const Evaluation = () => {
         });
       }
       
+      // Redirect to evaluations dashboard
+      navigate('/evaluations');
     } catch (error) {
       console.error("Erreur lors de la finalisation de l'évaluation:", error);
       toast.error("Échec de la finalisation de l'évaluation", {
@@ -245,13 +316,20 @@ const Evaluation = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  }, [evaluationId, navigate]);
 
   useEffect(() => {
     if (criteriaGroups && criteriaGroups.length > 0) {
       setCurrentGroupId(criteriaGroups[0].id);
     }
-  }, [currentStep, criteriaGroups]);
+  }, [criteriaGroups]);
+  
+  // Show loading state when fetching responses
+  const isLoading = 
+    groupsLoading || 
+    itemsLoading || 
+    employeesLoading || 
+    (!!evaluationId && (collabResponsesLoading || evaluatorResponsesLoading));
   
   return (
     <SidebarProvider>
@@ -308,7 +386,7 @@ const Evaluation = () => {
                         employees={employees || []}
                         onEvaluatorChange={setEvaluatorId}
                         onApproverChange={setApproverId}
-                        isLoading={itemsLoading || isSubmitting}
+                        isLoading={isLoading || isSubmitting}
                         onSubmit={handleSubmitSelfAssessment}
                         onMissionChange={handleMissionChange}
                         selectedMissionId={selectedMissionId}
@@ -320,7 +398,7 @@ const Evaluation = () => {
                         criteriaItems={criteriaItems || []}
                         onResponseChange={handleEvaluatorResponseChange}
                         employeeResponses={employeeResponses}
-                        isLoading={itemsLoading || isSubmitting}
+                        isLoading={isLoading || isSubmitting}
                         onSubmit={handleSubmitEvaluation}
                       />
                     )}
@@ -330,7 +408,7 @@ const Evaluation = () => {
                         criteriaItems={criteriaItems || []}
                         employeeResponses={employeeResponses}
                         evaluatorResponses={evaluatorResponses}
-                        isLoading={itemsLoading || isSubmitting}
+                        isLoading={isLoading || isSubmitting}
                         onApprove={handleApprove}
                       />
                     )}

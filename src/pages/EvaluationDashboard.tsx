@@ -69,11 +69,23 @@ const EvaluationDashboard = () => {
     setActiveFilter(value);
   };
   
-  const handleActionClick = (id: number) => {
+  const handleActionClick = (id: number, niveau: string) => {
+    // Redirect to the appropriate evaluation step based on the assessment level
     if (activeFilter === 'self') {
+      // For self-evaluations, always go to the basic edit form
       navigate(`/evaluation?id=${id}`);
     } else {
-      navigate(`/evaluation?id=${id}&mode=validation`);
+      // For team evaluations, direct to the appropriate step based on niveau
+      if (niveau === 'Evaluateur') {
+        // Step 2: Manager assessment form
+        navigate(`/evaluation?id=${id}&step=2`);
+      } else if (niveau === 'Approbateur') {
+        // Step 3: Approval validation form
+        navigate(`/evaluation?id=${id}&step=3`);
+      } else {
+        // Default fallback to view-only mode for completed evaluations
+        navigate(`/evaluation?id=${id}&mode=view`);
+      }
     }
   };
   
