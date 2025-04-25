@@ -1,11 +1,24 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { EvaluationItem } from '@/pages/Evaluation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Pencil, BarChart4, CheckCircle, Clock } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+
+// Define EvaluationItem interface directly here instead of importing
+interface EvaluationItem {
+  id: number;
+  mission: string;
+  code: string;
+  date_auto_eval: string;
+  date_eval: string;
+  date_validation: string;
+  evaluateur: string;
+  demandeur: string;
+  statut: string;
+}
 
 interface EvaluationTableProps {
   evaluations: EvaluationItem[];
@@ -68,7 +81,9 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                 <TableCell>{evaluation.demandeur}</TableCell>
                 <TableCell>
                   {evaluation.statut === 'Validée' ? (
-                    <Badge variant="success">Validée</Badge>
+                    <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
+                      Validée
+                    </Badge>
                   ) : evaluation.statut === 'En cours' ? (
                     <Badge variant="secondary">En cours</Badge>
                   ) : (
