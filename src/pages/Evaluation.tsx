@@ -1,93 +1,26 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
-import apiClient from '@/utils/apiClient';
-import HRISNavbar from '@/components/hris/HRISNavbar';
-import { 
-  SidebarProvider, 
-  Sidebar, 
-  SidebarContent, 
-  SidebarHeader, 
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton
-} from '@/components/ui/sidebar';
-import { Progress } from '@/components/ui/progress';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChevronLeft, ChevronRight, FileText, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { toast } from 'sonner';
+import HRISNavbar from '@/components/hris/HRISNavbar';
 import EvaluationHeader from '@/components/evaluations/EvaluationHeader';
+import EvaluationNavigation from '@/components/evaluations/EvaluationNavigation';
 import EvaluationStepOne from '@/components/evaluations/EvaluationStepOne';
 import EvaluationStepTwo from '@/components/evaluations/EvaluationStepTwo';
 import EvaluationStepThree from '@/components/evaluations/EvaluationStepThree';
 import EvaluationInstructions from '@/components/evaluations/EvaluationInstructions';
-import { toast } from 'sonner';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-
-// Types for our evaluation data
-export interface CriteriaGroup {
-  id: number;
-  name: string;
-}
-
-export interface CriteriaItem {
-  id: number;
-  type: 'numeric' | 'observation' | 'boolean';
-  label: string;
-  group_id: number;
-  group_name?: string; // Added for better error messaging
-}
-
-export interface EvaluationResponse {
-  item_id: number;
-  value: string | number | boolean;
-}
-
-export interface Employee {
-  id: number;
-  name: string;
-  email: string;
-  position: string;
-}
-
-const fetchCriteriaGroups = async (): Promise<CriteriaGroup[]> => {
-  const response = await apiClient.get('/groupe_items');
-  return response.data;
-};
-
-const fetchCriteriaItems = async (groupId: number): Promise<CriteriaItem[]> => {
-  const response = await apiClient.get('/items');
-  return response.data.filter((item: CriteriaItem) => item.group_id === groupId);
-};
-
-const fetchEmployees = async (): Promise<Employee[]> => {
-  return [
-    { id: 1, name: 'John Doe', email: 'john.doe@example.com', position: 'Frontend Developer' },
-    { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', position: 'Backend Developer' },
-    { id: 3, name: 'Robert Johnson', email: 'robert.johnson@example.com', position: 'UI/UX Designer' },
-    { id: 4, name: 'Emily Davis', email: 'emily.davis@example.com', position: 'Project Manager' },
-    { id: 5, name: 'Michael Wilson', email: 'michael.wilson@example.com', position: 'DevOps Engineer' },
-  ];
-};
-
-const fetchCollabResponses = async (evaluationId: number): Promise<EvaluationResponse[]> => {
-  try {
-    const response = await apiClient.get(`/collab_responses?id=${evaluationId}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching collaborator responses:', error);
-    return [];
-  }
-};
-
-const fetchEvaluatorResponses = async (evaluationId: number): Promise<EvaluationResponse[]> => {
-  try {
-    const response = await apiClient.get(`/evaluator_responses?id=${evaluationId}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching evaluator responses:', error);
-    return [];
-  }
-};
+import { 
+  fetchCriteriaGroups, 
+  fetchCriteriaItems, 
+  fetchEmployees,
+  fetchCollabResponses,
+  fetchEvaluatorResponses 
+} from '@/services/evaluationService';
+import { EvaluationResponse } from '@/types/evaluation.types';
 
 const Evaluation = () => {
   const { user } = useAuth();
@@ -105,7 +38,7 @@ const Evaluation = () => {
   const [approverId, setApproverId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMissionId, setSelectedMissionId] = useState<number | null>(null);
-  
+
   const { 
     data: criteriaGroups, 
     isLoading: groupsLoading 
@@ -328,34 +261,14 @@ const Evaluation = () => {
         <HRISNavbar />
         
         <div className="flex flex-1 h-full overflow-hidden">
-          <Sidebar>
-            <SidebarHeader className="p-4 pb-0">
-              <h3 className="text-lg font-medium mb-2">Évaluation</h3>
-              <Progress value={calculateProgress()} className="h-2 mb-4" />
-            </SidebarHeader>
-            <SidebarContent>
-              <SidebarMenu>
-                {criteriaGroups?.map((group) => (
-                  <SidebarMenuItem key={group.id}>
-                    <SidebarMenuButton 
-                      isActive={currentGroupId === group.id}
-                      onClick={() => handleGroupChange(group.id)}
-                      tooltip={group.name}
-                      className={`
-                        ${currentGroupId === group.id 
-                          ? 'bg-primary/10 text-primary font-semibold border-l-4 border-primary' 
-                          : 'hover:bg-gray-100'}
-                        transition-all duration-200 ease-in-out
-                      `}
-                    >
-                      <FileText className="h-5 w-5" />
-                      <span>{group.name}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarContent>
-          </Sidebar>
+          <EvaluationNavigation 
+            criteriaGroups={criteriaGroups}
+            currentGroupId={currentGroupId}
+            onGroupChange={handleGroupChange}
+            onPreviousGroup={handlePreviousGroup}
+            onNextGroup={handleNextGroup}
+            progress={calculateProgress()}
+          />
 
           <div className="flex flex-col h-full w-full overflow-auto">
             <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-fade-in">
