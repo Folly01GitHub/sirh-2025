@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -10,7 +11,7 @@ import apiClient from '@/utils/apiClient';
 
 interface EvaluationStepOneProps {
   criteriaItems: CriteriaItem[];
-  onResponseChange: (itemId: number, value: string | number) => void;
+  onResponseChange: (itemId: number, value: string | number | boolean) => void;
   responses: EvaluationResponse[];
   employees: Employee[];
   onEvaluatorChange: (evaluatorId: number) => void;
@@ -81,7 +82,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       }
       
       if (evaluationData.responses && evaluationData.responses.length > 0) {
-        evaluationData.responses.forEach((response: { itemId: number; value: string | number }) => {
+        evaluationData.responses.forEach((response: { itemId: number; value: string | number | boolean }) => {
           onResponseChange(response.itemId, response.value);
         });
       }
@@ -234,9 +235,9 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                     className="min-h-[100px]"
                     disabled={isLoading || isSubmitting}
                   />
-                  {getValue(item.id) && typeof getValue(item.id) === 'string' && getValue(item.id).length < 50 && (
+                  {typeof getValue(item.id) === 'string' && getValue(item.id) !== '' && (getValue(item.id) as string).length < 50 && (
                     <p className="mt-1 text-sm text-amber-600">
-                      Minimum 50 caractères requis ({getValue(item.id).length}/50)
+                      Minimum 50 caractères requis ({(getValue(item.id) as string).length}/50)
                     </p>
                   )}
                 </div>
@@ -248,7 +249,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                     <input
                       type="radio"
                       className="form-radio h-5 w-5 text-primary"
-                      checked={getValue(item.id) === true}
+                      checked={getValue(item.id) === true || getValue(item.id) === 'true'}
                       onChange={() => onResponseChange(item.id, true)}
                       disabled={isLoading || isSubmitting}
                     />
@@ -258,7 +259,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                     <input
                       type="radio"
                       className="form-radio h-5 w-5 text-primary"
-                      checked={getValue(item.id) === false}
+                      checked={getValue(item.id) === false || getValue(item.id) === 'false'}
                       onChange={() => onResponseChange(item.id, false)}
                       disabled={isLoading || isSubmitting}
                     />
