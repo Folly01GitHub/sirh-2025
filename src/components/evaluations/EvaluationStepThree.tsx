@@ -1,16 +1,11 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { CriteriaItem, EvaluationResponse } from '@/types/evaluation.types';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star, CheckCircle, XCircle } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import EvaluationCard from './responses/EvaluationCard';
+import EvaluationSummary from './step-three/EvaluationSummary';
+import ApprovalActions from './step-three/ApprovalActions';
 
 interface EvaluationStepThreeProps {
   criteriaItems: CriteriaItem[];
@@ -27,61 +22,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   isLoading,
   onApprove
 }) => {
-  const [comment, setComment] = useState("");
-  const [showRejectionComment, setShowRejectionComment] = useState(false);
-  
-  const getResponseValue = (responses: EvaluationResponse[], itemId: number) => {
-    const response = responses.find(r => r.item_id === itemId);
-    return response ? response.value : "";
-  };
-  
-  const renderStarRating = (value: number) => {
-    return (
-      <div className="flex space-x-1">
-        {[1, 2, 3, 4, 5].map((starValue) => (
-          <Star 
-            key={starValue}
-            className={`h-5 w-5 ${starValue <= value ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-          />
-        ))}
-      </div>
-    );
-  };
-  
-  const calculateAverages = () => {
-    const numericItems = criteriaItems.filter(item => item.type === 'numeric');
-    
-    const employeeAvg = numericItems.reduce((sum, item) => {
-      const value = Number(getResponseValue(employeeResponses, item.id)) || 0;
-      return sum + value;
-    }, 0) / (numericItems.length || 1);
-    
-    const evaluatorAvg = numericItems.reduce((sum, item) => {
-      const value = Number(getResponseValue(evaluatorResponses, item.id)) || 0;
-      return sum + value;
-    }, 0) / (numericItems.length || 1);
-    
-    return {
-      employeeAvg: employeeAvg.toFixed(1),
-      evaluatorAvg: evaluatorAvg.toFixed(1)
-    };
-  };
-  
-  const { employeeAvg, evaluatorAvg } = calculateAverages();
-  
-  const handleApprove = () => {
-    onApprove(true);
-  };
-  
-  const handleReject = () => {
-    if (!comment || comment.trim().length < 10) {
-      alert("Veuillez fournir un commentaire de rejet d'au moins 10 caractères");
-      return;
-    }
-    
-    onApprove(false, comment);
-  };
-  
   if (isLoading && criteriaItems.length === 0) {
     return (
       <div className="space-y-6">
@@ -102,27 +42,11 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </p>
       </div>
       
-      <div className="bg-white p-6 rounded-lg border shadow-sm">
-        <h3 className="text-xl font-medium mb-4">Résumé de l'évaluation</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <h4 className="font-medium text-gray-700">Auto-évaluation</h4>
-            <div className="flex items-center">
-              <div className="text-3xl font-bold text-yellow-500 mr-3">{employeeAvg}</div>
-              {renderStarRating(parseFloat(employeeAvg))}
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <h4 className="font-medium text-primary">Évaluation du manager</h4>
-            <div className="flex items-center">
-              <div className="text-3xl font-bold text-primary mr-3">{evaluatorAvg}</div>
-              {renderStarRating(parseFloat(evaluatorAvg))}
-            </div>
-          </div>
-        </div>
-      </div>
+      <EvaluationSummary 
+        criteriaItems={criteriaItems}
+        employeeResponses={employeeResponses}
+        evaluatorResponses={evaluatorResponses}
+      />
       
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="details">
@@ -136,57 +60,18 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                   <h3 className="text-lg font-medium mb-4">{item.label}</h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2 bg-gray-50 p-4 rounded-md">
-                      <h4 className="font-medium text-gray-700">Auto-évaluation du collaborateur</h4>
-                      
-                      {item.type === 'numeric' ? (
-                        <div className="mt-4">
-                          {renderStarRating(Number(getResponseValue(employeeResponses, item.id)) || 0)}
-                        </div>
-                      ) : item.type === 'boolean' ? (
-                        <div className="mt-4">
-                          <div className="p-3 rounded">
-                            {getResponseValue(employeeResponses, item.id) === 'oui' ? 'Oui' : 
-                             getResponseValue(employeeResponses, item.id) === 'non' ? 'Non' : 
-                             'Non spécifié'}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="mt-2">
-                          <ScrollArea className="h-[100px] w-full rounded-md">
-                            <div className="p-3 bg-gray-100 rounded text-gray-600 whitespace-pre-wrap">
-                              {getResponseValue(employeeResponses, item.id) || "Aucune observation fournie"}
-                            </div>
-                          </ScrollArea>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-2 bg-blue-50 p-4 rounded-md">
-                      <h4 className="font-medium text-primary">Évaluation du manager</h4>
-                      
-                      {item.type === 'numeric' ? (
-                        <div className="mt-4">
-                          {renderStarRating(Number(getResponseValue(evaluatorResponses, item.id)) || 0)}
-                        </div>
-                      ) : item.type === 'boolean' ? (
-                        <div className="mt-4">
-                          <div className="p-3 rounded">
-                            {getResponseValue(evaluatorResponses, item.id) === 'oui' ? 'Oui' : 
-                             getResponseValue(evaluatorResponses, item.id) === 'non' ? 'Non' : 
-                             'Non spécifié'}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="mt-2">
-                          <ScrollArea className="h-[100px] w-full rounded-md">
-                            <div className="p-3 bg-blue-100 rounded text-blue-800 whitespace-pre-wrap">
-                              {getResponseValue(evaluatorResponses, item.id) || "Aucune observation fournie"}
-                            </div>
-                          </ScrollArea>
-                        </div>
-                      )}
-                    </div>
+                    <EvaluationCard 
+                      item={item}
+                      responses={employeeResponses}
+                      readonly
+                      variant="employee"
+                    />
+                    <EvaluationCard 
+                      item={item}
+                      responses={evaluatorResponses}
+                      readonly
+                      variant="evaluator"
+                    />
                   </div>
                 </div>
               ))}
@@ -195,59 +80,10 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </AccordionItem>
       </Accordion>
       
-      <div className="bg-gray-50 p-6 rounded-lg border mt-8">
-        <h3 className="text-xl font-medium mb-4">Décision finale</h3>
-        
-        {showRejectionComment ? (
-          <div className="space-y-4">
-            <p className="text-gray-700">
-              Veuillez fournir un commentaire expliquant les raisons du rejet :
-            </p>
-            <Textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Détaillez les raisons du rejet et les axes d'amélioration…"
-              className="min-h-[150px]"
-              scrollable
-            />
-            <div className="flex flex-col sm:flex-row gap-4 mt-4">
-              <Button 
-                onClick={() => setShowRejectionComment(false)}
-                variant="outline"
-              >
-                Annuler
-              </Button>
-              <Button 
-                onClick={handleReject}
-                variant="destructive"
-                disabled={isLoading || comment.trim().length < 10}
-              >
-                <XCircle className="h-4 w-4 mr-2" />
-                Confirmer le rejet
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button 
-              onClick={handleApprove}
-              className="bg-green-600 hover:bg-green-700"
-              disabled={isLoading}
-            >
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Valider l'évaluation
-            </Button>
-            <Button 
-              onClick={() => setShowRejectionComment(true)}
-              variant="destructive"
-              disabled={isLoading}
-            >
-              <XCircle className="h-4 w-4 mr-2" />
-              Rejeter l'évaluation
-            </Button>
-          </div>
-        )}
-      </div>
+      <ApprovalActions 
+        onApprove={onApprove}
+        isLoading={isLoading}
+      />
     </div>
   );
 };
