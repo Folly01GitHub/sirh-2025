@@ -1,14 +1,11 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { CriteriaItem, EvaluationResponse } from '@/types/evaluation.types';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import StarRating from './StarRating';
-import BooleanResponse from './BooleanResponse';
-import ObservationInput from './ObservationInput';
-import { isValidResponse, getResponseValue } from '@/utils/evaluationUtils';
+import EvaluationCard from './responses/EvaluationCard';
+import { isValidResponse } from '@/utils/evaluationUtils';
 
 interface EvaluationStepTwoProps {
   criteriaItems: CriteriaItem[];
@@ -25,8 +22,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   isLoading,
   onSubmit
 }) => {
-  const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
-  const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
+  const [evaluatorResponses, setEvaluatorResponses] = React.useState<EvaluationResponse[]>([]);
+  const [missingFields, setMissingFields] = React.useState<{ group?: string, label: string }[]>([]);
 
   const handleEvaluatorResponseChange = (itemId: number, value: string | number | boolean) => {
     setEvaluatorResponses(prev => {
@@ -85,59 +82,23 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       </div>
 
       {criteriaItems.map((item) => (
-        <div key={item.id} className="p-4 border rounded-md shadow-sm">
+        <div key={item.id} className="p-4 border rounded-md">
           <h3 className="text-lg font-medium mb-4">{item.label}</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2 bg-gray-50 p-4 rounded-md">
-              <h4 className="font-medium text-gray-700">Auto-évaluation du collaborateur</h4>
-              
-              {item.type === 'numeric' ? (
-                <div className="mt-4">
-                  <StarRating 
-                    value={Number(getResponseValue(employeeResponses, item.id)) || 0}
-                    readonly 
-                  />
-                </div>
-              ) : item.type === 'boolean' ? (
-                <div className="mt-4">
-                  <BooleanResponse 
-                    value={getResponseValue(employeeResponses, item.id) as string}
-                    readonly
-                  />
-                </div>
-              ) : (
-                <ObservationInput 
-                  value={getResponseValue(employeeResponses, item.id) as string}
-                  readonly
-                />
-              )}
-            </div>
+            <EvaluationCard
+              item={item}
+              responses={employeeResponses}
+              readonly
+              variant="employee"
+            />
             
-            <div className="space-y-2">
-              <h4 className="font-medium text-primary">Votre évaluation</h4>
-              
-              {item.type === 'numeric' ? (
-                <div className="mt-4">
-                  <StarRating 
-                    value={Number(getResponseValue(evaluatorResponses, item.id)) || 0}
-                    onChange={(value) => handleEvaluatorResponseChange(item.id, value)}
-                  />
-                </div>
-              ) : item.type === 'boolean' ? (
-                <div className="mt-4">
-                  <BooleanResponse 
-                    value={getResponseValue(evaluatorResponses, item.id) as string}
-                    onChange={(value) => handleEvaluatorResponseChange(item.id, value)}
-                  />
-                </div>
-              ) : (
-                <ObservationInput 
-                  value={getResponseValue(evaluatorResponses, item.id) as string}
-                  onChange={(value) => handleEvaluatorResponseChange(item.id, value)}
-                />
-              )}
-            </div>
+            <EvaluationCard
+              item={item}
+              responses={evaluatorResponses}
+              onResponseChange={handleEvaluatorResponseChange}
+              variant="evaluator"
+            />
           </div>
         </div>
       ))}

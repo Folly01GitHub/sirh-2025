@@ -138,7 +138,7 @@ const Evaluation = () => {
       }
     });
   }, []);
-
+  
   const handleEvaluatorResponseChange = useCallback((itemId: number, value: string | number | boolean) => {
     setEvaluatorResponses(prev => {
       const existingIndex = prev.findIndex(response => response.item_id === itemId);
@@ -185,9 +185,16 @@ const Evaluation = () => {
     setIsSubmitting(true);
     
     try {
-      await apiClient.post('/submit_evaluator', {
-        evaluation_id: evaluationId,
-        responses: evaluatorResponses
+      await fetch('http://backend.local.com/api/submit_evaluator', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({
+          evaluation_id: evaluationId,
+          responses: evaluatorResponses
+        })
       });
       
       toast.success("Évaluation soumise", {
@@ -216,10 +223,17 @@ const Evaluation = () => {
     setIsSubmitting(true);
     
     try {
-      await apiClient.post('/submit_approver', {
-        evaluation_id: evaluationId,
-        approved,
-        comment
+      await fetch('http://backend.local.com/api/submit_approver', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({
+          evaluation_id: evaluationId,
+          approved,
+          comment
+        })
       });
       
       if (approved) {
