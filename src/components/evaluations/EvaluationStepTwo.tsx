@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/types/evaluation.types';
+import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface EvaluationStepTwoProps {
   criteriaItems: CriteriaItem[];
-  onResponseChange: (itemId: number, value: string | number | boolean) => void;
+  onResponseChange: (itemId: number, value: string) => void;
   employeeResponses: EvaluationResponse[];
   isLoading: boolean;
   onSubmit: () => void;

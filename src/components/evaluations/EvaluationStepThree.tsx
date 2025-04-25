@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { CriteriaItem, EvaluationResponse } from '@/types/evaluation.types';
+import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
