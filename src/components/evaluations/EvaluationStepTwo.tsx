@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
@@ -34,13 +35,21 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   const [searchParams] = useSearchParams();
   const evaluationId = searchParams.get('id');
   
-  // Fetch collaborator's responses
-  const { data: collaboratorResponses, isLoading: responsesLoading } = useQuery({
+  // Fetch collaborator's responses - updated to match the pattern from step 1
+  const { data: collaboratorResponses = [], isLoading: responsesLoading } = useQuery({
     queryKey: ['collaboratorResponses', evaluationId],
     queryFn: async () => {
       if (!evaluationId) return [];
-      const response = await apiClient.get(`/collab_responses?evaluation_id=${evaluationId}`);
-      return response.data;
+      try {
+        const response = await apiClient.get('/responses', {
+          params: { evaluation_id: evaluationId }
+        });
+        console.log("Collaborator responses fetched:", response.data);
+        return response.data || [];
+      } catch (error) {
+        console.error("Error fetching collaborator responses:", error);
+        return [];
+      }
     },
     enabled: !!evaluationId
   });
@@ -64,7 +73,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   // Get collaborator response values
   const getCollaboratorResponseValue = (itemId: number) => {
-    if (!collaboratorResponses) return "";
+    if (!collaboratorResponses || !collaboratorResponses.length) return "";
     const response = collaboratorResponses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
