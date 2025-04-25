@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee, EvaluationResponse } from '@/types/evaluation.types';
@@ -23,7 +22,7 @@ interface Mission {
 
 interface EvaluationStepOneProps {
   criteriaItems: CriteriaItem[];
-  onResponseChange: (itemId: number, value: string | number) => void;
+  onResponseChange: (itemId: number, value: string | number | boolean) => void;
   responses: EvaluationResponse[];
   employees: Employee[];
   onEvaluatorChange: (id: number) => void;
@@ -32,11 +31,6 @@ interface EvaluationStepOneProps {
   onSubmit: () => void;
   onMissionChange?: (id: number) => void;
   selectedMissionId?: number | null;
-}
-
-interface EvaluationResponse {
-  item_id: number;
-  value: string | number;
 }
 
 interface CollabResponse {

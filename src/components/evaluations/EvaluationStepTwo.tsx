@@ -13,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface EvaluationStepTwoProps {
   criteriaItems: CriteriaItem[];
-  onResponseChange: (itemId: number, value: string) => void;
+  onResponseChange: (itemId: number, value: string | number | boolean) => void;
   employeeResponses: EvaluationResponse[];
   isLoading: boolean;
   onSubmit: () => void;
