@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
@@ -166,43 +167,15 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     if (evaluationId) {
       apiClient.get<CollabResponse>(`/collab_responses?evaluation_id=${evaluationId}`)
         .then(response => {
-          const { evaluator_id, approver_id, mission_id } = response.data;
+          form.setValue("evaluator", response.data.evaluator_id);
+          form.setValue("approver", response.data.approver_id);
+          form.setValue("mission", response.data.mission_id);
           
-          form.setValue("evaluator", evaluator_id);
-          form.setValue("approver", approver_id);
-          form.setValue("mission", mission_id);
-          
-          onEvaluatorChange(Number(evaluator_id));
-          onApproverChange(Number(approver_id));
+          onEvaluatorChange(Number(response.data.evaluator_id));
+          onApproverChange(Number(response.data.approver_id));
           if (onMissionChange) {
-            onMissionChange(Number(mission_id));
+            onMissionChange(Number(response.data.mission_id));
           }
-
-          const loadInitialData = async () => {
-            try {
-              const evaluatorRes = await apiClient.get(`/employees_list?search=${evaluator_id}`);
-              if (evaluatorRes.data && Array.isArray(evaluatorRes.data)) {
-                setEvaluatorOptions(evaluatorRes.data);
-              }
-              
-              const approverRes = await apiClient.get(`/employees_list?search=${approver_id}`);
-              if (approverRes.data && Array.isArray(approverRes.data)) {
-                setApproverOptions(approverRes.data);
-              }
-              
-              const missionRes = await apiClient.get(`/liste_missions?search=${mission_id}`);
-              if (missionRes.data && Array.isArray(missionRes.data)) {
-                setMissionOptions(missionRes.data);
-              }
-            } catch (error) {
-              console.error('Error loading initial data:', error);
-              toast.error("Erreur lors du chargement des données", {
-                description: "Impossible de charger les données initiales"
-              });
-            }
-          };
-          
-          loadInitialData();
           
           response.data.responses.forEach(resp => {
             onResponseChange(Number(resp.id_item), resp.reponse_item);
@@ -215,7 +188,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
           });
         });
     }
-  }, [evaluationId, form, onEvaluatorChange, onApproverChange, onMissionChange, onResponseChange]);
+  }, [evaluationId]);
 
   const getResponseValue = (itemId: number) => {
     const response = responses.find(r => r.item_id === itemId);
