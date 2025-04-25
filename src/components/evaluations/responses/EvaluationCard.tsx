@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { CriteriaItem, EvaluationResponse } from '@/types/evaluation.types';
-import StarRating from './StarRating';
-import BooleanResponse from './BooleanResponse';
-import ObservationInput from './ObservationInput';
+import StarRating from '@/components/evaluations/StarRating';
+import BooleanResponse from '@/components/evaluations/BooleanResponse';
+import ObservationInput from '@/components/evaluations/ObservationInput';
 import { getResponseValue } from '@/utils/evaluationUtils';
 
 interface EvaluationCardProps {

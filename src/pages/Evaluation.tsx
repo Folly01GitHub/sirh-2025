@@ -84,13 +84,13 @@ const Evaluation = () => {
   
   useEffect(() => {
     if (collabResponsesData && collabResponsesData.length > 0) {
-      setEmployeeResponses(collabResponsesData);
+      setEmployeeResponses(collabResponsesData as EvaluationResponse[]);
     }
   }, [collabResponsesData]);
   
   useEffect(() => {
     if (evaluatorResponsesData && evaluatorResponsesData.length > 0) {
-      setEvaluatorResponses(evaluatorResponsesData);
+      setEvaluatorResponses(evaluatorResponsesData as EvaluationResponse[]);
     }
   }, [evaluatorResponsesData]);
   
