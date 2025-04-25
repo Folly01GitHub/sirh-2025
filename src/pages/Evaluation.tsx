@@ -39,7 +39,7 @@ export interface CriteriaItem {
 
 export interface EvaluationResponse {
   item_id: number;
-  value: string | number | boolean;
+  value: string | number;
 }
 
 export interface Employee {
@@ -137,7 +137,7 @@ const Evaluation = () => {
     }
   }, [criteriaGroups, currentGroupId]);
   
-  const handleEmployeeResponseChange = useCallback((itemId: number, value: string | number | boolean) => {
+  const handleEmployeeResponseChange = useCallback((itemId: number, value: string | number) => {
     setEmployeeResponses(prev => {
       const existingIndex = prev.findIndex(response => response.item_id === itemId);
       
@@ -151,7 +151,7 @@ const Evaluation = () => {
     });
   }, []);
 
-  const handleEvaluatorResponseChange = useCallback((itemId: number, value: string | number | boolean) => {
+  const handleEvaluatorResponseChange = useCallback((itemId: number, value: string | number) => {
     setEvaluatorResponses(prev => {
       const existingIndex = prev.findIndex(response => response.item_id === itemId);
       
