@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -31,6 +31,20 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   isLoading,
   onSubmit
 }) => {
+  const [searchParams] = useSearchParams();
+  const evaluationId = searchParams.get('id');
+  
+  // Fetch collaborator's responses
+  const { data: collaboratorResponses, isLoading: responsesLoading } = useQuery({
+    queryKey: ['collaboratorResponses', evaluationId],
+    queryFn: async () => {
+      if (!evaluationId) return [];
+      const response = await apiClient.get(`/collab_responses?evaluation_id=${evaluationId}`);
+      return response.data;
+    },
+    enabled: !!evaluationId
+  });
+  
   // Create a separate state for evaluator responses
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
@@ -48,9 +62,10 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
   }, [criteriaItems]);
   
-  // Get employee response values
-  const getEmployeeResponseValue = (itemId: number) => {
-    const response = employeeResponses.find(r => r.item_id === itemId);
+  // Get collaborator response values
+  const getCollaboratorResponseValue = (itemId: number) => {
+    if (!collaboratorResponses) return "";
+    const response = collaboratorResponses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
   
@@ -84,6 +99,22 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
   };
   
+  const renderCollaboratorStarRating = (itemId: number) => {
+    const currentValue = Number(getCollaboratorResponseValue(itemId)) || 0;
+    
+    return (
+      <div className="flex space-x-2">
+        {[1, 2, 3, 4, 5].map((value) => (
+          <div key={value} className="flex flex-col items-center">
+            <Star 
+              className={`h-6 w-6 ${value <= currentValue ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  };
+  
   const renderEvaluatorStarRating = (itemId: number) => {
     const currentValue = Number(getEvaluatorResponseValue(itemId)) || 0;
     
@@ -114,28 +145,12 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     );
   };
   
-  const renderEmployeeStarRating = (itemId: number) => {
-    const currentValue = Number(getEmployeeResponseValue(itemId)) || 0;
-    
-    return (
-      <div className="flex space-x-2">
-        {[1, 2, 3, 4, 5].map((value) => (
-          <div key={value} className="flex flex-col items-center">
-            <Star 
-              className={`h-6 w-6 ${value <= currentValue ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-            />
-          </div>
-        ))}
-      </div>
-    );
-  };
-  
-  const renderBooleanResponse = (itemId: number, isEmployee: boolean = false) => {
-    const value = isEmployee ? 
-      getEmployeeResponseValue(itemId) : 
+  const renderBooleanResponse = (itemId: number, isCollaborator: boolean = false) => {
+    const value = isCollaborator ? 
+      getCollaboratorResponseValue(itemId) : 
       getEvaluatorResponseValue(itemId);
     
-    if (isEmployee) {
+    if (isCollaborator) {
       return (
         <div className="flex gap-6">
           <div className="flex items-center space-x-2">
@@ -229,7 +244,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     onSubmit();
   };
   
-  if (isLoading && criteriaItems.length === 0) {
+  if (isLoading || responsesLoading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-6 w-1/3" />
@@ -259,7 +274,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
               
               {item.type === 'numeric' ? (
                 <div className="mt-4">
-                  {renderEmployeeStarRating(item.id)}
+                  {renderCollaboratorStarRating(item.id)}
                 </div>
               ) : item.type === 'boolean' ? (
                 <div className="mt-4">
@@ -269,7 +284,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
                 <div className="mt-2">
                   <ScrollArea className="h-[120px] w-full rounded-md">
                     <div className="p-3 bg-gray-100 rounded text-gray-600 whitespace-pre-wrap">
-                      {getEmployeeResponseValue(item.id) || "Aucune observation fournie"}
+                      {getCollaboratorResponseValue(item.id) || "Aucune observation fournie"}
                     </div>
                   </ScrollArea>
                 </div>
@@ -320,7 +335,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       <Button 
         onClick={handleSubmit} 
         className="w-full md:w-auto" 
-        disabled={isLoading}
+        disabled={isLoading || responsesLoading}
       >
         Soumettre mon évaluation
       </Button>
