@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -132,7 +131,6 @@ const Evaluation = () => {
     queryFn: fetchEmployees
   });
   
-  // Fetch collaborator responses if evaluation ID is provided
   const {
     data: collabResponsesData,
     isLoading: collabResponsesLoading
@@ -142,7 +140,6 @@ const Evaluation = () => {
     enabled: !!evaluationId
   });
   
-  // Fetch evaluator responses if evaluation ID is provided and we're in step 3 
   const {
     data: evaluatorResponsesData,
     isLoading: evaluatorResponsesLoading
@@ -152,7 +149,6 @@ const Evaluation = () => {
     enabled: !!evaluationId && (currentStep === 3 || currentStep === 2)
   });
   
-  // Set the responses from API when they are loaded
   useEffect(() => {
     if (collabResponsesData && collabResponsesData.length > 0) {
       setEmployeeResponses(collabResponsesData);
@@ -196,7 +192,7 @@ const Evaluation = () => {
     }
   }, [criteriaGroups, currentGroupId]);
   
-  const handleEmployeeResponseChange = useCallback((itemId: number, value: string | number) => {
+  const handleEmployeeResponseChange = useCallback((itemId: number, value: string | number | boolean) => {
     setEmployeeResponses(prev => {
       const existingIndex = prev.findIndex(response => response.item_id === itemId);
       
@@ -210,7 +206,7 @@ const Evaluation = () => {
     });
   }, []);
 
-  const handleEvaluatorResponseChange = useCallback((itemId: number, value: string | number) => {
+  const handleEvaluatorResponseChange = useCallback((itemId: number, value: string | number | boolean) => {
     setEvaluatorResponses(prev => {
       const existingIndex = prev.findIndex(response => response.item_id === itemId);
       
@@ -256,7 +252,6 @@ const Evaluation = () => {
     setIsSubmitting(true);
     
     try {
-      // Submit evaluator responses
       await apiClient.post('/submit_evaluator', {
         evaluation_id: evaluationId,
         responses: evaluatorResponses
@@ -266,7 +261,6 @@ const Evaluation = () => {
         description: "L'approbateur a été notifié"
       });
       
-      // Redirect to evaluations dashboard
       navigate('/evaluations');
     } catch (error) {
       console.error("Erreur lors de la soumission de l'évaluation:", error);
@@ -289,7 +283,6 @@ const Evaluation = () => {
     setIsSubmitting(true);
     
     try {
-      // Submit approver response
       await apiClient.post('/submit_approver', {
         evaluation_id: evaluationId,
         approved,
@@ -306,7 +299,6 @@ const Evaluation = () => {
         });
       }
       
-      // Redirect to evaluations dashboard
       navigate('/evaluations');
     } catch (error) {
       console.error("Erreur lors de la finalisation de l'évaluation:", error);
@@ -324,7 +316,6 @@ const Evaluation = () => {
     }
   }, [criteriaGroups]);
   
-  // Show loading state when fetching responses
   const isLoading = 
     groupsLoading || 
     itemsLoading || 

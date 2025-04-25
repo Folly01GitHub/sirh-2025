@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -31,13 +30,11 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   const [comment, setComment] = useState("");
   const [showRejectionComment, setShowRejectionComment] = useState(false);
   
-  // Obtenir la valeur de réponse pour un critère
   const getResponseValue = (responses: EvaluationResponse[], itemId: number) => {
     const response = responses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
   
-  // Rendu étoiles (lecture seule)
   const renderStarRating = (value: number) => {
     return (
       <div className="flex space-x-1">
@@ -51,7 +48,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
     );
   };
   
-  // Calcul des moyennes pour les notes numériques
   const calculateAverages = () => {
     const numericItems = criteriaItems.filter(item => item.type === 'numeric');
     
@@ -73,12 +69,10 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   
   const { employeeAvg, evaluatorAvg } = calculateAverages();
   
-  // Gérer la validation
   const handleApprove = () => {
     onApprove(true);
   };
   
-  // Gérer le rejet
   const handleReject = () => {
     if (!comment || comment.trim().length < 10) {
       alert("Veuillez fournir un commentaire de rejet d'au moins 10 caractères");
@@ -108,7 +102,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </p>
       </div>
       
-      {/* Carte de synthèse */}
       <div className="bg-white p-6 rounded-lg border shadow-sm">
         <h3 className="text-xl font-medium mb-4">Résumé de l'évaluation</h3>
         
@@ -131,7 +124,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </div>
       </div>
       
-      {/* Détails des évaluations */}
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="details">
           <AccordionTrigger>
@@ -144,7 +136,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                   <h3 className="text-lg font-medium mb-4">{item.label}</h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Réponse collaborateur (lecture seule) */}
                     <div className="space-y-2 bg-gray-50 p-4 rounded-md">
                       <h4 className="font-medium text-gray-700">Auto-évaluation du collaborateur</h4>
                       
@@ -154,7 +145,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                         </div>
                       ) : item.type === 'boolean' ? (
                         <div className="mt-4">
-                          {/* Render boolean response (true/false) */}
                           <div className="p-3 rounded">
                             {getResponseValue(employeeResponses, item.id) === 'oui' ? 'Oui' : 
                              getResponseValue(employeeResponses, item.id) === 'non' ? 'Non' : 
@@ -172,7 +162,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                       )}
                     </div>
                     
-                    {/* Réponse évaluateur (lecture seule) */}
                     <div className="space-y-2 bg-blue-50 p-4 rounded-md">
                       <h4 className="font-medium text-primary">Évaluation du manager</h4>
                       
@@ -182,7 +171,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                         </div>
                       ) : item.type === 'boolean' ? (
                         <div className="mt-4">
-                          {/* Render boolean response (true/false) */}
                           <div className="p-3 rounded">
                             {getResponseValue(evaluatorResponses, item.id) === 'oui' ? 'Oui' : 
                              getResponseValue(evaluatorResponses, item.id) === 'non' ? 'Non' : 
@@ -207,7 +195,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </AccordionItem>
       </Accordion>
       
-      {/* Actions de validation */}
       <div className="bg-gray-50 p-6 rounded-lg border mt-8">
         <h3 className="text-xl font-medium mb-4">Décision finale</h3>
         
