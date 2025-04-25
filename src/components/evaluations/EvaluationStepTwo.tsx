@@ -183,7 +183,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       case 'observation':
         return typeof response.value === 'string' && response.value.length >= 50;
       case 'boolean':
-        return typeof response.value === 'string' && ['oui', 'non'].includes(response.value);
+        return typeof response.value === 'string' && ['oui', 'non'].includes(response.value as string);
       default:
         return false;
     }
