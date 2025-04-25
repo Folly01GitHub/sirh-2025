@@ -500,6 +500,10 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                     onChange={value => {
                       field.onChange(value);
                       onEvaluatorChange(Number(value));
+                      const selectedEvaluator = evaluatorOptions.find(e => e.id.toString() === value);
+                      if (selectedEvaluator) {
+                        setEvaluatorDetails(selectedEvaluator);
+                      }
                     }}
                     onSearch={setEvaluatorQuery}
                     options={evaluatorSelectOptions}
@@ -521,6 +525,10 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                     onChange={value => {
                       field.onChange(value);
                       onApproverChange(Number(value));
+                      const selectedApprover = approverOptions.find(e => e.id.toString() === value);
+                      if (selectedApprover) {
+                        setApproverDetails(selectedApprover);
+                      }
                     }}
                     onSearch={setApproverQuery}
                     options={approverSelectOptions}
