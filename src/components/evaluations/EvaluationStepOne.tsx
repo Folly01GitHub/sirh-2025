@@ -94,6 +94,15 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     return response ? response.value : '';
   };
   
+  // Helper functions for type checking
+  const isBooleanTrue = (value: string | number | boolean): boolean => {
+    return value === true || value === 'true';
+  };
+  
+  const isBooleanFalse = (value: string | number | boolean): boolean => {
+    return value === false || value === 'false';
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -249,7 +258,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                     <input
                       type="radio"
                       className="form-radio h-5 w-5 text-primary"
-                      checked={getValue(item.id) === true || getValue(item.id) === 'true'}
+                      checked={isBooleanTrue(getValue(item.id))}
                       onChange={() => onResponseChange(item.id, true)}
                       disabled={isLoading || isSubmitting}
                     />
@@ -259,7 +268,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                     <input
                       type="radio"
                       className="form-radio h-5 w-5 text-primary"
-                      checked={getValue(item.id) === false || getValue(item.id) === 'false'}
+                      checked={isBooleanFalse(getValue(item.id))}
                       onChange={() => onResponseChange(item.id, false)}
                       disabled={isLoading || isSubmitting}
                     />
