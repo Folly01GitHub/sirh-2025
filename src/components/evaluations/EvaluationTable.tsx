@@ -1,13 +1,11 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pencil, BarChart4, CheckCircle, Clock } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Define EvaluationItem interface directly here instead of importing
 interface EvaluationItem {
   id: number;
   mission: string;
@@ -33,6 +31,21 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
 
   const handleEditClick = (evaluationId: number) => {
     navigate(`/evaluation?id=${evaluationId}`);
+  };
+
+  const getNiveauBadgeProps = (niveau: string) => {
+    switch (niveau) {
+      case 'Evaluateur':
+        return { style: { backgroundColor: '#F2FCE2', color: 'black' } };
+      case 'Approbateur':
+        return { style: { backgroundColor: '#FEF7CD', color: 'black' } };
+      case 'HR':
+        return { style: { backgroundColor: '#FEC6A1', color: 'black' } };
+      case 'Terminé':
+        return { style: { backgroundColor: '#9b87f5', color: 'white' } };
+      default:
+        return {};
+    }
   };
 
   return (
@@ -94,7 +107,12 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                   )}
                 </TableCell>
                 <TableCell>
-                  <Badge variant="outline">{evaluation.niveau}</Badge>
+                  <Badge 
+                    variant="outline" 
+                    {...getNiveauBadgeProps(evaluation.niveau)}
+                  >
+                    {evaluation.niveau}
+                  </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <Button
