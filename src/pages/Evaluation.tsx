@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
+import { useSearchParams } from 'react-router-dom';
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import { 
   SidebarProvider, 
@@ -70,9 +71,13 @@ const fetchEmployees = async (): Promise<Employee[]> => {
 };
 
 const Evaluation = () => {
+  const [searchParams] = useSearchParams();
+  const stepParam = searchParams.get('step');
+  const initialStep = stepParam ? parseInt(stepParam) : 1;
+  
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(initialStep as 1 | 2 | 3);
   const [currentGroupId, setCurrentGroupId] = useState<number>(1);
   const [employeeResponses, setEmployeeResponses] = useState<EvaluationResponse[]>([]);
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
@@ -80,6 +85,15 @@ const Evaluation = () => {
   const [approverId, setApproverId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMissionId, setSelectedMissionId] = useState<number | null>(null);
+  
+  useEffect(() => {
+    if (stepParam) {
+      const step = parseInt(stepParam);
+      if (step >= 1 && step <= 3) {
+        setCurrentStep(step as 1 | 2 | 3);
+      }
+    }
+  }, [stepParam]);
   
   const { 
     data: criteriaGroups, 
@@ -251,7 +265,7 @@ const Evaluation = () => {
     if (criteriaGroups && criteriaGroups.length > 0) {
       setCurrentGroupId(criteriaGroups[0].id);
     }
-  }, [currentStep, criteriaGroups]);
+  }, [criteriaGroups]);
   
   return (
     <SidebarProvider>
