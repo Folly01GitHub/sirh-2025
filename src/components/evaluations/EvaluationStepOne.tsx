@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
@@ -91,10 +92,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const [approverOptions, setApproverOptions] = useState<Employee[]>([]);
   const [approverLoading, setApproverLoading] = useState(false);
 
-  const [evaluatorDetails, setEvaluatorDetails] = useState<Employee | null>(null);
-  const [approverDetails, setApproverDetails] = useState<Employee | null>(null);
-  const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
-
   const { data: allCriteriaItems, isLoading: allItemsLoading } = useQuery({
     queryKey: ['allCriteriaItems'],
     queryFn: fetchAllCriteriaItems
@@ -107,13 +104,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       apiClient.get(`/liste_missions?search=${encodeURIComponent(missionQuery)}`)
         .then(res => {
           setMissionOptions(Array.isArray(res.data) ? res.data : []);
-          
-          if (selectedMissionId && res.data) {
-            const mission = res.data.find((m: Mission) => m.id === selectedMissionId);
-            if (mission) {
-              setSelectedMission(mission);
-            }
-          }
         })
         .catch(() => {
           setMissionsError("Erreur lors du chargement des missions");
@@ -122,7 +112,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         .finally(() => setMissionsLoading(false));
     }, 250);
     return () => clearTimeout(handler);
-  }, [missionQuery, selectedMissionId]);
+  }, [missionQuery]);
 
   useEffect(() => {
     if (!missionQuery) setMissionOptions([]);
@@ -158,39 +148,28 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     return () => clearTimeout(handler);
   }, [approverQuery]);
 
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      evaluator: "",
+      approver: "",
+      mission: selectedMissionId ? selectedMissionId.toString() : "",
+    },
+  });
+
+  useEffect(() => {
+    if (selectedMissionId) {
+      form.setValue("mission", selectedMissionId.toString());
+    }
+  }, [selectedMissionId, form]);
+
   useEffect(() => {
     if (evaluationId) {
       apiClient.get<CollabResponse>(`/collab_responses?evaluation_id=${evaluationId}`)
-        .then(async response => {
+        .then(response => {
           form.setValue("evaluator", response.data.evaluator_id);
           form.setValue("approver", response.data.approver_id);
           form.setValue("mission", response.data.mission_id);
-          
-          try {
-            const evaluatorResponse = await apiClient.get(`/employees/${response.data.evaluator_id}`);
-            setEvaluatorDetails(evaluatorResponse.data);
-            setEvaluatorOptions([evaluatorResponse.data]);
-            console.log('Evaluator details loaded:', evaluatorResponse.data);
-          } catch (error) {
-            console.error('Error fetching evaluator details:', error);
-          }
-          
-          try {
-            const approverResponse = await apiClient.get(`/employees/${response.data.approver_id}`);
-            setApproverDetails(approverResponse.data);
-            setApproverOptions([approverResponse.data]);
-            console.log('Approver details loaded:', approverResponse.data);
-          } catch (error) {
-            console.error('Error fetching approver details:', error);
-          }
-          
-          try {
-            const missionResponse = await apiClient.get(`/mission/${response.data.mission_id}`);
-            setSelectedMission(missionResponse.data);
-            console.log('Mission details loaded:', missionResponse.data);
-          } catch (error) {
-            console.error('Error fetching mission details:', error);
-          }
           
           onEvaluatorChange(Number(response.data.evaluator_id));
           onApproverChange(Number(response.data.approver_id));
@@ -210,33 +189,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         });
     }
   }, [evaluationId]);
-
-  useEffect(() => {
-    if (!evaluatorQuery && evaluatorDetails) {
-      setEvaluatorOptions([evaluatorDetails]);
-    }
-  }, [evaluatorQuery, evaluatorDetails]);
-
-  useEffect(() => {
-    if (!approverQuery && approverDetails) {
-      setApproverOptions([approverDetails]);
-    }
-  }, [approverQuery, approverDetails]);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      evaluator: "",
-      approver: "",
-      mission: selectedMissionId ? selectedMissionId.toString() : "",
-    },
-  });
-
-  useEffect(() => {
-    if (selectedMissionId) {
-      form.setValue("mission", selectedMissionId.toString());
-    }
-  }, [selectedMissionId, form]);
 
   const getResponseValue = (itemId: number) => {
     const response = responses.find(r => r.item_id === itemId);
@@ -459,13 +411,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     label: m.nom,
   }));
 
-  if (selectedMission && !missionOptions.some(m => m.id === selectedMission.id)) {
-    missionSelectOptions.unshift({
-      value: selectedMission.id.toString(),
-      label: selectedMission.nom,
-    });
-  }
-
   if (isLoading && criteriaItems.length === 0) {
     return (
       <div className="space-y-6">
@@ -500,10 +445,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                     onChange={value => {
                       field.onChange(value);
                       onEvaluatorChange(Number(value));
-                      const selectedEvaluator = evaluatorOptions.find(e => e.id.toString() === value);
-                      if (selectedEvaluator) {
-                        setEvaluatorDetails(selectedEvaluator);
-                      }
                     }}
                     onSearch={setEvaluatorQuery}
                     options={evaluatorSelectOptions}
@@ -525,10 +466,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                     onChange={value => {
                       field.onChange(value);
                       onApproverChange(Number(value));
-                      const selectedApprover = approverOptions.find(e => e.id.toString() === value);
-                      if (selectedApprover) {
-                        setApproverDetails(selectedApprover);
-                      }
                     }}
                     onSearch={setApproverQuery}
                     options={approverSelectOptions}
@@ -561,22 +498,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
               )}
             />
           </div>
-          
-          {evaluatorDetails && (
-            <div className="p-4 border rounded-md bg-blue-50 mb-2">
-              <h3 className="font-medium">Évaluateur sélectionné:</h3>
-              <p>{evaluatorDetails.name} - {evaluatorDetails.position}</p>
-              <p className="text-sm text-gray-500">{evaluatorDetails.email}</p>
-            </div>
-          )}
-          
-          {approverDetails && (
-            <div className="p-4 border rounded-md bg-green-50 mb-4">
-              <h3 className="font-medium">Approbateur sélectionné:</h3>
-              <p>{approverDetails.name} - {approverDetails.position}</p>
-              <p className="text-sm text-gray-500">{approverDetails.email}</p>
-            </div>
-          )}
           
           {criteriaItems.map((item) => (
             <div key={item.id} className="p-4 border rounded-md shadow-sm">
