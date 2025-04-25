@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
@@ -73,11 +74,15 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   selectedMissionId
 }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const evaluationId = searchParams.get('id');
+  
   const [missionQuery, setMissionQuery] = useState("");
   const [missionOptions, setMissionOptions] = useState<Mission[]>([]);
   const [missionsLoading, setMissionsLoading] = useState(false);
   const [missionsError, setMissionsError] = useState<string | null>(null);
-  const [submitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [evaluatorQuery, setEvaluatorQuery] = useState("");
   const [evaluatorOptions, setEvaluatorOptions] = useState<Employee[]>([]);
@@ -337,7 +342,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       }))
     };
     
-    setSubmitting(true);
+    setIsSubmitting(true);
     
     apiClient.post('/submit_auto_evaluation', submissionData)
       .then(response => {
@@ -366,7 +371,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         });
       })
       .finally(() => {
-        setSubmitting(false);
+        setIsSubmitting(false);
       });
   });
 
