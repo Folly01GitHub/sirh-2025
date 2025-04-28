@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
@@ -10,6 +11,18 @@ import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 interface EvaluationStepTwoProps {
   criteriaItems: CriteriaItem[];
@@ -24,6 +37,12 @@ const fetchAllCriteriaItems = async (): Promise<CriteriaItem[]> => {
   return response.data;
 };
 
+const refusalSchema = z.object({
+  reason: z.string().min(10, "Le motif doit contenir au moins 10 caractères"),
+});
+
+type RefusalFormData = z.infer<typeof refusalSchema>;
+
 const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   criteriaItems,
   onResponseChange,
@@ -34,6 +53,15 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const evaluationId = searchParams.get('id');
+  
+  const [refusalDialogOpen, setRefusalDialogOpen] = useState(false);
+  
+  const refusalForm = useForm<RefusalFormData>({
+    resolver: zodResolver(refusalSchema),
+    defaultValues: {
+      reason: "",
+    },
+  });
   
   const { data: collaboratorResponses = [], isLoading: responsesLoading } = useQuery({
     queryKey: ['collaboratorResponses', evaluationId],
@@ -263,6 +291,27 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
   };
   
+  const handleRefuseRequest = async (data: RefusalFormData) => {
+    try {
+      await apiClient.post('/refuse_evaluation', {
+        evaluation_id: evaluationId,
+        refusal_reason: data.reason
+      });
+      
+      toast.success("Auto-évaluation refusée", {
+        description: "Le collaborateur a été notifié"
+      });
+      
+      setRefusalDialogOpen(false);
+      navigate('/evaluations');
+    } catch (error) {
+      console.error("Erreur lors du refus de l'auto-évaluation:", error);
+      toast.error("Erreur lors du refus", {
+        description: "Veuillez réessayer ultérieurement"
+      });
+    }
+  };
+  
   if (isLoading || responsesLoading) {
     return (
       <div className="space-y-6">
@@ -351,13 +400,74 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         </div>
       ))}
       
-      <Button 
-        onClick={handleSubmit} 
-        className="w-full md:w-auto" 
-        disabled={isLoading || responsesLoading}
-      >
-        Soumettre mon évaluation
-      </Button>
+      <div className="flex flex-col md:flex-row gap-4">
+        <Button 
+          onClick={handleSubmit} 
+          className="w-full md:w-auto" 
+          disabled={isLoading || responsesLoading}
+        >
+          Soumettre mon évaluation
+        </Button>
+        
+        <Button 
+          onClick={() => setRefusalDialogOpen(true)} 
+          className="w-full md:w-auto" 
+          variant="outline"
+          disabled={isLoading || responsesLoading}
+        >
+          Refuser l'auto-évaluation
+        </Button>
+      </div>
+      
+      <Dialog open={refusalDialogOpen} onOpenChange={setRefusalDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Refuser l'auto-évaluation</DialogTitle>
+            <DialogDescription>
+              Veuillez indiquer la raison du refus. Cette information sera communiquée au collaborateur.
+            </DialogDescription>
+          </DialogHeader>
+
+          <Form {...refusalForm}>
+            <form onSubmit={refusalForm.handleSubmit(handleRefuseRequest)} className="space-y-4">
+              <FormField
+                control={refusalForm.control}
+                name="reason"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Motif du refus..."
+                        className="min-h-[120px]"
+                        scrollable
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setRefusalDialogOpen(false)}
+                >
+                  Annuler
+                </Button>
+                <Button 
+                  type="submit" 
+                  variant="destructive"
+                  disabled={refusalForm.formState.isSubmitting}
+                >
+                  Confirmer le refus
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
