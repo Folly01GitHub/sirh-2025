@@ -1,43 +1,91 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Star, CheckCircle, XCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
+import { toast } from 'sonner';
+import apiClient from '@/utils/apiClient';
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+interface ApiResponse {
+  mission_id: string;
+  evaluator_id: string;
+  approver_id: string;
+  responses: Array<{
+    id_item: string;
+    reponse_item: string;
+    type_item: string;
+  }>;
+}
+
 interface EvaluationStepThreeProps {
   criteriaItems: CriteriaItem[];
-  employeeResponses: EvaluationResponse[];
-  evaluatorResponses: EvaluationResponse[];
   isLoading: boolean;
   onApprove: (approved: boolean, comment?: string) => void;
 }
 
 const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   criteriaItems,
-  employeeResponses,
-  evaluatorResponses,
   isLoading,
   onApprove
 }) => {
+  const [searchParams] = useSearchParams();
+  const evaluationId = searchParams.get('id');
   const [comment, setComment] = useState("");
   const [showRejectionComment, setShowRejectionComment] = useState(false);
-  
-  // Obtenir la valeur de réponse pour un critère
+  const [employeeResponses, setEmployeeResponses] = useState<EvaluationResponse[]>([]);
+  const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
+  const [isLoadingResponses, setIsLoadingResponses] = useState(true);
+
+  useEffect(() => {
+    const fetchResponses = async () => {
+      if (!evaluationId) {
+        toast.error("ID d'évaluation manquant");
+        return;
+      }
+
+      setIsLoadingResponses(true);
+      try {
+        const [collabResponse, evaluatorResponse] = await Promise.all([
+          apiClient.get<ApiResponse>(`/collab_responses?evaluation_id=${evaluationId}`),
+          apiClient.get<ApiResponse>(`/evaluator_responses?evaluation_id=${evaluationId}`)
+        ]);
+
+        const formatResponses = (apiResponses: ApiResponse['responses']): EvaluationResponse[] => {
+          return apiResponses.map(response => ({
+            item_id: parseInt(response.id_item),
+            value: response.type_item === "numerique" 
+              ? parseInt(response.reponse_item) 
+              : response.reponse_item
+          }));
+        };
+
+        setEmployeeResponses(formatResponses(collabResponse.data.responses));
+        setEvaluatorResponses(formatResponses(evaluatorResponse.data.responses));
+      } catch (error) {
+        toast.error("Erreur lors de la récupération des réponses");
+        console.error("Error fetching responses:", error);
+      } finally {
+        setIsLoadingResponses(false);
+      }
+    };
+
+    fetchResponses();
+  }, [evaluationId]);
+
   const getResponseValue = (responses: EvaluationResponse[], itemId: number) => {
     const response = responses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
-  
-  // Rendu étoiles (lecture seule)
+
   const renderStarRating = (value: number) => {
     return (
       <div className="flex space-x-1">
@@ -50,8 +98,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
       </div>
     );
   };
-  
-  // Calcul des moyennes pour les notes numériques
+
   const calculateAverages = () => {
     const numericItems = criteriaItems.filter(item => item.type === 'numeric');
     
@@ -70,15 +117,11 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
       evaluatorAvg: evaluatorAvg.toFixed(1)
     };
   };
-  
-  const { employeeAvg, evaluatorAvg } = calculateAverages();
-  
-  // Gérer la validation
+
   const handleApprove = () => {
     onApprove(true);
   };
-  
-  // Gérer le rejet
+
   const handleReject = () => {
     if (!comment || comment.trim().length < 10) {
       alert("Veuillez fournir un commentaire de rejet d'au moins 10 caractères");
@@ -87,7 +130,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
     
     onApprove(false, comment);
   };
-  
+
   if (isLoading && criteriaItems.length === 0) {
     return (
       <div className="space-y-6">
@@ -98,7 +141,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-8">
       <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
@@ -108,7 +151,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </p>
       </div>
       
-      {/* Carte de synthèse */}
       <div className="bg-white p-6 rounded-lg border shadow-sm">
         <h3 className="text-xl font-medium mb-4">Résumé de l'évaluation</h3>
         
@@ -131,7 +173,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </div>
       </div>
       
-      {/* Détails des évaluations */}
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="details">
           <AccordionTrigger>
@@ -144,7 +185,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                   <h3 className="text-lg font-medium mb-4">{item.label}</h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Réponse collaborateur (lecture seule) */}
                     <div className="space-y-2 bg-gray-50 p-4 rounded-md">
                       <h4 className="font-medium text-gray-700">Auto-évaluation du collaborateur</h4>
                       
@@ -154,7 +194,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                         </div>
                       ) : item.type === 'boolean' ? (
                         <div className="mt-4">
-                          {/* Render boolean response (true/false) */}
                           <div className="p-3 rounded">
                             {getResponseValue(employeeResponses, item.id) === 'oui' ? 'Oui' : 
                              getResponseValue(employeeResponses, item.id) === 'non' ? 'Non' : 
@@ -172,7 +211,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                       )}
                     </div>
                     
-                    {/* Réponse évaluateur (lecture seule) */}
                     <div className="space-y-2 bg-blue-50 p-4 rounded-md">
                       <h4 className="font-medium text-primary">Évaluation du manager</h4>
                       
@@ -182,7 +220,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                         </div>
                       ) : item.type === 'boolean' ? (
                         <div className="mt-4">
-                          {/* Render boolean response (true/false) */}
                           <div className="p-3 rounded">
                             {getResponseValue(evaluatorResponses, item.id) === 'oui' ? 'Oui' : 
                              getResponseValue(evaluatorResponses, item.id) === 'non' ? 'Non' : 
@@ -207,7 +244,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </AccordionItem>
       </Accordion>
       
-      {/* Actions de validation */}
       <div className="bg-gray-50 p-6 rounded-lg border mt-8">
         <h3 className="text-xl font-medium mb-4">Décision finale</h3>
         
