@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +16,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Permissions from "./pages/Permissions";
 import Evaluation from "./pages/Evaluation";
 import EvaluationDashboard from "./pages/EvaluationDashboard";
+import EvaluationView from "./pages/EvaluationView";
 
 const queryClient = new QueryClient();
 
@@ -36,19 +36,17 @@ const App = () => (
             {/* Protected routes - require authentication */}
             <Route element={<AuthGuard />}>
               <Route path="/home" element={<Home />} />
-              {/* Admin routes */}
               <Route path="/admin/dashboard" element={<Dashboard />} />
               <Route path="/admin/users" element={<Users />} />
               <Route path="/admin/settings" element={<Settings />} />
-              {/* HRIS routes */}
               <Route path="/leave" element={<Home />} />
               <Route path="/assessments" element={<Home />} />
               <Route path="/permissions" element={<Permissions />} />
               <Route path="/evaluations" element={<EvaluationDashboard />} />
               <Route path="/evaluation" element={<Evaluation />} />
+              <Route path="/evaluation-view" element={<EvaluationView />} />
               <Route path="/cashout" element={<Home />} />
               <Route path="/certificates" element={<Home />} />
-              {/* Placeholder routes for HRIS pages */}
               <Route path="/dashboard" element={<Home />} />
               <Route path="/leave" element={<Home />} />
               <Route path="/appraisals" element={<Home />} />

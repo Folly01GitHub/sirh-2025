@@ -34,7 +34,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
   };
 
   const handleViewClick = (evaluationId: number) => {
-    navigate(`/evaluation?id=${evaluationId}&mode=view`);
+    navigate(`/evaluation-view?id=${evaluationId}`);
   };
 
   const getNiveauBadgeProps = (niveau: string) => {
