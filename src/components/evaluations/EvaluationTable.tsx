@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pencil } from 'lucide-react';
+import { Pencil, Eye } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface EvaluationItem {
@@ -32,6 +31,10 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
 
   const handleEditClick = (evaluationId: number, niveau: string) => {
     onActionClick(evaluationId, niveau);
+  };
+
+  const handleViewClick = (evaluationId: number) => {
+    navigate(`/evaluation?id=${evaluationId}&mode=view`);
   };
 
   const getNiveauBadgeProps = (niveau: string) => {
@@ -117,7 +120,14 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                     {evaluation.niveau}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleViewClick(evaluation.id)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
                   {evaluation.statut === 'En cours' && (
                     <Button
                       variant="ghost"
