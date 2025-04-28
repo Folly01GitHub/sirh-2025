@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useNavigate } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -33,9 +32,9 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   onSubmit
 }) => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const evaluationId = searchParams.get('id');
   
-  // Fetch collaborator's responses - updated to match the pattern from step 1
   const { data: collaboratorResponses = [], isLoading: responsesLoading } = useQuery({
     queryKey: ['collaboratorResponses', evaluationId],
     queryFn: async () => {
@@ -54,7 +53,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     enabled: !!evaluationId
   });
   
-  // Create a separate state for evaluator responses
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
   const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
@@ -71,20 +69,17 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
   }, [criteriaItems]);
   
-  // Get collaborator response values
   const getCollaboratorResponseValue = (itemId: number) => {
     if (!collaboratorResponses || !collaboratorResponses.length) return "";
     const response = collaboratorResponses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
   
-  // Get evaluator response values
   const getEvaluatorResponseValue = (itemId: number) => {
     const response = evaluatorResponses.find(r => r.item_id === itemId);
     return response ? response.value : "";
   };
   
-  // Handle response changes for evaluator
   const handleEvaluatorResponseChange = (itemId: number, value: string | number) => {
     const stringValue = typeof value === 'number' ? value.toString() : value;
     
@@ -235,7 +230,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     return missing.length === 0;
   };
   
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateAllFields()) {
       console.log("Échec de la validation du formulaire. Champs manquants :", missingFields);
       
@@ -245,12 +240,27 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
           duration: 5000
         });
       }
-      
       return;
     }
 
-    console.log("Validation du formulaire réussie, soumission de l'évaluation");
-    onSubmit();
+    try {
+      const response = await apiClient.post('/submit_evaluator', {
+        evaluation_id: evaluationId,
+        responses: evaluatorResponses.map(r => ({
+          item_id: r.item_id,
+          value: r.value.toString()
+        }))
+      });
+      
+      toast.success("Évaluation soumise avec succès");
+      navigate('/evaluations');
+      
+    } catch (error) {
+      console.error("Erreur lors de la soumission de l'évaluation:", error);
+      toast.error("Erreur lors de la soumission", {
+        description: "Veuillez réessayer ultérieurement"
+      });
+    }
   };
   
   if (isLoading || responsesLoading) {
