@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
@@ -117,6 +118,8 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
       evaluatorAvg: evaluatorAvg.toFixed(1)
     };
   };
+
+  const { employeeAvg, evaluatorAvg } = calculateAverages();
 
   const handleApprove = () => {
     onApprove(true);

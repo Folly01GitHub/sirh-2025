@@ -342,8 +342,6 @@ const Evaluation = () => {
                     {currentStep === 3 && (
                       <EvaluationStepThree 
                         criteriaItems={criteriaItems || []}
-                        employeeResponses={employeeResponses}
-                        evaluatorResponses={evaluatorResponses}
                         isLoading={itemsLoading || isSubmitting}
                         onApprove={handleApprove}
                       />
