@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -39,6 +38,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   onApprove
 }) => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const evaluationId = searchParams.get('id');
   const [comment, setComment] = useState("");
   const [showRejectionComment, setShowRejectionComment] = useState(false);
@@ -121,17 +121,51 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
 
   const { employeeAvg, evaluatorAvg } = calculateAverages();
 
-  const handleApprove = () => {
-    onApprove(true);
+  const handleApprove = async () => {
+    if (!evaluationId) {
+      toast.error("ID d'évaluation manquant");
+      return;
+    }
+
+    try {
+      await apiClient.patch(`/evaluations/${evaluationId}/validate`, {
+        statut_eval: "Accepté",
+        niveau_eval: "Terminé",
+        motif_refus: ""
+      });
+      
+      toast.success("Évaluation validée avec succès");
+      navigate('/evaluations');
+    } catch (error) {
+      console.error("Error validating evaluation:", error);
+      toast.error("Erreur lors de la validation de l'évaluation");
+    }
   };
 
-  const handleReject = () => {
+  const handleReject = async () => {
     if (!comment || comment.trim().length < 10) {
-      alert("Veuillez fournir un commentaire de rejet d'au moins 10 caractères");
+      toast.error("Veuillez fournir un commentaire de rejet d'au moins 10 caractères");
+      return;
+    }
+
+    if (!evaluationId) {
+      toast.error("ID d'évaluation manquant");
       return;
     }
     
-    onApprove(false, comment);
+    try {
+      await apiClient.patch(`/evaluations/${evaluationId}/validate`, {
+        statut_eval: "Refusé",
+        niveau_eval: "Terminé",
+        motif_refus: comment
+      });
+      
+      toast.success("Évaluation refusée avec succès");
+      navigate('/evaluations');
+    } catch (error) {
+      console.error("Error rejecting evaluation:", error);
+      toast.error("Erreur lors du rejet de l'évaluation");
+    }
   };
 
   if (isLoading && criteriaItems.length === 0) {
