@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -59,7 +60,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
             <TableHead>Date Eval</TableHead>
             <TableHead>Date Validation</TableHead>
             <TableHead>Evaluateur</TableHead>
-            <TableHead>Demandeur</TableHead>
+            {activeFilter === 'team' && <TableHead>Demandeur</TableHead>}
             <TableHead>Statut</TableHead>
             <TableHead>Niveau</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -75,7 +76,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                 <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                {activeFilter === 'team' && <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>}
                 <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
                 <TableCell className="text-right"><Skeleton className="h-4 w-[100px]" /></TableCell>
@@ -83,7 +84,9 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
             ))
           ) : evaluations.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={10} className="text-center py-6">Aucune évaluation trouvée.</TableCell>
+              <TableCell colSpan={activeFilter === 'team' ? 10 : 9} className="text-center py-6">
+                Aucune évaluation trouvée.
+              </TableCell>
             </TableRow>
           ) : (
             evaluations.map((evaluation) => (
@@ -94,7 +97,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                 <TableCell>{evaluation.date_eval}</TableCell>
                 <TableCell>{evaluation.date_validation}</TableCell>
                 <TableCell>{evaluation.evaluateur}</TableCell>
-                <TableCell>{evaluation.demandeur}</TableCell>
+                {activeFilter === 'team' && <TableCell>{evaluation.demandeur}</TableCell>}
                 <TableCell>
                   {evaluation.statut === 'Validée' ? (
                     <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
