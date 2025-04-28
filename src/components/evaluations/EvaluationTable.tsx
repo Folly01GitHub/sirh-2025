@@ -59,6 +59,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
             <TableHead>Date Eval</TableHead>
             <TableHead>Date Validation</TableHead>
             <TableHead>Evaluateur</TableHead>
+            <TableHead>Demandeur</TableHead>
             <TableHead>Statut</TableHead>
             <TableHead>Niveau</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -74,6 +75,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                 <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
                 <TableCell className="text-right"><Skeleton className="h-4 w-[100px]" /></TableCell>
@@ -81,7 +83,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
             ))
           ) : evaluations.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={9} className="text-center py-6">Aucune évaluation trouvée.</TableCell>
+              <TableCell colSpan={10} className="text-center py-6">Aucune évaluation trouvée.</TableCell>
             </TableRow>
           ) : (
             evaluations.map((evaluation) => (
@@ -92,6 +94,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                 <TableCell>{evaluation.date_eval}</TableCell>
                 <TableCell>{evaluation.date_validation}</TableCell>
                 <TableCell>{evaluation.evaluateur}</TableCell>
+                <TableCell>{evaluation.demandeur}</TableCell>
                 <TableCell>
                   {evaluation.statut === 'Validée' ? (
                     <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
