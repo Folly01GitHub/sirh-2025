@@ -71,8 +71,10 @@ const EvaluationDashboard = () => {
     } else {
       if (niveau === 'Evaluateur') {
         navigate(`/evaluation?id=${id}&step=2`);
+      } else if (niveau === 'Approbateur') {
+        navigate(`/evaluation?id=${id}&step=3`);
       } else {
-        navigate(`/evaluation?id=${id}&mode=validation`);
+        navigate(`/evaluation?id=${id}`);
       }
     }
   };
