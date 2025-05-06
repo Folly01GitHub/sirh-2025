@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 
 // Create an axios instance with base configuration
@@ -30,6 +31,14 @@ apiClient.interceptors.response.use(
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
       console.error('API Error Response:', error.response.data);
+      
+      // Specific handling for draft saving errors
+      if (
+        (error.config.url === '/auto_draft' || error.config.url === '/brouillon_eval') && 
+        error.response.status === 400
+      ) {
+        console.warn('Draft save error:', error.response.data);
+      }
     } else if (error.request) {
       // The request was made but no response was received
       console.error('No response received:', error.request);

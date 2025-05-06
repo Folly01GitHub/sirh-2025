@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star, AlertTriangle } from 'lucide-react';
+import { Star, AlertTriangle, Save } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
 import { toast } from 'sonner';
@@ -55,6 +54,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   const evaluationId = searchParams.get('id');
   
   const [refusalDialogOpen, setRefusalDialogOpen] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
   
   const refusalForm = useForm<RefusalFormData>({
     resolver: zodResolver(refusalSchema),
@@ -312,6 +312,38 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
   };
   
+  const handleSaveAsDraft = async () => {
+    if (!evaluationId) {
+      toast.error("ID d'évaluation manquant", {
+        description: "Impossible d'enregistrer le brouillon sans identifiant d'évaluation"
+      });
+      return;
+    }
+
+    setSavingDraft(true);
+    
+    try {
+      await apiClient.post('/brouillon_eval', {
+        evaluation_id: evaluationId,
+        responses: evaluatorResponses.map(r => ({
+          item_id: r.item_id,
+          value: r.value.toString()
+        }))
+      });
+      
+      toast.success("Brouillon sauvegardé", {
+        description: "Votre évaluation a été enregistrée comme brouillon"
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement du brouillon:", error);
+      toast.error("Échec de la sauvegarde", {
+        description: "Impossible d'enregistrer votre évaluation comme brouillon"
+      });
+    } finally {
+      setSavingDraft(false);
+    }
+  };
+  
   if (isLoading || responsesLoading) {
     return (
       <div className="space-y-6">
@@ -404,16 +436,26 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         <Button 
           onClick={handleSubmit} 
           className="w-full md:w-auto" 
-          disabled={isLoading || responsesLoading}
+          disabled={isLoading || responsesLoading || savingDraft}
         >
           Soumettre mon évaluation
+        </Button>
+        
+        <Button 
+          onClick={handleSaveAsDraft} 
+          className="w-full md:w-auto" 
+          variant="outline"
+          disabled={isLoading || responsesLoading || savingDraft}
+        >
+          <Save className="mr-2 h-4 w-4" />
+          {savingDraft ? "Sauvegarde en cours..." : "Enregistrer comme brouillon"}
         </Button>
         
         <Button 
           onClick={() => setRefusalDialogOpen(true)} 
           className="w-full md:w-auto" 
           variant="outline"
-          disabled={isLoading || responsesLoading}
+          disabled={isLoading || responsesLoading || savingDraft}
         >
           Refuser l'auto-évaluation
         </Button>

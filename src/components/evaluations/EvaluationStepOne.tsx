@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star } from 'lucide-react';
+import { Star, Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -83,6 +82,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const [missionsLoading, setMissionsLoading] = useState(false);
   const [missionsError, setMissionsError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
 
   const [evaluatorQuery, setEvaluatorQuery] = useState("");
   const [evaluatorOptions, setEvaluatorOptions] = useState<Employee[]>([]);
@@ -350,6 +350,48 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       });
   });
 
+  const handleSaveAsDraft = async () => {
+    const formValues = form.getValues();
+    const missionId = formValues.mission ? Number(formValues.mission) : null;
+    const evaluatorId = formValues.evaluator ? Number(formValues.evaluator) : null;
+    const approverId = formValues.approver ? Number(formValues.approver) : null;
+    
+    // Collect all responses, even if not all fields are completed
+    const draftData = {
+      mission_id: missionId,
+      evaluator_id: evaluatorId,
+      approver_id: approverId,
+      evaluation_id: evaluationId ? Number(evaluationId) : null,
+      responses: responses.map(r => ({
+        item_id: r.item_id,
+        value: r.value
+      }))
+    };
+    
+    setSavingDraft(true);
+    
+    try {
+      const response = await apiClient.post('/auto_draft', draftData);
+      
+      toast.success("Brouillon sauvegardé", {
+        description: "Votre auto-évaluation a été enregistrée comme brouillon"
+      });
+      
+      if (response.data.evaluation_id && !evaluationId) {
+        // If this is a new evaluation, redirect to the same page with the new ID
+        navigate(`/evaluation?id=${response.data.evaluation_id}&step=1`);
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement du brouillon:", error);
+      
+      toast.error("Échec de la sauvegarde", {
+        description: "Impossible d'enregistrer votre auto-évaluation comme brouillon"
+      });
+    } finally {
+      setSavingDraft(false);
+    }
+  };
+
   const renderStarRating = (itemId: number) => {
     const currentValue = Number(getResponseValue(itemId)) || 0;
     return (
@@ -545,13 +587,26 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
             </p>
           )}
           
-          <Button 
-            type="submit" 
-            className="w-full md:w-auto" 
-            disabled={isLoading || allItemsLoading || submitting}
-          >
-            {submitting ? "Soumission en cours..." : "Soumettre mon auto-évaluation"}
-          </Button>
+          <div className="flex flex-col md:flex-row gap-4">
+            <Button 
+              type="submit" 
+              className="w-full md:w-auto" 
+              disabled={isLoading || allItemsLoading || submitting}
+            >
+              {submitting ? "Soumission en cours..." : "Soumettre mon auto-évaluation"}
+            </Button>
+            
+            <Button 
+              type="button"
+              variant="outline"
+              className="w-full md:w-auto"
+              onClick={handleSaveAsDraft}
+              disabled={isLoading || allItemsLoading || savingDraft}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {savingDraft ? "Sauvegarde en cours..." : "Enregistrer comme brouillon"}
+            </Button>
+          </div>
         </form>
       </Form>
     </div>
