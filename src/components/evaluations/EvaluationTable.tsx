@@ -133,7 +133,9 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                   >
                     <Eye className="h-4 w-4" />
                   </Button>
-                  {(evaluation.statut === 'En cours' || evaluation.statut === 'brouillon') && (
+                  {/* Show edit button based on filter type and status */}
+                  {(activeFilter === 'team' && (evaluation.statut === 'En cours' || evaluation.statut === 'brouillon')) || 
+                   (activeFilter === 'self' && evaluation.statut === 'brouillon') ? (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -141,7 +143,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
-                  )}
+                  ) : null}
                 </TableCell>
               </TableRow>
             ))
