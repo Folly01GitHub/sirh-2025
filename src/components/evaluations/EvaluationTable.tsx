@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -108,6 +109,10 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                     </Badge>
                   ) : evaluation.statut === 'En cours' ? (
                     <Badge variant="secondary">En cours</Badge>
+                  ) : evaluation.statut === 'brouillon' ? (
+                    <Badge variant="outline" className="border-amber-300 text-amber-600">
+                      Brouillon
+                    </Badge>
                   ) : (
                     <Badge>{evaluation.statut}</Badge>
                   )}
@@ -128,7 +133,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                   >
                     <Eye className="h-4 w-4" />
                   </Button>
-                  {evaluation.statut === 'En cours' && (
+                  {(evaluation.statut === 'En cours' || evaluation.statut === 'brouillon') && (
                     <Button
                       variant="ghost"
                       size="icon"
