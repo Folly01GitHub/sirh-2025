@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -48,7 +49,7 @@ const HRISNavbar = () => {
                   RH
                 </div>
               </div>
-              <span className="text-lg font-bold text-gray-900">Portail RH</span>
+              <span className="text-lg font-bold text-gray-900">MyRoom</span>
             </Link>
           </div>
 
@@ -73,14 +74,6 @@ const HRISNavbar = () => {
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                    <Link to="/evaluations">
-                      <Award className="h-4 w-4 mr-1" />
-                      <span>Évaluations</span>
-                    </Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                     <Link to="/permissions">
                       <Lock className="h-4 w-4 mr-1" />
                       <span>Permissions</span>
@@ -89,9 +82,17 @@ const HRISNavbar = () => {
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                    <Link to="/evaluations">
+                      <Award className="h-4 w-4 mr-1" />
+                      <span>Évaluations</span>
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                     <Link to="/cashout">
                       <Wallet className="h-4 w-4 mr-1" />
-                      <span>Décaissement</span>
+                      <span>Sorties de caisse</span>
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
@@ -99,7 +100,7 @@ const HRISNavbar = () => {
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                     <Link to="/certificates">
                       <FileCheck className="h-4 w-4 mr-1" />
-                      <span>Certificats</span>
+                      <span>Attestations</span>
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
@@ -205,14 +206,6 @@ const HRISNavbar = () => {
                   <span>Congés</span>
                 </Link>
                 <Link
-                  to="/evaluations"
-                  className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
-                  onClick={toggleMobileMenu}
-                >
-                  <Award className="h-5 w-5 mr-3" />
-                  <span>Évaluations</span>
-                </Link>
-                <Link
                   to="/permissions"
                   className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
                   onClick={toggleMobileMenu}
@@ -221,12 +214,20 @@ const HRISNavbar = () => {
                   <span>Permissions</span>
                 </Link>
                 <Link
+                  to="/evaluations"
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
+                  onClick={toggleMobileMenu}
+                >
+                  <Award className="h-5 w-5 mr-3" />
+                  <span>Évaluations</span>
+                </Link>
+                <Link
                   to="/cashout"
                   className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
                   onClick={toggleMobileMenu}
                 >
                   <Wallet className="h-5 w-5 mr-3" />
-                  <span>Décaissement</span>
+                  <span>Sorties de caisse</span>
                 </Link>
                 <Link
                   to="/certificates"
@@ -234,7 +235,7 @@ const HRISNavbar = () => {
                   onClick={toggleMobileMenu}
                 >
                   <FileCheck className="h-5 w-5 mr-3" />
-                  <span>Certificats</span>
+                  <span>Attestations</span>
                 </Link>
               </nav>
               <div className="border-t border-gray-200 pt-4 mt-4">
