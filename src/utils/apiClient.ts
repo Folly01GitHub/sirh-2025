@@ -16,6 +16,11 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
+    // Add logging for evaluator responses requests
+    if (config.url === '/evaluator_responses') {
+      console.log('Fetching evaluator responses with params:', config.params);
+    }
+    
     return config;
   },
   (error) => {
@@ -25,7 +30,13 @@ apiClient.interceptors.request.use(
 
 // Add a response interceptor to handle errors
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Add logging for evaluator responses
+    if (response.config.url === '/evaluator_responses') {
+      console.log('Evaluator responses data received:', response.data);
+    }
+    return response;
+  },
   (error) => {
     if (error.response) {
       // The request was made and the server responded with a status code

@@ -124,6 +124,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         value: response.value
       }));
       
+      console.log("Formatted responses:", formattedResponses);
       setEvaluatorResponses(formattedResponses);
       
       // Notify the parent component of each response
@@ -134,6 +135,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       toast.info("Brouillon chargé", {
         description: "Vos réponses précédentes ont été restaurées"
       });
+    } else {
+      console.log("No evaluator partial responses found");
     }
   }, [evaluatorPartialResponses, onResponseChange]);
   
