@@ -87,11 +87,12 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
   
   // Query to fetch evaluator's partial responses (drafts)
-  const { data: evaluatorPartialResponses = [], isLoading: evaluatorResponsesLoading } = useQuery({
+  const { data: evaluatorPartialResponses = [], isLoading: evaluatorResponsesLoading, refetch: refetchEvaluatorResponses } = useQuery({
     queryKey: ['evaluatorPartialResponses', evaluationId],
     queryFn: async () => {
       if (!evaluationId) return [];
       try {
+        console.log('Fetching evaluator responses for evaluation:', evaluationId);
         const response = await apiClient.get('/evaluator_responses', {
           params: { evaluation_id: evaluationId }
         });
@@ -103,7 +104,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       }
     },
     enabled: !!evaluationId,
-    // Make sure this query runs before any UI rendering
     staleTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: false
@@ -155,10 +155,10 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   const getEvaluatorResponseValue = (itemId: number) => {
     // First check in our local state
-    const response = evaluatorResponses.find(r => r.item_id === itemId);
-    if (response) {
-      console.log(`Found evaluator response for item ${itemId}:`, response.value);
-      return response.value;
+    const localResponse = evaluatorResponses.find(r => r.item_id === itemId);
+    if (localResponse) {
+      console.log(`Found evaluator response in local state for item ${itemId}:`, localResponse.value);
+      return localResponse.value;
     }
     
     // If not found in local state, check in the fetched partial responses
@@ -170,6 +170,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       }
     }
     
+    console.log(`No evaluator response found for item ${itemId}`);
     return "";
   };
   
@@ -221,7 +222,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     
     return (
       <RadioGroup 
-        value={currentValue ? currentValue.toString() : "0"} 
+        value={currentValue ? currentValue.toString() : ""} 
         onValueChange={(value) => handleEvaluatorResponseChange(itemId, parseInt(value))}
         className="flex space-x-2"
       >
@@ -405,6 +406,9 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       toast.success("Brouillon sauvegardé", {
         description: "Votre évaluation a été enregistrée comme brouillon"
       });
+      
+      // Refetch evaluator responses to make sure our state is up to date
+      refetchEvaluatorResponses();
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du brouillon:", error);
       toast.error("Échec de la sauvegarde", {

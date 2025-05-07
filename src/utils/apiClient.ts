@@ -35,6 +35,17 @@ apiClient.interceptors.response.use(
     if (response.config.url === '/evaluator_responses') {
       console.log('Evaluator responses data received:', response.data);
     }
+    
+    // Add detailed logging for evaluator responses
+    if (response.config.url === '/evaluator_responses' && response.data) {
+      if (Array.isArray(response.data) && response.data.length > 0) {
+        console.log(`Found ${response.data.length} evaluator response(s):`, 
+          response.data.map(r => `Item ID: ${r.item_id}, Value: ${r.value}`));
+      } else {
+        console.log('No evaluator responses found or empty array returned');
+      }
+    }
+    
     return response;
   },
   (error) => {
