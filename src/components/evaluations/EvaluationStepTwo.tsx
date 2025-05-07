@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Star, AlertTriangle, Save } from 'lucide-react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -22,18 +22,6 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-// New interface for API response format
-interface ApiEvaluatorResponse {
-  mission_id: string;
-  evaluator_id: string;
-  approver_id: string;
-  responses: {
-    id_item: string;
-    reponse_item: string;
-    type_item: "observation" | "numeric" | "boolean";
-  }[];
-}
 
 interface EvaluationStepTwoProps {
   criteriaItems: CriteriaItem[];
@@ -61,17 +49,12 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   isLoading,
   onSubmit
 }) => {
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const evaluationId = searchParams.get('id');
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const evaluationId = searchParams.get('id');
   
   const [refusalDialogOpen, setRefusalDialogOpen] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [localEvaluatorResponses, setLocalEvaluatorResponses] = useState<EvaluationResponse[]>([]);
-  const [loadingResponses, setLoadingResponses] = useState(true);
   
   const refusalForm = useForm<RefusalFormData>({
     resolver: zodResolver(refusalSchema),
@@ -98,69 +81,54 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     enabled: !!evaluationId
   });
   
+  const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
+  const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
+  const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
+  
+  // New query to fetch evaluator's partial responses (drafts)
+  const { data: evaluatorPartialResponses = [], isLoading: evaluatorResponsesLoading } = useQuery({
+    queryKey: ['evaluatorPartialResponses', evaluationId],
+    queryFn: async () => {
+      if (!evaluationId) return [];
+      try {
+        const response = await apiClient.get('/evaluator_responses', {
+          params: { evaluation_id: evaluationId }
+        });
+        console.log("Evaluator partial responses fetched:", response.data);
+        return response.data || [];
+      } catch (error) {
+        console.error("Error fetching evaluator partial responses:", error);
+        return [];
+      }
+    },
+    enabled: !!evaluationId
+  });
+  
   const { data: allCriteriaItems, isSuccess: allItemsLoaded } = useQuery({
     queryKey: ['allCriteriaItems'],
     queryFn: fetchAllCriteriaItems
   });
   
-  // Load evaluator responses using the direct API call approach
+  // Initialize evaluator responses with fetched draft data, if available
   useEffect(() => {
-    if (evaluationId) {
-      setLoadingResponses(true);
-      console.log(`Fetching evaluator responses for evaluation ID: ${evaluationId}`);
+    if (evaluatorPartialResponses && evaluatorPartialResponses.length > 0) {
+      const formattedResponses = evaluatorPartialResponses.map(response => ({
+        item_id: response.item_id,
+        value: response.value
+      }));
       
-      apiClient.get('/evaluator_responses', {
-        params: { evaluation_id: evaluationId }
-      })
-        .then(response => {
-          console.log("Evaluator raw response data:", response.data);
-          const apiResponse = response.data as ApiEvaluatorResponse;
-          
-          if (apiResponse && apiResponse.responses && Array.isArray(apiResponse.responses)) {
-            // Transform API response format to our internal format
-            const formattedResponses = apiResponse.responses.map(item => {
-              let value: string | number = item.reponse_item;
-              
-              // Convert numeric values from string to number
-              if (item.type_item === 'numeric') {
-                value = parseFloat(item.reponse_item);
-              }
-              
-              return {
-                item_id: parseInt(item.id_item),
-                value
-              };
-            });
-            
-            console.log("Transformed evaluator responses:", formattedResponses);
-            setLocalEvaluatorResponses(formattedResponses);
-            
-            // Notify the parent component of each response
-            formattedResponses.forEach(response => {
-              onResponseChange(response.item_id, response.value.toString());
-            });
-            
-            toast.info("Brouillon chargé", {
-              description: "Vos réponses précédentes ont été restaurées"
-            });
-          } else {
-            console.log("No evaluator responses found or invalid data format received");
-          }
-        })
-        .catch(error => {
-          console.error("Error fetching evaluator responses:", error);
-          toast.error("Erreur de chargement", {
-            description: "Impossible de récupérer vos réponses précédentes"
-          });
-        })
-        .finally(() => {
-          setLoadingResponses(false);
-        });
+      setEvaluatorResponses(formattedResponses);
+      
+      // Notify the parent component of each response
+      formattedResponses.forEach(response => {
+        onResponseChange(response.item_id, response.value);
+      });
+      
+      toast.info("Brouillon chargé", {
+        description: "Vos réponses précédentes ont été restaurées"
+      });
     }
-  }, [evaluationId, onResponseChange]);
-  
-  const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
-  const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
+  }, [evaluatorPartialResponses, onResponseChange]);
   
   useEffect(() => {
     if (criteriaItems.length > 0) {
@@ -176,21 +144,14 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const getEvaluatorResponseValue = (itemId: number) => {
-    // First check in local state (most up-to-date)
-    const localResponse = localEvaluatorResponses.find(r => r.item_id === itemId);
-    if (localResponse) {
-      return localResponse.value;
-    }
-    
-    // If nothing found, return empty string
-    return "";
+    const response = evaluatorResponses.find(r => r.item_id === itemId);
+    return response ? response.value : "";
   };
   
   const handleEvaluatorResponseChange = (itemId: number, value: string | number) => {
-    console.log(`Handling evaluator response change for item ${itemId}: ${value}`);
     const stringValue = typeof value === 'number' ? value.toString() : value;
     
-    setLocalEvaluatorResponses(prev => {
+    setEvaluatorResponses(prev => {
       const existingIndex = prev.findIndex(r => r.item_id === itemId);
       
       if (existingIndex !== -1) {
@@ -228,11 +189,10 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   const renderEvaluatorStarRating = (itemId: number) => {
     const currentValue = Number(getEvaluatorResponseValue(itemId)) || 0;
-    console.log(`Rendering star rating for item ${itemId} with value: ${currentValue}`);
     
     return (
       <RadioGroup 
-        value={currentValue ? currentValue.toString() : ""} 
+        value={currentValue.toString()} 
         onValueChange={(value) => handleEvaluatorResponseChange(itemId, parseInt(value))}
         className="flex space-x-2"
       >
@@ -262,8 +222,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       getCollaboratorResponseValue(itemId) : 
       getEvaluatorResponseValue(itemId);
     
-    console.log(`Rendering boolean response for item ${itemId}, isCollaborator: ${isCollaborator}, value: ${value}`);
-    
     if (isCollaborator) {
       return (
         <div className="flex gap-6">
@@ -281,7 +239,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
 
     return (
       <RadioGroup
-        value={value || ""}
+        value={value ? value.toString() : ""}
         onValueChange={(val) => handleEvaluatorResponseChange(itemId, val)}
         className="flex gap-6"
       >
@@ -327,7 +285,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     const missing: { group?: string, label: string }[] = [];
 
     allCriteriaItems.forEach(item => {
-      const response = localEvaluatorResponses.find(r => r.item_id === item.id);
+      const response = evaluatorResponses.find(r => r.item_id === item.id);
       if (!isValidResponse(response, item.type)) {
         missing.push({
           label: item.label,
@@ -338,17 +296,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
 
     setMissingFields(missing);
     return missing.length === 0;
-  };
-  
-  // Convert the internal format back to API format for saving
-  const convertToApiFormat = (responses: EvaluationResponse[]) => {
-    return {
-      evaluation_id: evaluationId,
-      responses: responses.map(r => ({
-        item_id: r.item_id,
-        value: r.value.toString()
-      }))
-    };
   };
   
   const handleSubmit = async () => {
@@ -364,13 +311,14 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       return;
     }
 
-    setSubmitting(true);
-    
     try {
-      const formattedData = convertToApiFormat(localEvaluatorResponses);
-      console.log("Submitting evaluator responses:", formattedData);
-      
-      const response = await apiClient.post('/submit_evaluator', formattedData);
+      const response = await apiClient.post('/submit_evaluator', {
+        evaluation_id: evaluationId,
+        responses: evaluatorResponses.map(r => ({
+          item_id: r.item_id,
+          value: r.value.toString()
+        }))
+      });
       
       toast.success("Évaluation soumise avec succès");
       navigate('/evaluations');
@@ -380,8 +328,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       toast.error("Erreur lors de la soumission", {
         description: "Veuillez réessayer ultérieurement"
       });
-    } finally {
-      setSubmitting(false);
     }
   };
   
@@ -417,10 +363,13 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     setSavingDraft(true);
     
     try {
-      const formattedData = convertToApiFormat(localEvaluatorResponses);
-      console.log("Saving evaluator responses as draft:", formattedData);
-      
-      await apiClient.post('/brouillon_eval', formattedData);
+      await apiClient.post('/brouillon_eval', {
+        evaluation_id: evaluationId,
+        responses: evaluatorResponses.map(r => ({
+          item_id: r.item_id,
+          value: r.value.toString()
+        }))
+      });
       
       toast.success("Brouillon sauvegardé", {
         description: "Votre évaluation a été enregistrée comme brouillon"
@@ -435,7 +384,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
   };
   
-  if (isLoading || responsesLoading || loadingResponses) {
+  if (isLoading || responsesLoading || evaluatorResponsesLoading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-6 w-1/3" />
@@ -527,9 +476,9 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         <Button 
           onClick={handleSubmit} 
           className="w-full md:w-auto" 
-          disabled={isLoading || responsesLoading || savingDraft || submitting}
+          disabled={isLoading || responsesLoading || savingDraft}
         >
-          {submitting ? "Soumission en cours..." : "Soumettre mon évaluation"}
+          Soumettre mon évaluation
         </Button>
         
         <Button 

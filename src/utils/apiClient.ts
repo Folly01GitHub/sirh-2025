@@ -16,9 +16,6 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Log API requests for debugging
-    console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`, config.params || {});
-    
     return config;
   },
   (error) => {
@@ -28,46 +25,19 @@ apiClient.interceptors.request.use(
 
 // Add a response interceptor to handle errors
 apiClient.interceptors.response.use(
-  (response) => {
-    // Log successful responses for specific endpoints
-    if (response.config.url?.includes('/evaluator_responses') || 
-        response.config.url?.includes('/collab_responses')) {
-      console.log(`API Response for ${response.config.url}:`, response.data);
-    }
-    // Enhanced logging for response data structure
-    if (response.config.url?.includes('/evaluator_responses')) {
-      console.log('Evaluator responses data structure:', {
-        hasResponses: !!response.data.responses,
-        responseType: typeof response.data.responses,
-        isArray: Array.isArray(response.data.responses),
-        firstItem: response.data.responses && response.data.responses.length > 0 ? 
-          response.data.responses[0] : 'No items'
-      });
-    }
-    return response;
-  },
+  (response) => response,
   (error) => {
     if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
       console.error('API Error Response:', error.response.data);
-      console.error('API Error Status:', error.response.status);
       
-      // Only log headers and config for serious errors
-      if (error.response.status >= 500) {
-        console.error('API Error Headers:', error.response.headers);
-        console.error('API Error Config:', error.config);
-      }
-      
-      // Specific handling for form data errors
+      // Specific handling for draft saving errors
       if (
-        (error.config.url === '/auto_draft' || 
-         error.config.url === '/brouillon_eval' || 
-         error.config.url?.includes('/evaluator_responses') ||
-         error.config.url?.includes('/collab_responses')) && 
+        (error.config.url === '/auto_draft' || error.config.url === '/brouillon_eval' || error.config.url.includes('/evaluator_responses')) && 
         error.response.status === 400
       ) {
-        console.warn('Data save or fetch error:', error.response.data);
+        console.warn('Draft save or fetch error:', error.response.data);
       }
     } else if (error.request) {
       // The request was made but no response was received
