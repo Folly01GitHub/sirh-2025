@@ -136,7 +136,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   useEffect(() => {
     setApproverLoading(true);
     const handler = setTimeout(() => {
-      apiClient.get(`/employees_list?search=${encodeURIComponent(approverQuery)}`)
+      apiClient.get(`/approver_list?search=${encodeURIComponent(approverQuery)}`)
         .then(res => {
           setApproverOptions(Array.isArray(res.data) ? res.data : []);
         })
