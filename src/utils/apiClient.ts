@@ -25,12 +25,18 @@ apiClient.interceptors.request.use(
 
 // Add a response interceptor to handle errors
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log successful responses for debugging purposes
+    console.log(`API Success: ${response.config.url}`, response.data);
+    return response;
+  },
   (error) => {
     if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
       console.error('API Error Response:', error.response.data);
+      console.error('Error Status:', error.response.status);
+      console.error('Error Headers:', error.response.headers);
       
       // Specific handling for draft saving errors
       if (

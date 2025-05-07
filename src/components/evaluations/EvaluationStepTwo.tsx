@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
@@ -29,6 +30,18 @@ interface EvaluationStepTwoProps {
   employeeResponses: EvaluationResponse[];
   isLoading: boolean;
   onSubmit: () => void;
+}
+
+// Type pour la réponse API de l'évaluateur
+interface EvaluatorAPIResponse {
+  mission_id: string;
+  evaluator_id: string;
+  approver_id: string;
+  responses: {
+    id_item: string;
+    reponse_item: string;
+    type_item: string;
+  }[];
 }
 
 const fetchAllCriteriaItems = async (): Promise<CriteriaItem[]> => {
@@ -85,20 +98,20 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
   const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
   
-  // New query to fetch evaluator's partial responses (drafts)
-  const { data: evaluatorPartialResponses = [], isLoading: evaluatorResponsesLoading } = useQuery({
+  // Query pour récupérer les réponses de l'évaluateur (format API mise à jour)
+  const { data: evaluatorApiResponse, isLoading: evaluatorResponsesLoading } = useQuery({
     queryKey: ['evaluatorPartialResponses', evaluationId],
     queryFn: async () => {
-      if (!evaluationId) return [];
+      if (!evaluationId) return null;
       try {
         const response = await apiClient.get('/evaluator_responses', {
           params: { evaluation_id: evaluationId }
         });
-        console.log("Evaluator partial responses fetched:", response.data);
-        return response.data || [];
+        console.log("Evaluator API response:", response.data);
+        return response.data as EvaluatorAPIResponse;
       } catch (error) {
-        console.error("Error fetching evaluator partial responses:", error);
-        return [];
+        console.error("Error fetching evaluator responses:", error);
+        return null;
       }
     },
     enabled: !!evaluationId
@@ -109,26 +122,28 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     queryFn: fetchAllCriteriaItems
   });
   
-  // Initialize evaluator responses with fetched draft data, if available
+  // Convertir le format API en format interne
   useEffect(() => {
-    if (evaluatorPartialResponses && evaluatorPartialResponses.length > 0) {
-      const formattedResponses = evaluatorPartialResponses.map(response => ({
-        item_id: response.item_id,
-        value: response.value
+    if (evaluatorApiResponse && evaluatorApiResponse.responses) {
+      const formattedResponses = evaluatorApiResponse.responses.map(response => ({
+        item_id: parseInt(response.id_item),
+        value: response.type_item === 'numeric' 
+          ? parseFloat(response.reponse_item) 
+          : response.reponse_item
       }));
       
       setEvaluatorResponses(formattedResponses);
       
-      // Notify the parent component of each response
+      // Notifier le composant parent de chaque réponse
       formattedResponses.forEach(response => {
-        onResponseChange(response.item_id, response.value);
+        onResponseChange(response.item_id, response.value.toString());
       });
       
       toast.info("Brouillon chargé", {
         description: "Vos réponses précédentes ont été restaurées"
       });
     }
-  }, [evaluatorPartialResponses, onResponseChange]);
+  }, [evaluatorApiResponse, onResponseChange]);
   
   useEffect(() => {
     if (criteriaItems.length > 0) {
@@ -298,6 +313,15 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     return missing.length === 0;
   };
   
+  // Convertir les réponses au format API pour la soumission
+  const convertToApiFormat = () => {
+    return evaluatorResponses.map(response => ({
+      id_item: response.item_id.toString(),
+      reponse_item: response.value.toString(),
+      type_item: allCriteriaItems?.find(item => item.id === response.item_id)?.type || 'numeric'
+    }));
+  };
+  
   const handleSubmit = async () => {
     if (!validateAllFields()) {
       console.log("Échec de la validation du formulaire. Champs manquants :", missingFields);
@@ -314,10 +338,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     try {
       const response = await apiClient.post('/submit_evaluator', {
         evaluation_id: evaluationId,
-        responses: evaluatorResponses.map(r => ({
-          item_id: r.item_id,
-          value: r.value.toString()
-        }))
+        responses: convertToApiFormat()
       });
       
       toast.success("Évaluation soumise avec succès");
@@ -365,10 +386,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     try {
       await apiClient.post('/brouillon_eval', {
         evaluation_id: evaluationId,
-        responses: evaluatorResponses.map(r => ({
-          item_id: r.item_id,
-          value: r.value.toString()
-        }))
+        responses: convertToApiFormat()
       });
       
       toast.success("Brouillon sauvegardé", {
