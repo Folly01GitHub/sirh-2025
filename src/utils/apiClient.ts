@@ -16,11 +16,6 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Add logging for evaluator responses requests
-    if (config.url === '/evaluator_responses') {
-      console.log('Fetching evaluator responses with params:', config.params);
-    }
-    
     return config;
   },
   (error) => {
@@ -30,24 +25,7 @@ apiClient.interceptors.request.use(
 
 // Add a response interceptor to handle errors
 apiClient.interceptors.response.use(
-  (response) => {
-    // Add logging for evaluator responses
-    if (response.config.url === '/evaluator_responses') {
-      console.log('Evaluator responses data received:', response.data);
-    }
-    
-    // Add detailed logging for evaluator responses
-    if (response.config.url === '/evaluator_responses' && response.data) {
-      if (Array.isArray(response.data) && response.data.length > 0) {
-        console.log(`Found ${response.data.length} evaluator response(s):`, 
-          response.data.map(r => `Item ID: ${r.item_id}, Value: ${r.value}`));
-      } else {
-        console.log('No evaluator responses found or empty array returned');
-      }
-    }
-    
-    return response;
-  },
+  (response) => response,
   (error) => {
     if (error.response) {
       // The request was made and the server responded with a status code
@@ -56,9 +34,7 @@ apiClient.interceptors.response.use(
       
       // Specific handling for draft saving errors
       if (
-        (error.config.url === '/auto_draft' || 
-         error.config.url === '/brouillon_eval' || 
-         error.config.url.includes('/evaluator_responses')) && 
+        (error.config.url === '/auto_draft' || error.config.url === '/brouillon_eval' || error.config.url.includes('/evaluator_responses')) && 
         error.response.status === 400
       ) {
         console.warn('Draft save or fetch error:', error.response.data);
