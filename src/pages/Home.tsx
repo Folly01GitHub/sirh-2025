@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, Briefcase, Calendar as CalendarIcon, Award } from 'lucide-react';
+import { ChevronRight, Calendar as CalendarIcon, Award, Clock } from 'lucide-react';
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import StatsCard from '@/components/hris/StatsCard';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,16 @@ const Home = () => {
   const today = new Date();
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(today);
   const { user } = useAuth();
+  
+  // Sample data - would typically come from API
+  const leaveData = {
+    remainingDays: 12
+  };
+  
+  const evaluationData = {
+    completed: 3,
+    total: 5
+  };
   
   const events = [
     { date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2), type: 'meeting' },
@@ -30,6 +40,8 @@ const Home = () => {
   };
 
   const dashboardUrl = user?.role === 'admin' ? '/admin/dashboard' : '/dashboard';
+
+  const upcomingEventsCount = events.length;
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8f9fc]">
@@ -57,26 +69,26 @@ const Home = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <StatsCard 
                 title="Congés restants" 
-                value="12 jours" 
+                value={`${leaveData.remainingDays} jours`} 
                 icon={<Calendar className="h-6 w-6 text-blue-600" />}
                 color="blue"
-                description="Prochains congés : 15-22 Juillet"
+                description="Solde annuel disponible"
               />
               
               <StatsCard 
-                title="Missions en cours" 
-                value="3 projets" 
-                icon={<Briefcase className="h-6 w-6 text-amber-600" />}
+                title="Évaluations" 
+                value={`${evaluationData.completed}/${evaluationData.total}`} 
+                icon={<Award className="h-6 w-6 text-amber-600" />}
                 color="amber"
-                description="2 à livrer ce mois-ci"
+                description="Évaluations terminées / totales"
               />
               
               <StatsCard 
-                title="Évaluations à venir" 
-                value="1 entretien" 
-                icon={<Award className="h-6 w-6 text-green-600" />}
+                title="Événements à venir" 
+                value={`${upcomingEventsCount} événements`} 
+                icon={<Clock className="h-6 w-6 text-green-600" />}
                 color="green"
-                description="Prévu pour le 10 Août"
+                description="Prochains jours à noter"
               />
             </div>
           </div>
@@ -106,7 +118,7 @@ const Home = () => {
                     {events.map((event, index) => (
                       <div key={index} className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-md transition-colors">
                         <div className="h-10 w-10 flex items-center justify-center rounded-full bg-primary/10 text-primary">
-                          {event.type === 'meeting' && <Briefcase className="h-5 w-5" />}
+                          {event.type === 'meeting' && <Clock className="h-5 w-5" />}
                           {event.type === 'appraisal' && <Award className="h-5 w-5" />}
                           {event.type === 'leave' && <CalendarIcon className="h-5 w-5" />}
                         </div>
