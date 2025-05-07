@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
@@ -285,6 +284,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     );
   };
   
+  // Define isValidResponse function - KEEP ONLY ONE COPY
   const isValidResponse = (response: EvaluationResponse | undefined, type: string): boolean => {
     if (!response) return false;
     
@@ -302,6 +302,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
   };
   
+  // Define validateAllFields function - KEEP ONLY ONE COPY
   const validateAllFields = (): boolean => {
     if (!allItemsLoaded || !allCriteriaItems) {
       console.warn("Cannot validate form - all criteria items not loaded yet");
@@ -311,7 +312,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     const missing: { group?: string, label: string }[] = [];
 
     allCriteriaItems.forEach(item => {
-      const response = evaluatorResponses.find(r => r.item_id === item.id);
+      const response = localEvaluatorResponses.find(r => r.item_id === item.id);
       if (!isValidResponse(response, item.type)) {
         missing.push({
           label: item.label,
@@ -412,45 +413,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     } finally {
       setSavingDraft(false);
     }
-  };
-  
-  const isValidResponse = (response: EvaluationResponse | undefined, type: string): boolean => {
-    if (!response) return false;
-    
-    switch (type) {
-      case 'numeric':
-        const numericValue = typeof response.value === 'number' ? response.value : 
-                          (typeof response.value === 'string' ? Number(response.value) : 0);
-        return numericValue >= 1 && numericValue <= 5;
-      case 'observation':
-        return typeof response.value === 'string' && response.value.length >= 50;
-      case 'boolean':
-        return typeof response.value === 'string' && ['oui', 'non'].includes(response.value);
-      default:
-        return false;
-    }
-  };
-  
-  const validateAllFields = (): boolean => {
-    if (!allItemsLoaded || !allCriteriaItems) {
-      console.warn("Cannot validate form - all criteria items not loaded yet");
-      return false;
-    }
-    
-    const missing: { group?: string, label: string }[] = [];
-
-    allCriteriaItems.forEach(item => {
-      const response = localEvaluatorResponses.find(r => r.item_id === item.id);
-      if (!isValidResponse(response, item.type)) {
-        missing.push({
-          label: item.label,
-          group: item.group_name || `Group ${item.group_id}`
-        });
-      }
-    });
-
-    setMissingFields(missing);
-    return missing.length === 0;
   };
   
   if (isLoading || responsesLoading || evaluatorResponsesLoading) {
