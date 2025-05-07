@@ -70,7 +70,7 @@ const Home = () => {
               <StatsCard 
                 title="Congés restants" 
                 value={`${leaveData.remainingDays} jours`} 
-                icon={<Calendar className="h-6 w-6 text-blue-600" />}
+                icon={<CalendarIcon className="h-6 w-6 text-blue-600" />}
                 color="blue"
                 description="Solde annuel disponible"
               />
