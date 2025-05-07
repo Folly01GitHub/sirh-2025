@@ -53,6 +53,25 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
     }
   };
 
+  // Helper function to determine if the edit button should be displayed
+  const shouldShowEditButton = (evaluation: EvaluationItem) => {
+    // If level is 'Evaluateur', don't show the edit button regardless of status
+    if (evaluation.niveau === 'Evaluateur') {
+      return false;
+    }
+    
+    // Original conditions for showing edit button
+    if (activeFilter === 'team') {
+      return evaluation.statut === 'En cours' || evaluation.statut === 'brouillon';
+    }
+    
+    if (activeFilter === 'self') {
+      return evaluation.statut === 'brouillon';
+    }
+    
+    return false;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <Table>
@@ -133,9 +152,8 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                   >
                     <Eye className="h-4 w-4" />
                   </Button>
-                  {/* Show edit button based on filter type and status */}
-                  {(activeFilter === 'team' && (evaluation.statut === 'En cours' || evaluation.statut === 'brouillon')) || 
-                   (activeFilter === 'self' && evaluation.statut === 'brouillon') ? (
+                  {/* Use the helper function to determine whether to show edit button */}
+                  {shouldShowEditButton(evaluation) && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -143,7 +161,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
-                  ) : null}
+                  )}
                 </TableCell>
               </TableRow>
             ))
