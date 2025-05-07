@@ -39,7 +39,7 @@ interface EvaluatorAPIResponse {
   approver_id: string;
   responses: {
     id_item: string;
-    reponse_item: string;
+    reponse_item: string | null;
     type_item: string;
   }[];
 }
@@ -125,23 +125,29 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   // Convertir le format API en format interne
   useEffect(() => {
     if (evaluatorApiResponse && evaluatorApiResponse.responses) {
-      const formattedResponses = evaluatorApiResponse.responses.map(response => ({
-        item_id: parseInt(response.id_item),
-        value: response.type_item === 'numeric' 
-          ? parseFloat(response.reponse_item) 
-          : response.reponse_item
-      }));
+      const formattedResponses = evaluatorApiResponse.responses
+        .filter(response => response.id_item) // Assurons-nous que l'ID existe
+        .map(response => ({
+          item_id: parseInt(response.id_item),
+          value: response.type_item === 'numeric' 
+            ? (response.reponse_item ? parseFloat(response.reponse_item) : '') 
+            : (response.reponse_item || '')
+        }));
       
       setEvaluatorResponses(formattedResponses);
       
-      // Notifier le composant parent de chaque réponse
+      // Notifier le composant parent de chaque réponse valide
       formattedResponses.forEach(response => {
-        onResponseChange(response.item_id, response.value.toString());
+        if (response.value !== '') {
+          onResponseChange(response.item_id, response.value.toString());
+        }
       });
       
-      toast.info("Brouillon chargé", {
-        description: "Vos réponses précédentes ont été restaurées"
-      });
+      if (formattedResponses.length > 0) {
+        toast.info("Brouillon chargé", {
+          description: "Vos réponses précédentes ont été restaurées"
+        });
+      }
     }
   }, [evaluatorApiResponse, onResponseChange]);
   

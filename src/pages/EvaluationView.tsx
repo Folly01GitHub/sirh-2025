@@ -44,12 +44,18 @@ const EvaluationView = () => {
         ]);
 
         const formatResponses = (apiResponses: any): EvaluationResponse[] => {
-          return apiResponses.responses.map((response: any) => ({
-            item_id: parseInt(response.id_item),
-            value: response.type_item === "numerique" 
-              ? parseInt(response.reponse_item) 
-              : response.reponse_item
-          }));
+          if (!apiResponses || !apiResponses.responses) {
+            return [];
+          }
+          
+          return apiResponses.responses
+            .filter((response: any) => response && response.id_item)
+            .map((response: any) => ({
+              item_id: parseInt(response.id_item),
+              value: response.type_item === "numerique" || response.type_item === "numeric"
+                ? (response.reponse_item ? parseInt(response.reponse_item) : 0) 
+                : (response.reponse_item || "")
+            }));
         };
 
         setEmployeeResponses(formatResponses(collabResponse.data));
@@ -85,21 +91,32 @@ const EvaluationView = () => {
     if (!criteriaItems) return { employeeAvg: '0.0', evaluatorAvg: '0.0' };
     
     const numericItems = criteriaItems.filter((item: CriteriaItem) => item.type === 'numeric');
+    if (numericItems.length === 0) return { employeeAvg: '0.0', evaluatorAvg: '0.0' };
     
-    const employeeAvg = numericItems.reduce((sum, item) => {
-      const value = Number(getResponseValue(employeeResponses, item.id)) || 0;
-      return sum + value;
-    }, 0) / (numericItems.length || 1);
+    let employeeSum = 0;
+    let employeeCount = 0;
+    numericItems.forEach(item => {
+      const value = Number(getResponseValue(employeeResponses, item.id));
+      if (!isNaN(value) && value > 0) {
+        employeeSum += value;
+        employeeCount++;
+      }
+    });
     
-    const evaluatorAvg = numericItems.reduce((sum, item) => {
-      const value = Number(getResponseValue(evaluatorResponses, item.id)) || 0;
-      return sum + value;
-    }, 0) / (numericItems.length || 1);
+    let evaluatorSum = 0;
+    let evaluatorCount = 0;
+    numericItems.forEach(item => {
+      const value = Number(getResponseValue(evaluatorResponses, item.id));
+      if (!isNaN(value) && value > 0) {
+        evaluatorSum += value;
+        evaluatorCount++;
+      }
+    });
     
-    return {
-      employeeAvg: employeeAvg.toFixed(1),
-      evaluatorAvg: evaluatorAvg.toFixed(1)
-    };
+    const employeeAvg = employeeCount > 0 ? (employeeSum / employeeCount).toFixed(1) : '0.0';
+    const evaluatorAvg = evaluatorCount > 0 ? (evaluatorSum / evaluatorCount).toFixed(1) : '0.0';
+    
+    return { employeeAvg, evaluatorAvg };
   };
 
   const { employeeAvg, evaluatorAvg } = calculateAverages();

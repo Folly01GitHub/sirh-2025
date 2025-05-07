@@ -28,6 +28,16 @@ apiClient.interceptors.response.use(
   (response) => {
     // Log successful responses for debugging purposes
     console.log(`API Success: ${response.config.url}`, response.data);
+    
+    // Handle null responses safely for evaluator_responses
+    if (response.config.url?.includes('/evaluator_responses')) {
+      if (!response.data || !response.data.responses) {
+        console.warn('Evaluator responses is null or empty, providing default structure');
+        response.data = response.data || {};
+        response.data.responses = response.data.responses || [];
+      }
+    }
+    
     return response;
   },
   (error) => {
@@ -38,12 +48,25 @@ apiClient.interceptors.response.use(
       console.error('Error Status:', error.response.status);
       console.error('Error Headers:', error.response.headers);
       
-      // Specific handling for draft saving errors
+      // Specific handling for null responses in evaluations
       if (
-        (error.config.url === '/auto_draft' || error.config.url === '/brouillon_eval' || error.config.url.includes('/evaluator_responses')) && 
-        error.response.status === 400
+        (error.config.url === '/auto_draft' || 
+         error.config.url === '/brouillon_eval' || 
+         error.config.url?.includes('/evaluator_responses') ||
+         error.config.url?.includes('/collab_responses'))
       ) {
-        console.warn('Draft save or fetch error:', error.response.data);
+        if (error.response.status === 400 || error.response.status === 404) {
+          console.warn('Evaluation responses error handled gracefully:', error.response.data);
+          
+          // Return a default empty structure instead of rejecting
+          if (error.config.url?.includes('/evaluator_responses')) {
+            return Promise.resolve({
+              data: {
+                responses: []
+              }
+            });
+          }
+        }
       }
     } else if (error.request) {
       // The request was made but no response was received
