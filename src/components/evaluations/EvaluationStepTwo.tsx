@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
@@ -23,6 +22,18 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+
+// New interface for API response format
+interface ApiEvaluatorResponse {
+  mission_id: string;
+  evaluator_id: string;
+  approver_id: string;
+  responses: {
+    id_item: string;
+    reponse_item: string;
+    type_item: "observation" | "numeric" | "boolean";
+  }[];
+}
 
 interface EvaluationStepTwoProps {
   criteriaItems: CriteriaItem[];
@@ -60,6 +71,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   const [savingDraft, setSavingDraft] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [localEvaluatorResponses, setLocalEvaluatorResponses] = useState<EvaluationResponse[]>([]);
+  const [loadingResponses, setLoadingResponses] = useState(true);
   
   const refusalForm = useForm<RefusalFormData>({
     resolver: zodResolver(refusalSchema),
@@ -91,34 +103,48 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     queryFn: fetchAllCriteriaItems
   });
   
-  // Load evaluator responses using the same approach as in Step One
+  // Load evaluator responses using the direct API call approach
   useEffect(() => {
     if (evaluationId) {
+      setLoadingResponses(true);
       console.log(`Fetching evaluator responses for evaluation ID: ${evaluationId}`);
+      
       apiClient.get('/evaluator_responses', {
         params: { evaluation_id: evaluationId }
       })
         .then(response => {
-          console.log("Evaluator responses fetched successfully:", response.data);
-          if (response.data && response.data.length > 0) {
-            const formattedResponses = response.data.map(response => ({
-              item_id: response.item_id,
-              value: response.value
-            }));
+          console.log("Evaluator raw response data:", response.data);
+          const apiResponse = response.data as ApiEvaluatorResponse;
+          
+          if (apiResponse && apiResponse.responses && Array.isArray(apiResponse.responses)) {
+            // Transform API response format to our internal format
+            const formattedResponses = apiResponse.responses.map(item => {
+              let value: string | number = item.reponse_item;
+              
+              // Convert numeric values from string to number
+              if (item.type_item === 'numeric') {
+                value = parseFloat(item.reponse_item);
+              }
+              
+              return {
+                item_id: parseInt(item.id_item),
+                value
+              };
+            });
             
+            console.log("Transformed evaluator responses:", formattedResponses);
             setLocalEvaluatorResponses(formattedResponses);
             
             // Notify the parent component of each response
             formattedResponses.forEach(response => {
-              console.log(`Setting evaluator response for item ${response.item_id}: ${response.value}`);
-              onResponseChange(response.item_id, response.value);
+              onResponseChange(response.item_id, response.value.toString());
             });
             
             toast.info("Brouillon chargé", {
               description: "Vos réponses précédentes ont été restaurées"
             });
           } else {
-            console.log("No evaluator responses found or empty array received");
+            console.log("No evaluator responses found or invalid data format received");
           }
         })
         .catch(error => {
@@ -126,6 +152,9 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
           toast.error("Erreur de chargement", {
             description: "Impossible de récupérer vos réponses précédentes"
           });
+        })
+        .finally(() => {
+          setLoadingResponses(false);
         });
     }
   }, [evaluationId, onResponseChange]);
@@ -311,6 +340,17 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     return missing.length === 0;
   };
   
+  // Convert the internal format back to API format for saving
+  const convertToApiFormat = (responses: EvaluationResponse[]) => {
+    return {
+      evaluation_id: evaluationId,
+      responses: responses.map(r => ({
+        item_id: r.item_id,
+        value: r.value.toString()
+      }))
+    };
+  };
+  
   const handleSubmit = async () => {
     if (!validateAllFields()) {
       console.log("Échec de la validation du formulaire. Champs manquants :", missingFields);
@@ -327,13 +367,10 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     setSubmitting(true);
     
     try {
-      const response = await apiClient.post('/submit_evaluator', {
-        evaluation_id: evaluationId,
-        responses: localEvaluatorResponses.map(r => ({
-          item_id: r.item_id,
-          value: r.value.toString()
-        }))
-      });
+      const formattedData = convertToApiFormat(localEvaluatorResponses);
+      console.log("Submitting evaluator responses:", formattedData);
+      
+      const response = await apiClient.post('/submit_evaluator', formattedData);
       
       toast.success("Évaluation soumise avec succès");
       navigate('/evaluations');
@@ -380,14 +417,10 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     setSavingDraft(true);
     
     try {
-      console.log("Saving evaluator responses as draft:", localEvaluatorResponses);
-      await apiClient.post('/brouillon_eval', {
-        evaluation_id: evaluationId,
-        responses: localEvaluatorResponses.map(r => ({
-          item_id: r.item_id,
-          value: r.value.toString()
-        }))
-      });
+      const formattedData = convertToApiFormat(localEvaluatorResponses);
+      console.log("Saving evaluator responses as draft:", formattedData);
+      
+      await apiClient.post('/brouillon_eval', formattedData);
       
       toast.success("Brouillon sauvegardé", {
         description: "Votre évaluation a été enregistrée comme brouillon"
@@ -402,7 +435,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
   };
   
-  if (isLoading || responsesLoading) {
+  if (isLoading || responsesLoading || loadingResponses) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-6 w-1/3" />

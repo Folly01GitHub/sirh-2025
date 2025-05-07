@@ -34,6 +34,16 @@ apiClient.interceptors.response.use(
         response.config.url?.includes('/collab_responses')) {
       console.log(`API Response for ${response.config.url}:`, response.data);
     }
+    // Enhanced logging for response data structure
+    if (response.config.url?.includes('/evaluator_responses')) {
+      console.log('Evaluator responses data structure:', {
+        hasResponses: !!response.data.responses,
+        responseType: typeof response.data.responses,
+        isArray: Array.isArray(response.data.responses),
+        firstItem: response.data.responses && response.data.responses.length > 0 ? 
+          response.data.responses[0] : 'No items'
+      });
+    }
     return response;
   },
   (error) => {
