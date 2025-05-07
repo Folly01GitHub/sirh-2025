@@ -85,10 +85,50 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
   const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
   
+  // New query to fetch evaluator's partial responses (drafts)
+  const { data: evaluatorPartialResponses = [], isLoading: evaluatorResponsesLoading } = useQuery({
+    queryKey: ['evaluatorPartialResponses', evaluationId],
+    queryFn: async () => {
+      if (!evaluationId) return [];
+      try {
+        const response = await apiClient.get('/evaluator_responses', {
+          params: { evaluation_id: evaluationId }
+        });
+        console.log("Evaluator partial responses fetched:", response.data);
+        return response.data || [];
+      } catch (error) {
+        console.error("Error fetching evaluator partial responses:", error);
+        return [];
+      }
+    },
+    enabled: !!evaluationId
+  });
+  
   const { data: allCriteriaItems, isSuccess: allItemsLoaded } = useQuery({
     queryKey: ['allCriteriaItems'],
     queryFn: fetchAllCriteriaItems
   });
+  
+  // Initialize evaluator responses with fetched draft data, if available
+  useEffect(() => {
+    if (evaluatorPartialResponses && evaluatorPartialResponses.length > 0) {
+      const formattedResponses = evaluatorPartialResponses.map(response => ({
+        item_id: response.item_id,
+        value: response.value
+      }));
+      
+      setEvaluatorResponses(formattedResponses);
+      
+      // Notify the parent component of each response
+      formattedResponses.forEach(response => {
+        onResponseChange(response.item_id, response.value);
+      });
+      
+      toast.info("Brouillon chargé", {
+        description: "Vos réponses précédentes ont été restaurées"
+      });
+    }
+  }, [evaluatorPartialResponses, onResponseChange]);
   
   useEffect(() => {
     if (criteriaItems.length > 0) {
@@ -344,7 +384,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
   };
   
-  if (isLoading || responsesLoading) {
+  if (isLoading || responsesLoading || evaluatorResponsesLoading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-6 w-1/3" />
