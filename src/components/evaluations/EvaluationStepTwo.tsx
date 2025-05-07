@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
@@ -85,7 +86,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
   const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
   
-  // New query to fetch evaluator's partial responses (drafts)
+  // Query to fetch evaluator's partial responses (drafts)
   const { data: evaluatorPartialResponses = [], isLoading: evaluatorResponsesLoading } = useQuery({
     queryKey: ['evaluatorPartialResponses', evaluationId],
     queryFn: async () => {
@@ -101,7 +102,11 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         return [];
       }
     },
-    enabled: !!evaluationId
+    enabled: !!evaluationId,
+    // Make sure this query runs before any UI rendering
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false
   });
   
   const { data: allCriteriaItems, isSuccess: allItemsLoaded } = useQuery({
@@ -109,9 +114,11 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     queryFn: fetchAllCriteriaItems
   });
   
-  // Initialize evaluator responses with fetched draft data, if available
+  // Initialize evaluator responses with fetched draft data
   useEffect(() => {
     if (evaluatorPartialResponses && evaluatorPartialResponses.length > 0) {
+      console.log("Processing evaluator partial responses:", evaluatorPartialResponses);
+      
       const formattedResponses = evaluatorPartialResponses.map(response => ({
         item_id: response.item_id,
         value: response.value
@@ -144,12 +151,28 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const getEvaluatorResponseValue = (itemId: number) => {
+    // First check in our local state
     const response = evaluatorResponses.find(r => r.item_id === itemId);
-    return response ? response.value : "";
+    if (response) {
+      console.log(`Found evaluator response for item ${itemId}:`, response.value);
+      return response.value;
+    }
+    
+    // If not found in local state, check in the fetched partial responses
+    if (evaluatorPartialResponses && evaluatorPartialResponses.length > 0) {
+      const partialResponse = evaluatorPartialResponses.find(r => r.item_id === itemId);
+      if (partialResponse) {
+        console.log(`Found partial response for item ${itemId}:`, partialResponse.value);
+        return partialResponse.value;
+      }
+    }
+    
+    return "";
   };
   
   const handleEvaluatorResponseChange = (itemId: number, value: string | number) => {
     const stringValue = typeof value === 'number' ? value.toString() : value;
+    console.log(`Setting evaluator response for item ${itemId} to:`, stringValue);
     
     setEvaluatorResponses(prev => {
       const existingIndex = prev.findIndex(r => r.item_id === itemId);
@@ -188,11 +211,14 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const renderEvaluatorStarRating = (itemId: number) => {
-    const currentValue = Number(getEvaluatorResponseValue(itemId)) || 0;
+    // Get the current value from the evaluator responses
+    const respValue = getEvaluatorResponseValue(itemId);
+    const currentValue = respValue ? Number(respValue) : 0;
+    console.log(`Rendering evaluator star rating for item ${itemId}, value:`, currentValue);
     
     return (
       <RadioGroup 
-        value={currentValue.toString()} 
+        value={currentValue ? currentValue.toString() : "0"} 
         onValueChange={(value) => handleEvaluatorResponseChange(itemId, parseInt(value))}
         className="flex space-x-2"
       >
@@ -221,6 +247,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     const value = isCollaborator ? 
       getCollaboratorResponseValue(itemId) : 
       getEvaluatorResponseValue(itemId);
+    
+    console.log(`Rendering boolean response for item ${itemId}, isCollaborator: ${isCollaborator}, value:`, value);
     
     if (isCollaborator) {
       return (
@@ -453,7 +481,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
                     Minimum 50 caractères
                   </p>
                   <Textarea 
-                    value={getEvaluatorResponseValue(item.id).toString()}
+                    value={getEvaluatorResponseValue(item.id).toString() || ""}
                     onChange={(e) => handleEvaluatorResponseChange(item.id, e.target.value)}
                     placeholder="Entrez votre observation…"
                     className="min-h-[120px] max-h-[120px] overflow-y-auto"

@@ -34,7 +34,9 @@ apiClient.interceptors.response.use(
       
       // Specific handling for draft saving errors
       if (
-        (error.config.url === '/auto_draft' || error.config.url === '/brouillon_eval' || error.config.url.includes('/evaluator_responses')) && 
+        (error.config.url === '/auto_draft' || 
+         error.config.url === '/brouillon_eval' || 
+         error.config.url.includes('/evaluator_responses')) && 
         error.response.status === 400
       ) {
         console.warn('Draft save or fetch error:', error.response.data);
