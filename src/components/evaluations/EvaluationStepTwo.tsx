@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -49,13 +50,15 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   isLoading,
   onSubmit
 }) => {
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const evaluationId = searchParams.get('id');
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const evaluationId = searchParams.get('id');
   
   const [refusalDialogOpen, setRefusalDialogOpen] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [localEvaluatorResponses, setLocalEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   
   const refusalForm = useForm<RefusalFormData>({
@@ -83,56 +86,49 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     enabled: !!evaluationId
   });
   
-  // Updated query to fetch evaluator's responses with better error logging
-  const { data: evaluatorPartialResponses = [], isLoading: evaluatorResponsesLoading } = useQuery({
-    queryKey: ['evaluatorPartialResponses', evaluationId],
-    queryFn: async () => {
-      if (!evaluationId) return [];
-      try {
-        console.log(`Fetching evaluator responses for evaluation ID: ${evaluationId}`);
-        const response = await apiClient.get('/evaluator_responses', {
-          params: { evaluation_id: evaluationId }
-        });
-        console.log("Evaluator responses fetched successfully:", response.data);
-        return response.data || [];
-      } catch (error) {
-        console.error("Error fetching evaluator responses:", error);
-        return [];
-      }
-    },
-    enabled: !!evaluationId
-  });
-  
   const { data: allCriteriaItems, isSuccess: allItemsLoaded } = useQuery({
     queryKey: ['allCriteriaItems'],
     queryFn: fetchAllCriteriaItems
   });
   
-  // Initialize evaluator responses with fetched draft data as soon as they're available
+  // Load evaluator responses using the same approach as in Step One
   useEffect(() => {
-    if (evaluatorPartialResponses && evaluatorPartialResponses.length > 0) {
-      console.log("Processing evaluator responses to display in form:", evaluatorPartialResponses);
-      
-      const formattedResponses = evaluatorPartialResponses.map(response => ({
-        item_id: response.item_id,
-        value: response.value
-      }));
-      
-      setLocalEvaluatorResponses(formattedResponses);
-      
-      // Notify the parent component of each response
-      formattedResponses.forEach(response => {
-        console.log(`Setting evaluator response for item ${response.item_id}: ${response.value}`);
-        onResponseChange(response.item_id, response.value);
-      });
-      
-      toast.info("Brouillon chargé", {
-        description: "Vos réponses précédentes ont été restaurées"
-      });
-    } else {
-      console.log("No evaluator responses found or empty array received");
+    if (evaluationId) {
+      console.log(`Fetching evaluator responses for evaluation ID: ${evaluationId}`);
+      apiClient.get('/evaluator_responses', {
+        params: { evaluation_id: evaluationId }
+      })
+        .then(response => {
+          console.log("Evaluator responses fetched successfully:", response.data);
+          if (response.data && response.data.length > 0) {
+            const formattedResponses = response.data.map(response => ({
+              item_id: response.item_id,
+              value: response.value
+            }));
+            
+            setLocalEvaluatorResponses(formattedResponses);
+            
+            // Notify the parent component of each response
+            formattedResponses.forEach(response => {
+              console.log(`Setting evaluator response for item ${response.item_id}: ${response.value}`);
+              onResponseChange(response.item_id, response.value);
+            });
+            
+            toast.info("Brouillon chargé", {
+              description: "Vos réponses précédentes ont été restaurées"
+            });
+          } else {
+            console.log("No evaluator responses found or empty array received");
+          }
+        })
+        .catch(error => {
+          console.error("Error fetching evaluator responses:", error);
+          toast.error("Erreur de chargement", {
+            description: "Impossible de récupérer vos réponses précédentes"
+          });
+        });
     }
-  }, [evaluatorPartialResponses, onResponseChange]);
+  }, [evaluationId, onResponseChange]);
   
   const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
   const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
@@ -155,14 +151,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     const localResponse = localEvaluatorResponses.find(r => r.item_id === itemId);
     if (localResponse) {
       return localResponse.value;
-    }
-    
-    // Then check in fetched responses as fallback
-    if (evaluatorPartialResponses && evaluatorPartialResponses.length > 0) {
-      const fetchedResponse = evaluatorPartialResponses.find(r => r.item_id === itemId);
-      if (fetchedResponse) {
-        return fetchedResponse.value;
-      }
     }
     
     // If nothing found, return empty string
@@ -284,7 +272,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     );
   };
   
-  // Define isValidResponse function - KEEP ONLY ONE COPY
   const isValidResponse = (response: EvaluationResponse | undefined, type: string): boolean => {
     if (!response) return false;
     
@@ -302,7 +289,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
   };
   
-  // Define validateAllFields function - KEEP ONLY ONE COPY
   const validateAllFields = (): boolean => {
     if (!allItemsLoaded || !allCriteriaItems) {
       console.warn("Cannot validate form - all criteria items not loaded yet");
@@ -338,6 +324,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       return;
     }
 
+    setSubmitting(true);
+    
     try {
       const response = await apiClient.post('/submit_evaluator', {
         evaluation_id: evaluationId,
@@ -355,6 +343,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       toast.error("Erreur lors de la soumission", {
         description: "Veuillez réessayer ultérieurement"
       });
+    } finally {
+      setSubmitting(false);
     }
   };
   
@@ -399,9 +389,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         }))
       });
       
-      // Refetch evaluator responses to ensure we have the latest data
-      queryClient.invalidateQueries({ queryKey: ['evaluatorPartialResponses', evaluationId] });
-      
       toast.success("Brouillon sauvegardé", {
         description: "Votre évaluation a été enregistrée comme brouillon"
       });
@@ -415,7 +402,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
   };
   
-  if (isLoading || responsesLoading || evaluatorResponsesLoading) {
+  if (isLoading || responsesLoading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-6 w-1/3" />
@@ -507,9 +494,9 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         <Button 
           onClick={handleSubmit} 
           className="w-full md:w-auto" 
-          disabled={isLoading || responsesLoading || savingDraft}
+          disabled={isLoading || responsesLoading || savingDraft || submitting}
         >
-          Soumettre mon évaluation
+          {submitting ? "Soumission en cours..." : "Soumettre mon évaluation"}
         </Button>
         
         <Button 

@@ -29,8 +29,9 @@ apiClient.interceptors.request.use(
 // Add a response interceptor to handle errors
 apiClient.interceptors.response.use(
   (response) => {
-    // Log successful responses for endpoints we're troubleshooting
-    if (response.config.url?.includes('/evaluator_responses')) {
+    // Log successful responses for specific endpoints
+    if (response.config.url?.includes('/evaluator_responses') || 
+        response.config.url?.includes('/collab_responses')) {
       console.log(`API Response for ${response.config.url}:`, response.data);
     }
     return response;
@@ -41,17 +42,22 @@ apiClient.interceptors.response.use(
       // that falls out of the range of 2xx
       console.error('API Error Response:', error.response.data);
       console.error('API Error Status:', error.response.status);
-      console.error('API Error Headers:', error.response.headers);
-      console.error('API Error Config:', error.config);
       
-      // Specific handling for draft saving errors
+      // Only log headers and config for serious errors
+      if (error.response.status >= 500) {
+        console.error('API Error Headers:', error.response.headers);
+        console.error('API Error Config:', error.config);
+      }
+      
+      // Specific handling for form data errors
       if (
         (error.config.url === '/auto_draft' || 
          error.config.url === '/brouillon_eval' || 
-         error.config.url?.includes('/evaluator_responses')) && 
+         error.config.url?.includes('/evaluator_responses') ||
+         error.config.url?.includes('/collab_responses')) && 
         error.response.status === 400
       ) {
-        console.warn('Draft save or fetch error:', error.response.data);
+        console.warn('Data save or fetch error:', error.response.data);
       }
     } else if (error.request) {
       // The request was made but no response was received
