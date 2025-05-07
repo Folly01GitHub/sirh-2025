@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
@@ -6,7 +7,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Star, AlertTriangle, Save } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -51,10 +52,12 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
 }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const evaluationId = searchParams.get('id');
   
   const [refusalDialogOpen, setRefusalDialogOpen] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
+  const [localEvaluatorResponses, setLocalEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   
   const refusalForm = useForm<RefusalFormData>({
     resolver: zodResolver(refusalSchema),
@@ -81,23 +84,20 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     enabled: !!evaluationId
   });
   
-  const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
-  const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
-  const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
-  
-  // New query to fetch evaluator's partial responses (drafts)
+  // Updated query to fetch evaluator's responses with better error logging
   const { data: evaluatorPartialResponses = [], isLoading: evaluatorResponsesLoading } = useQuery({
     queryKey: ['evaluatorPartialResponses', evaluationId],
     queryFn: async () => {
       if (!evaluationId) return [];
       try {
+        console.log(`Fetching evaluator responses for evaluation ID: ${evaluationId}`);
         const response = await apiClient.get('/evaluator_responses', {
           params: { evaluation_id: evaluationId }
         });
-        console.log("Evaluator partial responses fetched:", response.data);
+        console.log("Evaluator responses fetched successfully:", response.data);
         return response.data || [];
       } catch (error) {
-        console.error("Error fetching evaluator partial responses:", error);
+        console.error("Error fetching evaluator responses:", error);
         return [];
       }
     },
@@ -109,26 +109,34 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     queryFn: fetchAllCriteriaItems
   });
   
-  // Initialize evaluator responses with fetched draft data, if available
+  // Initialize evaluator responses with fetched draft data as soon as they're available
   useEffect(() => {
     if (evaluatorPartialResponses && evaluatorPartialResponses.length > 0) {
+      console.log("Processing evaluator responses to display in form:", evaluatorPartialResponses);
+      
       const formattedResponses = evaluatorPartialResponses.map(response => ({
         item_id: response.item_id,
         value: response.value
       }));
       
-      setEvaluatorResponses(formattedResponses);
+      setLocalEvaluatorResponses(formattedResponses);
       
       // Notify the parent component of each response
       formattedResponses.forEach(response => {
+        console.log(`Setting evaluator response for item ${response.item_id}: ${response.value}`);
         onResponseChange(response.item_id, response.value);
       });
       
       toast.info("Brouillon chargé", {
         description: "Vos réponses précédentes ont été restaurées"
       });
+    } else {
+      console.log("No evaluator responses found or empty array received");
     }
   }, [evaluatorPartialResponses, onResponseChange]);
+  
+  const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
+  const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
   
   useEffect(() => {
     if (criteriaItems.length > 0) {
@@ -144,14 +152,29 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const getEvaluatorResponseValue = (itemId: number) => {
-    const response = evaluatorResponses.find(r => r.item_id === itemId);
-    return response ? response.value : "";
+    // First check in local state (most up-to-date)
+    const localResponse = localEvaluatorResponses.find(r => r.item_id === itemId);
+    if (localResponse) {
+      return localResponse.value;
+    }
+    
+    // Then check in fetched responses as fallback
+    if (evaluatorPartialResponses && evaluatorPartialResponses.length > 0) {
+      const fetchedResponse = evaluatorPartialResponses.find(r => r.item_id === itemId);
+      if (fetchedResponse) {
+        return fetchedResponse.value;
+      }
+    }
+    
+    // If nothing found, return empty string
+    return "";
   };
   
   const handleEvaluatorResponseChange = (itemId: number, value: string | number) => {
+    console.log(`Handling evaluator response change for item ${itemId}: ${value}`);
     const stringValue = typeof value === 'number' ? value.toString() : value;
     
-    setEvaluatorResponses(prev => {
+    setLocalEvaluatorResponses(prev => {
       const existingIndex = prev.findIndex(r => r.item_id === itemId);
       
       if (existingIndex !== -1) {
@@ -189,10 +212,11 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   const renderEvaluatorStarRating = (itemId: number) => {
     const currentValue = Number(getEvaluatorResponseValue(itemId)) || 0;
+    console.log(`Rendering star rating for item ${itemId} with value: ${currentValue}`);
     
     return (
       <RadioGroup 
-        value={currentValue.toString()} 
+        value={currentValue ? currentValue.toString() : ""} 
         onValueChange={(value) => handleEvaluatorResponseChange(itemId, parseInt(value))}
         className="flex space-x-2"
       >
@@ -222,6 +246,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       getCollaboratorResponseValue(itemId) : 
       getEvaluatorResponseValue(itemId);
     
+    console.log(`Rendering boolean response for item ${itemId}, isCollaborator: ${isCollaborator}, value: ${value}`);
+    
     if (isCollaborator) {
       return (
         <div className="flex gap-6">
@@ -239,7 +265,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
 
     return (
       <RadioGroup
-        value={value ? value.toString() : ""}
+        value={value || ""}
         onValueChange={(val) => handleEvaluatorResponseChange(itemId, val)}
         className="flex gap-6"
       >
@@ -314,7 +340,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     try {
       const response = await apiClient.post('/submit_evaluator', {
         evaluation_id: evaluationId,
-        responses: evaluatorResponses.map(r => ({
+        responses: localEvaluatorResponses.map(r => ({
           item_id: r.item_id,
           value: r.value.toString()
         }))
@@ -363,13 +389,17 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     setSavingDraft(true);
     
     try {
+      console.log("Saving evaluator responses as draft:", localEvaluatorResponses);
       await apiClient.post('/brouillon_eval', {
         evaluation_id: evaluationId,
-        responses: evaluatorResponses.map(r => ({
+        responses: localEvaluatorResponses.map(r => ({
           item_id: r.item_id,
           value: r.value.toString()
         }))
       });
+      
+      // Refetch evaluator responses to ensure we have the latest data
+      queryClient.invalidateQueries({ queryKey: ['evaluatorPartialResponses', evaluationId] });
       
       toast.success("Brouillon sauvegardé", {
         description: "Votre évaluation a été enregistrée comme brouillon"
@@ -382,6 +412,45 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     } finally {
       setSavingDraft(false);
     }
+  };
+  
+  const isValidResponse = (response: EvaluationResponse | undefined, type: string): boolean => {
+    if (!response) return false;
+    
+    switch (type) {
+      case 'numeric':
+        const numericValue = typeof response.value === 'number' ? response.value : 
+                          (typeof response.value === 'string' ? Number(response.value) : 0);
+        return numericValue >= 1 && numericValue <= 5;
+      case 'observation':
+        return typeof response.value === 'string' && response.value.length >= 50;
+      case 'boolean':
+        return typeof response.value === 'string' && ['oui', 'non'].includes(response.value);
+      default:
+        return false;
+    }
+  };
+  
+  const validateAllFields = (): boolean => {
+    if (!allItemsLoaded || !allCriteriaItems) {
+      console.warn("Cannot validate form - all criteria items not loaded yet");
+      return false;
+    }
+    
+    const missing: { group?: string, label: string }[] = [];
+
+    allCriteriaItems.forEach(item => {
+      const response = localEvaluatorResponses.find(r => r.item_id === item.id);
+      if (!isValidResponse(response, item.type)) {
+        missing.push({
+          label: item.label,
+          group: item.group_name || `Group ${item.group_id}`
+        });
+      }
+    });
+
+    setMissingFields(missing);
+    return missing.length === 0;
   };
   
   if (isLoading || responsesLoading || evaluatorResponsesLoading) {

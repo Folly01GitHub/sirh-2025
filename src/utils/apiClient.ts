@@ -16,6 +16,9 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
+    // Log API requests for debugging
+    console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`, config.params || {});
+    
     return config;
   },
   (error) => {
@@ -25,16 +28,27 @@ apiClient.interceptors.request.use(
 
 // Add a response interceptor to handle errors
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log successful responses for endpoints we're troubleshooting
+    if (response.config.url?.includes('/evaluator_responses')) {
+      console.log(`API Response for ${response.config.url}:`, response.data);
+    }
+    return response;
+  },
   (error) => {
     if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
       console.error('API Error Response:', error.response.data);
+      console.error('API Error Status:', error.response.status);
+      console.error('API Error Headers:', error.response.headers);
+      console.error('API Error Config:', error.config);
       
       // Specific handling for draft saving errors
       if (
-        (error.config.url === '/auto_draft' || error.config.url === '/brouillon_eval' || error.config.url.includes('/evaluator_responses')) && 
+        (error.config.url === '/auto_draft' || 
+         error.config.url === '/brouillon_eval' || 
+         error.config.url?.includes('/evaluator_responses')) && 
         error.response.status === 400
       ) {
         console.warn('Draft save or fetch error:', error.response.data);
