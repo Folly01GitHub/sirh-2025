@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -55,16 +54,12 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
 
   // Helper function to determine if the edit button should be displayed
   const shouldShowEditButton = (evaluation: EvaluationItem) => {
-    // If level is 'Evaluateur', don't show the edit button regardless of status
-    if (evaluation.niveau === 'Evaluateur') {
-      return false;
-    }
-    
-    // Original conditions for showing edit button
+    // For team evaluations, only check status
     if (activeFilter === 'team') {
       return evaluation.statut === 'En cours' || evaluation.statut === 'brouillon';
     }
     
+    // For self evaluations, keep original logic
     if (activeFilter === 'self') {
       return evaluation.statut === 'brouillon';
     }
@@ -152,7 +147,6 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                   >
                     <Eye className="h-4 w-4" />
                   </Button>
-                  {/* Use the helper function to determine whether to show edit button */}
                   {shouldShowEditButton(evaluation) && (
                     <Button
                       variant="ghost"
