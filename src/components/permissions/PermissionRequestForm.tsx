@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,6 +9,7 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { CalendarIcon, Clock, Loader2 } from 'lucide-react';
+import apiClient from '@/utils/apiClient';
 
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,9 +20,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
 
 interface PermissionRequestFormProps {
   onSubmitSuccess: () => void;
+}
+
+interface Approver {
+  id: number;
+  name: string;
+  position: string;
 }
 
 const formSchema = z.object({
@@ -31,6 +40,7 @@ const formSchema = z.object({
   end_time: z.string().min(1, "L'heure de retour est requise"),
   reason: z.string().min(3, "Une raison d'au moins 3 caractères est requise"),
   validation_level: z.number().default(0),
+  approver_id: z.string().min(1, "Un approbateur doit être sélectionné"),
 }).refine((data) => {
   return data.end_time > data.start_time;
 }, {
@@ -43,6 +53,9 @@ type FormData = z.infer<typeof formSchema>;
 const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) => {
   const { user, token } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [approverQuery, setApproverQuery] = useState("");
+  const [approverOptions, setApproverOptions] = useState<Approver[]>([]);
+  const [approverLoading, setApproverLoading] = useState(false);
   
   // Updated time options: from 8:00 to 18:00 with 30-minute intervals
   const timeOptions = Array.from({ length: 21 }, (_, i) => {
@@ -50,6 +63,22 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
     const minute = (i % 2) * 30; // 0 or 30 minutes
     return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
   });
+  
+  // Fetch approver options when search query changes
+  useEffect(() => {
+    setApproverLoading(true);
+    const handler = setTimeout(() => {
+      apiClient.get(`/approver_list?search=${encodeURIComponent(approverQuery)}`)
+        .then(res => {
+          setApproverOptions(Array.isArray(res.data) ? res.data : []);
+        })
+        .catch(() => {
+          setApproverOptions([]);
+        })
+        .finally(() => setApproverLoading(false));
+    }, 250);
+    return () => clearTimeout(handler);
+  }, [approverQuery]);
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -59,6 +88,7 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
       end_time: '',
       reason: '',
       validation_level: 0,
+      approver_id: '',
     },
   });
   
@@ -73,6 +103,7 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
         end_time: data.end_time,
         reason: data.reason,
         validation_level: 0,
+        approver_id: data.approver_id,
       };
       
       console.log('Sending permission request:', payload);
@@ -100,6 +131,7 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
         end_time: '',
         reason: '',
         validation_level: 0,
+        approver_id: '',
       });
       
       console.log('About to call onSubmitSuccess callback from form');
@@ -133,6 +165,29 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="approver_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Approbateur</FormLabel>
+                  <SearchableSelect
+                    label=""
+                    placeholder="Sélectionnez ou cherchez un approbateur..."
+                    value={field.value}
+                    onChange={field.onChange}
+                    onSearch={setApproverQuery}
+                    options={approverOptions.map(approver => ({
+                      label: `${approver.name} - ${approver.position}`,
+                      value: approver.id.toString()
+                    }))}
+                    loading={approverLoading}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
             <FormField
               control={form.control}
               name="permission_date"
