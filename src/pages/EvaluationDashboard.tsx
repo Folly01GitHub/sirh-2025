@@ -1,13 +1,15 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
 import HRISNavbar from '@/components/hris/HRISNavbar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import EvaluationStatsSection from '@/components/evaluations/EvaluationStatsSection';
 import EvaluationTable from '@/components/evaluations/EvaluationTable';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { TabsContent, Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface EvaluationStats {
   total: number;
@@ -101,19 +103,18 @@ const EvaluationDashboard = () => {
           </Button>
         </div>
         
-        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-          <Select 
-            value={activeFilter} 
+        <div className="bg-white rounded-lg shadow-md p-4 mb-6 flex justify-center">
+          <Tabs
+            defaultValue="self"
+            value={activeFilter}
             onValueChange={handleFilterChange}
+            className="w-full md:w-auto"
           >
-            <SelectTrigger className="w-full md:w-[280px]">
-              <SelectValue placeholder="Choisir une vue" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="self">Mes évaluations</SelectItem>
-              <SelectItem value="team">Mes collaborateurs</SelectItem>
-            </SelectContent>
-          </Select>
+            <TabsList className="grid w-full md:w-[400px] grid-cols-2">
+              <TabsTrigger value="self">Mes évaluations</TabsTrigger>
+              <TabsTrigger value="team">Mes collaborateurs</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
         
         <EvaluationStatsSection 
