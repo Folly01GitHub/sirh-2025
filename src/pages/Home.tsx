@@ -56,7 +56,7 @@ const Home = () => {
               asChild
             >
               <Link to={dashboardUrl}>
-                Accéder au tableau de bord
+                Portail d'administration
                 <ChevronRight className="ml-1 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
               </Link>
             </Button>
