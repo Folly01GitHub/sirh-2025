@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -45,9 +44,10 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
   const { user, token } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const timeOptions = Array.from({ length: 24 * 4 }, (_, i) => {
-    const hour = Math.floor(i / 4);
-    const minute = (i % 4) * 15;
+  // Updated time options: from 8:00 to 18:00 with 30-minute intervals
+  const timeOptions = Array.from({ length: 21 }, (_, i) => {
+    const hour = Math.floor(i / 2) + 8; // Start from 8:00
+    const minute = (i % 2) * 30; // 0 or 30 minutes
     return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
   });
   
