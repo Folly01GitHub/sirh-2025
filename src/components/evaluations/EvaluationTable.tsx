@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -16,7 +17,7 @@ interface EvaluationItem {
   evaluateur: string;
   demandeur: string;
   statut: string;
-  niveau: 'Evaluateur' | 'Approbateur' | 'Terminé';
+  niveau: 'Evaluateur' | 'Approbateur' | 'Terminé' | 'Auto-évaluation';
 }
 
 interface EvaluationTableProps {
@@ -47,6 +48,8 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
         return { style: { backgroundColor: '#FEC6A1', color: 'black' } };
       case 'Terminé':
         return { style: { backgroundColor: '#9b87f5', color: 'white' } };
+      case 'Auto-évaluation':
+        return { style: { backgroundColor: '#E2E8FC', color: 'black' } };
       default:
         return {};
     }
@@ -59,9 +62,9 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
       return evaluation.statut === 'En cours' || evaluation.statut === 'brouillon';
     }
     
-    // For self evaluations, keep original logic
+    // For self evaluations, only check niveau
     if (activeFilter === 'self') {
-      return evaluation.statut === 'brouillon';
+      return evaluation.niveau === 'Auto-évaluation';
     }
     
     return false;
