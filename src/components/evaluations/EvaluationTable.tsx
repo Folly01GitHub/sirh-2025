@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -9,11 +10,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 interface EvaluationItem {
   id: number;
   mission: string;
+  client: string; // Added client field
   code: string;
   date_auto_eval: string;
   date_eval: string;
   date_validation: string;
   evaluateur: string;
+  approbateur: string; // Added approbateur field
   demandeur: string;
   statut: string;
   niveau: 'Evaluateur' | 'Approbateur' | 'Terminé' | 'Auto-évaluation';
@@ -86,14 +89,13 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
         <TableHeader>
           <TableRow>
             <TableHead>Mission</TableHead>
-            <TableHead>Code</TableHead>
+            <TableHead>Client</TableHead>
             <TableHead>Date Auto-Eval</TableHead>
             <TableHead>Date Eval</TableHead>
             <TableHead>Date Validation</TableHead>
             <TableHead>Evaluateur</TableHead>
-            {activeFilter === 'team' && <TableHead>Demandeur</TableHead>}
+            <TableHead>Approbateur</TableHead>
             <TableHead>Statut</TableHead>
-            <TableHead>Niveau</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -102,20 +104,19 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
             Array.from({ length: 5 }).map((_, index) => (
               <TableRow key={index}>
                 <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
-                {activeFilter === 'team' && <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>}
-                <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
                 <TableCell className="text-right"><Skeleton className="h-4 w-[100px]" /></TableCell>
               </TableRow>
             ))
           ) : evaluations.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={activeFilter === 'team' ? 10 : 9} className="text-center py-6">
+              <TableCell colSpan={9} className="text-center py-6">
                 Aucune évaluation trouvée.
               </TableCell>
             </TableRow>
@@ -123,12 +124,12 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
             evaluations.map((evaluation) => (
               <TableRow key={evaluation.id}>
                 <TableCell>{evaluation.mission}</TableCell>
-                <TableCell>{evaluation.code}</TableCell>
+                <TableCell>{evaluation.client || "-"}</TableCell>
                 <TableCell>{evaluation.date_auto_eval}</TableCell>
                 <TableCell>{evaluation.date_eval}</TableCell>
                 <TableCell>{evaluation.date_validation}</TableCell>
                 <TableCell>{evaluation.evaluateur}</TableCell>
-                {activeFilter === 'team' && <TableCell>{evaluation.demandeur}</TableCell>}
+                <TableCell>{evaluation.approbateur || "-"}</TableCell>
                 <TableCell>
                   {evaluation.statut === 'Validée' ? (
                     <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
@@ -143,14 +144,6 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                   ) : (
                     <Badge>{evaluation.statut}</Badge>
                   )}
-                </TableCell>
-                <TableCell>
-                  <Badge 
-                    variant="outline" 
-                    {...getNiveauBadgeProps(evaluation.niveau)}
-                  >
-                    {evaluation.niveau}
-                  </Badge>
                 </TableCell>
                 <TableCell className="text-right space-x-2">
                   {shouldShowViewButton(evaluation) && (

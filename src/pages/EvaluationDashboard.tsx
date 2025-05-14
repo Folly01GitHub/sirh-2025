@@ -8,7 +8,6 @@ import HRISNavbar from '@/components/hris/HRISNavbar';
 import { Button } from '@/components/ui/button';
 import EvaluationStatsSection from '@/components/evaluations/EvaluationStatsSection';
 import EvaluationTable from '@/components/evaluations/EvaluationTable';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { TabsContent, Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface EvaluationStats {
@@ -20,11 +19,13 @@ interface EvaluationStats {
 interface EvaluationItem {
   id: number;
   mission: string;
+  client: string; // Added client field
   code: string;
   date_auto_eval: string;
   date_eval: string;
   date_validation: string;
   evaluateur: string;
+  approbateur: string; // Added approbateur field
   demandeur: string;
   statut: string;
   niveau: 'Evaluateur' | 'Approbateur' | 'Terminé';
