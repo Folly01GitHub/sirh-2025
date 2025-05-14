@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -68,6 +67,17 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
     }
     
     return false;
+  };
+
+  // Helper function to determine if the view button should be displayed
+  const shouldShowViewButton = (evaluation: EvaluationItem) => {
+    // For self evaluations section, hide the view button if status is "brouillon"
+    if (activeFilter === 'self' && evaluation.statut === 'brouillon') {
+      return false;
+    }
+    
+    // For all other cases, show the view button
+    return true;
   };
 
   return (
@@ -143,13 +153,15 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right space-x-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleViewClick(evaluation.id)}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
+                  {shouldShowViewButton(evaluation) && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleViewClick(evaluation.id)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  )}
                   {shouldShowEditButton(evaluation) && (
                     <Button
                       variant="ghost"
