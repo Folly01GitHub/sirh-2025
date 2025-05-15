@@ -207,16 +207,16 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
           <div className="space-y-2">
             <h4 className="font-medium text-gray-700">Auto-évaluation</h4>
             <div className="flex items-center">
-              <div className="text-3xl font-bold text-yellow-500 mr-3">{employeeAvg}</div>
-              {renderNumericBoxReadOnly(parseFloat(employeeAvg))}
+              {/* Affichage uniquement de la note moyenne, exemple : 3.3/5 */}
+              <div className="text-3xl font-bold text-yellow-500 mr-3">{employeeAvg}/5</div>
             </div>
           </div>
           
           <div className="space-y-2">
             <h4 className="font-medium text-primary">Évaluation du manager</h4>
             <div className="flex items-center">
-              <div className="text-3xl font-bold text-primary mr-3">{evaluatorAvg}</div>
-              {renderNumericBoxReadOnly(parseFloat(evaluatorAvg))}
+              {/* Affichage uniquement de la note moyenne, exemple : 3.3/5 */}
+              <div className="text-3xl font-bold text-primary mr-3">{evaluatorAvg}/5</div>
             </div>
           </div>
         </div>
