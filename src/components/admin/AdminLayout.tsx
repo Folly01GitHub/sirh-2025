@@ -20,7 +20,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   LayoutDashboard, 
-  Users, 
   Settings, 
   Bell, 
   Search, 
@@ -50,7 +49,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   const menuItems = [
     { path: '/admin/dashboard', label: 'Tableau de Bord', icon: LayoutDashboard },
-    { path: '/admin/users', label: 'Utilisateurs', icon: Users },
     { path: '/admin/settings', label: 'Paramètres', icon: Settings }
   ];
 
@@ -61,7 +59,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           <SidebarHeader className="p-4">
             <Link to="/admin/dashboard" className="flex items-center gap-2">
               <div className="bg-primary rounded-md p-1">
-                <Users className="h-6 w-6 text-white" />
+                <User className="h-6 w-6 text-white" />
               </div>
               <span className="font-bold text-lg">Portail Admin</span>
             </Link>
