@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+// Si useAuth est présent dans le projet, utilisez-le, sinon fallback sur localStorage.
+import { useAuth } from '@/contexts/AuthContext'; // S'il y a une erreur ici, commentez et utilisez localStorage.
 
 const userSchema = z.object({
   firstName: z.string().min(2, "Le prénom est requis"),
@@ -26,6 +28,7 @@ const AddUserCard = () => {
   const [positions, setPositions] = useState<string[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
   const [loadingLists, setLoadingLists] = useState(true);
+  const { token } = useAuth ? useAuth() : { token: localStorage.getItem('auth_token') };
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
@@ -43,12 +46,14 @@ const AddUserCard = () => {
     async function fetchLists() {
       setLoadingLists(true);
       try {
+        const headers = token
+          ? { Authorization: `Bearer ${token}` }
+          : {};
+
         const [gradesRes, deptsRes] = await Promise.all([
-          axios.get('https://10.172.225.11:8082/api/grades'),
-          axios.get('https://10.172.225.11:8082/api/departements'),
+          axios.get('https://10.172.225.11:8082/api/grades', { headers }),
+          axios.get('https://10.172.225.11:8082/api/departements', { headers }),
         ]);
-        // grades API expected to return array of string names
-        // depts API expected to return array of string names
         setPositions(Array.isArray(gradesRes.data) ? gradesRes.data : []);
         setDepartments(Array.isArray(deptsRes.data) ? deptsRes.data : []);
       } catch (err) {
@@ -58,7 +63,7 @@ const AddUserCard = () => {
       }
     }
     fetchLists();
-  }, []);
+  }, [token]);
 
   const onSubmit = async (data: UserFormData) => {
     setLoading(true);
@@ -206,3 +211,4 @@ const AddUserCard = () => {
 };
 
 export default AddUserCard;
+
