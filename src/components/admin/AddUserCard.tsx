@@ -60,9 +60,14 @@ const AddUserCard = () => {
       
       toast.success("Invitation envoyée avec succès !");
       form.reset();
-    } catch (error) {
-      console.error("Erreur lors de l'envoi de l'invitation:", error);
-      toast.error("Échec de l'envoi de l'invitation. Veuillez réessayer.");
+    } catch (error: any) {
+      // Gestion de l'erreur "409"
+      if (error.response && error.response.status === 409) {
+        toast.error("Adresse email déjà utilisée !");
+      } else {
+        console.error("Erreur lors de l'envoi de l'invitation:", error);
+        toast.error("Échec de l'envoi de l'invitation. Veuillez réessayer.");
+      }
     } finally {
       setLoading(false);
     }
@@ -179,3 +184,4 @@ const AddUserCard = () => {
 };
 
 export default AddUserCard;
+
