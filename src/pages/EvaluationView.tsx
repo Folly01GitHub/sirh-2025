@@ -50,12 +50,12 @@ const EvaluationView = () => {
     }
   });
 
-  // Regrouper les criteriaItems par groupes, en intégrant le vrai nom via l’API /groupe_items
+  // Regrouper les criteriaItems par groupes, en intégrant le vrai nom via l'API /groupe_items
   const groupedCriteria: CriteriaGroup[] =
     Array.isArray(criteriaItems) && criteriaItems.length > 0
       ? criteriaItems.reduce((acc: CriteriaGroup[], item: CriteriaItem) => {
           let group = acc.find((g) => g.group_id === item.group_id);
-          // Chercher le vrai nom du groupe depuis l’API
+          // Chercher le vrai nom du groupe depuis l'API
           const groupFromApi = Array.isArray(groupeItems)
             ? groupeItems.find((g: GroupeItem) => g.id === item.group_id)
             : undefined;
@@ -160,6 +160,12 @@ const EvaluationView = () => {
 
   const { employeeAvg, evaluatorAvg } = calculateAverages();
 
+  // Helper function to truncate long titles for tab display
+  const truncateGroupName = (name: string, maxLength = 20) => {
+    if (name.length <= maxLength) return name;
+    return `${name.substring(0, maxLength)}...`;
+  };
+
   if (itemsLoading || groupesLoading) {
     return (
       <div className="space-y-6">
@@ -201,14 +207,21 @@ const EvaluationView = () => {
           <h3 className="text-xl font-medium mb-6">Détail complet des évaluations</h3>
           {groupedCriteria.length > 0 && (
             <Tabs value={activeGroup ?? undefined} onValueChange={(v) => setActiveGroup(v)} className="w-full">
-              <TabsList className="mb-4 flex-wrap gap-2">
-                {groupedCriteria.map((group) => (
-                  <TabsTrigger key={group.group_id} value={String(group.group_id)}>
-                    {/* Affichage du vrai nom du groupe, récupéré depuis l’API groupe_items */}
-                    {group.group_name}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+              <ScrollArea className="w-full">
+                <TabsList className="mb-4 flex-nowrap w-max">
+                  {groupedCriteria.map((group) => (
+                    <TabsTrigger 
+                      key={group.group_id} 
+                      value={String(group.group_id)}
+                      title={group.group_name} // Full name as tooltip on hover
+                      className="min-w-[100px] px-3 whitespace-normal text-center h-auto py-2"
+                    >
+                      {/* Afficher une version tronquée si le nom est trop long */}
+                      {truncateGroupName(group.group_name, 18)}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </ScrollArea>
               {groupedCriteria.map((group) => (
                 <TabsContent
                   key={group.group_id}
@@ -216,7 +229,6 @@ const EvaluationView = () => {
                   className="space-y-6"
                 >
                   {group.items.map((item: CriteriaItem) => (
-                    // ... keep rendering of each item as before ...
                     <div key={item.id} className="p-4 border rounded-md">
                       <h3 className="text-lg font-medium mb-4">{item.label}</h3>
 
