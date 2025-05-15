@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
@@ -51,6 +51,11 @@ const fetchCriteriaGroups = async (): Promise<CriteriaGroup[]> => {
 const fetchCriteriaItems = async (groupId: number): Promise<CriteriaItem[]> => {
   const response = await apiClient.get('/items');
   return response.data.filter((item: CriteriaItem) => item.group_id === groupId);
+};
+
+const fetchAllCriteriaItems = async (): Promise<CriteriaItem[]> => {
+  const response = await apiClient.get('/items');
+  return response.data;
 };
 
 const fetchEmployees = async (): Promise<Employee[]> => {
@@ -107,6 +112,14 @@ const Evaluation = () => {
   });
   
   const {
+    data: allCriteriaItems,
+    isLoading: allItemsLoading
+  } = useQuery({
+    queryKey: ['allCriteriaItems'],
+    queryFn: fetchAllCriteriaItems
+  });
+  
+  const {
     data: employees,
     isLoading: employeesLoading
   } = useQuery({
@@ -114,14 +127,85 @@ const Evaluation = () => {
     queryFn: fetchEmployees
   });
   
+  // Helper function to validate a response based on criteria type
+  const isValidResponse = useCallback((response: EvaluationResponse | undefined, type: string): boolean => {
+    if (!response) return false;
+    
+    switch (type) {
+      case 'numeric':
+        const numericValue = typeof response.value === 'number' ? response.value : 
+                          (typeof response.value === 'string' ? Number(response.value) : 0);
+        return numericValue >= 1 && numericValue <= 5;
+      case 'observation':
+        return typeof response.value === 'string' && response.value.length >= 50;
+      case 'commentaire':
+        // Pour les commentaires, n'importe quelle valeur (même vide) est valide
+        return true;
+      case 'boolean':
+        return typeof response.value === 'string' && ['oui', 'non'].includes(response.value);
+      default:
+        return false;
+    }
+  }, []);
+  
+  // Calculate progress based on completed required fields
   const calculateProgress = useCallback(() => {
+    if (currentStep === 1) {
+      if (!allCriteriaItems || allCriteriaItems.length === 0) return 0;
+      
+      // Check basic fields (evaluator, approver, mission)
+      let completedFields = 0;
+      const totalRequiredFields = allCriteriaItems.length + 3; // +3 for evaluator, approver, mission fields
+      
+      if (evaluatorId) completedFields++;
+      if (approverId) completedFields++;
+      if (selectedMissionId) completedFields++;
+      
+      // Check criteria items
+      allCriteriaItems.forEach(item => {
+        const response = employeeResponses.find(r => r.item_id === item.id);
+        if (isValidResponse(response, item.type)) {
+          completedFields++;
+        }
+      });
+      
+      return Math.round((completedFields / totalRequiredFields) * 100);
+    } else if (currentStep === 2) {
+      if (!allCriteriaItems || allCriteriaItems.length === 0) return 0;
+      
+      let completedFields = 0;
+      const totalRequiredFields = allCriteriaItems.length;
+      
+      // Check criteria items
+      allCriteriaItems.forEach(item => {
+        const response = evaluatorResponses.find(r => r.item_id === item.id);
+        if (isValidResponse(response, item.type)) {
+          completedFields++;
+        }
+      });
+      
+      return Math.round((completedFields / totalRequiredFields) * 100);
+    }
+    
+    // Default: show group-based progress for step 3
     if (!criteriaGroups || criteriaGroups.length === 0) return 0;
     
     const totalGroups = criteriaGroups.length;
     const currentGroupIndex = criteriaGroups.findIndex(group => group.id === currentGroupId);
     
     return Math.round(((currentGroupIndex + 1) / totalGroups) * 100);
-  }, [criteriaGroups, currentGroupId]);
+  }, [
+    currentStep, 
+    allCriteriaItems, 
+    evaluatorId, 
+    approverId, 
+    selectedMissionId, 
+    employeeResponses, 
+    evaluatorResponses, 
+    criteriaGroups, 
+    currentGroupId, 
+    isValidResponse
+  ]);
   
   const handleGroupChange = useCallback((groupId: string) => {
     setCurrentGroupId(parseInt(groupId));
