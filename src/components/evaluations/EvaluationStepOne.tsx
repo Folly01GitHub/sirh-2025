@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
@@ -15,6 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import apiClient from '@/utils/apiClient';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
+import { NumericBoxGroup } from './NumericBoxGroup';
 
 interface Mission {
   id: number;
@@ -401,27 +401,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     }
   };
 
-  const renderStarRating = (itemId: number) => {
-    const currentValue = Number(getResponseValue(itemId)) || 0;
-    return (
-      <div className="flex space-x-2">
-        {[1, 2, 3, 4, 5].map((value) => (
-          <label key={value} htmlFor={`rating-${itemId}-${value}`} className="cursor-pointer flex flex-col items-center">
-            <input
-              type="radio"
-              id={`rating-${itemId}-${value}`}
-              value={value}
-              checked={currentValue === value}
-              onChange={() => onResponseChange(itemId, value)}
-              className="sr-only"
-            />
-            <Star className={`h-6 w-6 transition-all ${value <= currentValue ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
-          </label>
-        ))}
-      </div>
-    );
-  };
-
   const renderBooleanResponse = (itemId: number) => {
     const currentValue = getResponseValue(itemId) as string;
     
@@ -556,12 +535,11 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
               
               {item.type === 'numeric' ? (
                 <div className="space-y-2">
-                  <p className="text-sm text-gray-500 mb-2">Évaluez de 1 à 5 étoiles</p>
-                  {renderStarRating(item.id)}
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Très insuffisant</span>
-                    <span>Excellent</span>
-                  </div>
+                  <p className="text-sm text-gray-500 mb-2">Sélectionnez une note de 1 à 5</p>
+                  <NumericBoxGroup
+                    value={Number(getResponseValue(item.id)) || 0}
+                    onChange={val => onResponseChange(item.id, val)}
+                  />
                 </div>
               ) : item.type === 'boolean' ? (
                 <div className="space-y-2">
