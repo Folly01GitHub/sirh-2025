@@ -1,0 +1,173 @@
+
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+
+interface DebriefItem {
+  id: number;
+  label: string;
+  type: "observation" | "boolean";
+}
+
+interface DebriefDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  evaluationId: number;
+  onSuccess?: () => void;
+}
+
+const DebriefDialog: React.FC<DebriefDialogProps> = ({
+  open,
+  onOpenChange,
+  evaluationId,
+  onSuccess,
+}) => {
+  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<DebriefItem[]>([]);
+  const [responses, setResponses] = useState<Record<number, string | boolean>>(
+    {}
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [submitLoading, setSubmitLoading] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setLoading(true);
+      fetch("/debriefitems")
+        .then((r) => r.json())
+        .then((data) => {
+          setItems(Array.isArray(data) ? data : []);
+          setLoading(false);
+        })
+        .catch(() => {
+          setError("Erreur lors du chargement du formulaire.");
+          setLoading(false);
+        });
+    }
+  }, [open]);
+
+  const handleChange = (itemId: number, value: string | boolean) => {
+    setResponses((prev) => ({ ...prev, [itemId]: value }));
+  };
+
+  const handleSend = async () => {
+    setError(null);
+    setSubmitLoading(true);
+    try {
+      const toSend = items.map((item) => ({
+        item_id: item.id,
+        value: responses[item.id],
+      }));
+
+      const res = await fetch("/debriefresponses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          evaluation_id: evaluationId,
+          responses: toSend,
+        }),
+      });
+      if (!res.ok) throw new Error("Erreur lors de l'envoi.");
+      onOpenChange(false);
+      if (onSuccess) onSuccess();
+    } catch {
+      setError("Erreur lors de l'envoi des réponses.");
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Debrief - Envoyer à l'approbateur</DialogTitle>
+        </DialogHeader>
+        {loading ? (
+          <div className="py-8 text-center text-gray-400">Chargement...</div>
+        ) : (
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSend();
+            }}
+          >
+            {items.map((item) => (
+              <div key={item.id}>
+                <label className="block font-medium mb-2">{item.label}</label>
+                {item.type === "observation" ? (
+                  <Textarea
+                    placeholder="Votre observation..."
+                    value={
+                      typeof responses[item.id] === "string"
+                        ? responses[item.id]
+                        : ""
+                    }
+                    onChange={(e) => handleChange(item.id, e.target.value)}
+                  />
+                ) : item.type === "boolean" ? (
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2">
+                      <Input
+                        type="radio"
+                        name={`item-${item.id}`}
+                        value="oui"
+                        checked={responses[item.id] === "oui"}
+                        onChange={() => handleChange(item.id, "oui")}
+                      />
+                      Oui
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <Input
+                        type="radio"
+                        name={`item-${item.id}`}
+                        value="non"
+                        checked={responses[item.id] === "non"}
+                        onChange={() => handleChange(item.id, "non")}
+                      />
+                      Non
+                    </label>
+                  </div>
+                ) : null}
+              </div>
+            ))}
+
+            {error ? (
+              <div className="text-red-600 text-sm">{error}</div>
+            ) : null}
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={submitLoading}
+              >
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                disabled={submitLoading}
+                className="bg-[#171c8f] text-white"
+              >
+                {submitLoading ? "Envoi..." : "Envoyer à l'approbateur"}
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default DebriefDialog;

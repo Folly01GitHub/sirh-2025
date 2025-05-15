@@ -1,22 +1,23 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pencil, Eye, Send } from 'lucide-react'; // Ajout de l'icône Send
+import { Pencil, Eye, Send } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import DebriefDialog from './DebriefDialog';
 
 interface EvaluationItem {
   id: number;
   mission: string;
-  client: string; // Added client field
+  client: string;
   code: string;
   date_auto_eval: string;
   date_eval: string;
   date_validation: string;
   evaluateur: string;
-  approbateur: string; // Added approbateur field
+  approbateur: string;
   demandeur: string;
   statut: string;
   niveau: 'Evaluateur' | 'Approbateur' | 'Terminé' | 'Auto-évaluation';
@@ -32,16 +33,14 @@ interface EvaluationTableProps {
 const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }: EvaluationTableProps) => {
   const navigate = useNavigate();
 
+  const [dialogEvaluationId, setDialogEvaluationId] = useState<number | null>(null);
+
   const handleEditClick = (evaluationId: number, niveau: string) => {
     onActionClick(evaluationId, niveau);
   };
 
   const handleViewClick = (evaluationId: number) => {
     navigate(`/evaluation-view?id=${evaluationId}`);
-  };
-
-  const handleMessageClick = (evaluationId: number) => {
-    alert(`Envoyer un message pour l'évaluation #${evaluationId}`);
   };
 
   const getNiveauBadgeProps = (niveau: string) => {
@@ -61,39 +60,25 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
     }
   };
 
-  // Helper function to determine if the edit button should be displayed
   const shouldShowEditButton = (evaluation: EvaluationItem) => {
-    // For team evaluations, check status conditions
     if (activeFilter === 'team') {
       return evaluation.statut === 'En cours' || 
              evaluation.statut === 'brouillon' ||
              evaluation.statut === 'Evaluation en cours' ||
              evaluation.statut === 'Approbation en cours';
     }
-    
-    // For self evaluations, only check niveau
     if (activeFilter === 'self') {
       return evaluation.niveau === 'Auto-évaluation';
     }
-    
     return false;
   };
 
-  // Helper function to determine if the view button should be displayed
   const shouldShowViewButton = (evaluation: EvaluationItem) => {
-    // For self evaluations section, hide the view button if status is "brouillon" or "Evaluation en cours"
     if (activeFilter === 'self') {
       return !(evaluation.statut === 'brouillon' || evaluation.statut === 'Evaluation en cours');
     }
-    
-    // For team evaluations, show the view button for all statuses
     return true;
   };
-
-  // Helper for the bouton message
-  // SUPPRIMÉ : const shouldShowMessageButton = (evaluation: EvaluationItem) => {
-  //   return activeFilter === 'self' && evaluation.statut === 'Debrief';
-  // };
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -104,7 +89,6 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
             <TableHead>Client</TableHead>
             <TableHead>Date Auto-Eval</TableHead>
             <TableHead>Date Eval</TableHead>
-            {/* Affichage dynamique du header */}
             {activeFilter === 'team' ? (
               <TableHead>Demandeur</TableHead>
             ) : (
@@ -144,7 +128,6 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                 <TableCell>{evaluation.client || "-"}</TableCell>
                 <TableCell>{evaluation.date_auto_eval}</TableCell>
                 <TableCell>{evaluation.date_eval}</TableCell>
-                {/* Affichage dynamique de la cellule : soit demandeur, soit date_validation */}
                 {activeFilter === 'team' ? (
                   <TableCell>{evaluation.demandeur || "-"}</TableCell>
                 ) : (
@@ -192,17 +175,24 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                   )}
                   {/* Bouton d'envoi d'évaluation (avion en papier) */}
                   {activeFilter === 'self' && evaluation.statut === 'Debrief' && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      title="Envoyer l'évaluation"
-                      onClick={() => {
-                        // Remplacer ceci par la logique réelle d'envoi si besoin
-                        alert(`Envoyer l'évaluation #${evaluation.id}`);
-                      }}
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Envoyer l'évaluation"
+                        onClick={() => setDialogEvaluationId(evaluation.id)}
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                      <DebriefDialog
+                        open={dialogEvaluationId === evaluation.id}
+                        onOpenChange={(open) => {
+                          if (!open) setDialogEvaluationId(null);
+                        }}
+                        evaluationId={evaluation.id}
+                        // Optionnel: onSuccess={() => ...}
+                      />
+                    </>
                   )}
                 </TableCell>
               </TableRow>
