@@ -4,7 +4,6 @@ import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { CriteriaItem } from '@/pages/Evaluation';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import HRISNavbar from '@/components/hris/HRISNavbar';
@@ -157,81 +156,75 @@ const EvaluationView = () => {
           </div>
         </div>
 
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="details">
-            <AccordionTrigger>
-              Détail complet des évaluations
-            </AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-6 mt-4">
-                {criteriaItems?.map((item: CriteriaItem) => (
-                  <div key={item.id} className="p-4 border rounded-md">
-                    <h3 className="text-lg font-medium mb-4">{item.label}</h3>
+        {/* Affichage direct du détail complet des évaluations */}
+        <div className="bg-white p-6 rounded-lg border shadow-sm space-y-6 mt-4">
+          <h3 className="text-xl font-medium mb-4">Détail complet des évaluations</h3>
+          {criteriaItems?.map((item: CriteriaItem) => (
+            <div key={item.id} className="p-4 border rounded-md">
+              <h3 className="text-lg font-medium mb-4">{item.label}</h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2 bg-gray-50 p-4 rounded-md">
-                        <h4 className="font-medium text-gray-700">Auto-évaluation du collaborateur</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2 bg-gray-50 p-4 rounded-md">
+                  <h4 className="font-medium text-gray-700">Auto-évaluation du collaborateur</h4>
 
-                        {item.type === 'numeric' ? (
-                          <div className="mt-4">
-                            {/* Cases numériques employé (readOnly) */}
-                            <NumericBoxGroup value={Number(getResponseValue(employeeResponses, item.id)) || 0} readOnly />
-                          </div>
-                        ) : item.type === 'boolean' ? (
-                          <div className="mt-4">
-                            <div className="p-3 rounded">
-                              {getResponseValue(employeeResponses, item.id) === 'oui' ? 'Oui' :
-                                getResponseValue(employeeResponses, item.id) === 'non' ? 'Non' :
-                                  'Non spécifié'}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="mt-2">
-                            <ScrollArea className="h-[100px] w-full rounded-md">
-                              <div className="p-3 bg-gray-100 rounded text-gray-600 whitespace-pre-wrap">
-                                {getResponseValue(employeeResponses, item.id) || "Aucune observation fournie"}
-                              </div>
-                            </ScrollArea>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="space-y-2 bg-blue-50 p-4 rounded-md">
-                        <h4 className="font-medium text-primary">Évaluation du manager</h4>
-
-                        {item.type === 'numeric' ? (
-                          <div className="mt-4">
-                            {/* Cases numériques manager (readOnly) */}
-                            <NumericBoxGroup value={Number(getResponseValue(evaluatorResponses, item.id)) || 0} readOnly />
-                          </div>
-                        ) : item.type === 'boolean' ? (
-                          <div className="mt-4">
-                            <div className="p-3 rounded">
-                              {getResponseValue(evaluatorResponses, item.id) === 'oui' ? 'Oui' :
-                                getResponseValue(evaluatorResponses, item.id) === 'non' ? 'Non' :
-                                  'Non spécifié'}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="mt-2">
-                            <ScrollArea className="h-[100px] w-full rounded-md">
-                              <div className="p-3 bg-blue-100 rounded text-blue-800 whitespace-pre-wrap">
-                                {getResponseValue(evaluatorResponses, item.id) || "Aucune observation fournie"}
-                              </div>
-                            </ScrollArea>
-                          </div>
-                        )}
+                  {item.type === 'numeric' ? (
+                    <div className="mt-4">
+                      {/* Cases numériques employé (readOnly) */}
+                      <NumericBoxGroup value={Number(getResponseValue(employeeResponses, item.id)) || 0} readOnly />
+                    </div>
+                  ) : item.type === 'boolean' ? (
+                    <div className="mt-4">
+                      <div className="p-3 rounded">
+                        {getResponseValue(employeeResponses, item.id) === 'oui' ? 'Oui' :
+                          getResponseValue(employeeResponses, item.id) === 'non' ? 'Non' :
+                            'Non spécifié'}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ) : (
+                    <div className="mt-2">
+                      <ScrollArea className="h-[100px] w-full rounded-md">
+                        <div className="p-3 bg-gray-100 rounded text-gray-600 whitespace-pre-wrap">
+                          {getResponseValue(employeeResponses, item.id) || "Aucune observation fournie"}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2 bg-blue-50 p-4 rounded-md">
+                  <h4 className="font-medium text-primary">Évaluation du manager</h4>
+
+                  {item.type === 'numeric' ? (
+                    <div className="mt-4">
+                      {/* Cases numériques manager (readOnly) */}
+                      <NumericBoxGroup value={Number(getResponseValue(evaluatorResponses, item.id)) || 0} readOnly />
+                    </div>
+                  ) : item.type === 'boolean' ? (
+                    <div className="mt-4">
+                      <div className="p-3 rounded">
+                        {getResponseValue(evaluatorResponses, item.id) === 'oui' ? 'Oui' :
+                          getResponseValue(evaluatorResponses, item.id) === 'non' ? 'Non' :
+                            'Non spécifié'}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-2">
+                      <ScrollArea className="h-[100px] w-full rounded-md">
+                        <div className="p-3 bg-blue-100 rounded text-blue-800 whitespace-pre-wrap">
+                          {getResponseValue(evaluatorResponses, item.id) || "Aucune observation fournie"}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  )}
+                </div>
               </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 };
 
 export default EvaluationView;
+
