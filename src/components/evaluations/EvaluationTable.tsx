@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -59,9 +58,12 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
 
   // Helper function to determine if the edit button should be displayed
   const shouldShowEditButton = (evaluation: EvaluationItem) => {
-    // For team evaluations, only check status
+    // For team evaluations, check status conditions
     if (activeFilter === 'team') {
-      return evaluation.statut === 'En cours' || evaluation.statut === 'brouillon';
+      return evaluation.statut === 'En cours' || 
+             evaluation.statut === 'brouillon' ||
+             evaluation.statut === 'Evaluation en cours' ||
+             evaluation.statut === 'Approbation en cours';
     }
     
     // For self evaluations, only check niveau
