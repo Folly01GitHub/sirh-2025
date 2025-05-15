@@ -291,6 +291,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         return numericValue >= 1 && numericValue <= 5;
       case 'observation':
         return typeof response.value === 'string' && response.value.length >= 50;
+      case 'commentaire':
+        return true;
       case 'boolean':
         return typeof response.value === 'string' && ['oui', 'non'].includes(response.value);
       default:
@@ -486,21 +488,27 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
               ) : (
                 <div className="mt-2">
                   <p className="text-sm text-gray-500 mb-2">
-                    Minimum 50 caractères
+                    {item.type === 'observation' 
+                      ? "Minimum 50 caractères" 
+                      : "Commentaire facultatif"}
                   </p>
                   <Textarea 
                     value={getEvaluatorResponseValue(item.id).toString()}
                     onChange={(e) => handleEvaluatorResponseChange(item.id, e.target.value)}
-                    placeholder="Entrez votre observation…"
+                    placeholder={item.type === 'observation' 
+                      ? "Entrez votre observation…" 
+                      : "Entrez un commentaire (facultatif)…"}
                     className="min-h-[120px] max-h-[120px] overflow-y-auto"
                   />
-                  <div className="text-xs text-right">
-                    {typeof getEvaluatorResponseValue(item.id) === 'string' && (
-                      <span className={`${(getEvaluatorResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
-                        {(getEvaluatorResponseValue(item.id) as string).length} / 50 caractères minimum
-                      </span>
-                    )}
-                  </div>
+                  {item.type === 'observation' && (
+                    <div className="text-xs text-right">
+                      {typeof getEvaluatorResponseValue(item.id) === 'string' && (
+                        <span className={`${(getEvaluatorResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
+                          {(getEvaluatorResponseValue(item.id) as string).length} / 50 caractères minimum
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
@@ -219,6 +220,10 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         const isObservationValid = response.value.length >= 50;
         console.log(`Observation validation: ${isObservationValid} (length: ${response.value.length})`);
         return isObservationValid;
+      case 'commentaire':
+        // Pour les commentaires, n'importe quelle valeur (même vide) est valide
+        console.log('Commentaire validation: always valid');
+        return true;
       case 'boolean':
         if (typeof response.value !== 'string') {
           console.log('Boolean value is not a string');
@@ -565,21 +570,25 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
               ) : (
                 <div className="space-y-2">
                   <p className="text-sm text-gray-500 mb-2">
-                    Minimum 50 caractères
+                    {item.type === 'observation' ? "Minimum 50 caractères" : "Commentaire facultatif"}
                   </p>
                   <Textarea 
                     value={getResponseValue(item.id) as string}
                     onChange={(e) => onResponseChange(item.id, e.target.value)}
-                    placeholder="Entrez votre observation…"
+                    placeholder={item.type === 'observation' 
+                      ? "Entrez votre observation…" 
+                      : "Entrez un commentaire (facultatif)…"}
                     className="min-h-[120px]"
                   />
-                  <div className="text-xs text-right">
-                    {typeof getResponseValue(item.id) === 'string' && (
-                      <span className={`${(getResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
-                        {(getResponseValue(item.id) as string).length} / 50 caractères minimum
-                      </span>
-                    )}
-                  </div>
+                  {item.type === 'observation' && (
+                    <div className="text-xs text-right">
+                      {typeof getResponseValue(item.id) === 'string' && (
+                        <span className={`${(getResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
+                          {(getResponseValue(item.id) as string).length} / 50 caractères minimum
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

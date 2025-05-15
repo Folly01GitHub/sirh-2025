@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -32,7 +33,7 @@ export interface CriteriaGroup {
 
 export interface CriteriaItem {
   id: number;
-  type: 'numeric' | 'observation' | 'boolean';
+  type: 'numeric' | 'observation' | 'boolean' | 'commentaire';
   label: string;
   group_id: number;
   group_name?: string; // Added for better error messaging
