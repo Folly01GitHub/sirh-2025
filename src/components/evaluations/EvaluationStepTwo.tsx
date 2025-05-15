@@ -300,12 +300,12 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
   };
   
-  const validateAllFields = (): boolean => {
+  const validateAllFields = (): { group?: string, label: string }[] => {
     if (!allItemsLoaded || !allCriteriaItems) {
       console.warn("Cannot validate form - all criteria items not loaded yet");
-      return false;
+      return [];
     }
-    
+
     const missing: { group?: string, label: string }[] = [];
 
     allCriteriaItems.forEach(item => {
@@ -320,7 +320,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
 
     setMissingFields(missing);
     setValidationAttempted(true);
-    return missing.length === 0;
+    return missing;
   };
   
   // Convertir les réponses au format API pour la soumission
@@ -333,21 +333,14 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const handleSubmit = async () => {
-    // Activate loading indicator immediately 
     setIsSubmitting(true);
-    console.log("Submit button clicked, isSubmitting set to true");
-    
-    // Perform field validation
-    if (!validateAllFields()) {
-      console.error("Form validation failed. Missing fields:", missingFields);
-      
-      if (missingFields.length > 0) {
-        toast.error("Formulaire incomplet", {
-          description: `${missingFields.length} champ(s) obligatoire(s) non rempli(s)`,
-          duration: 5000
-        });
-      }
-      
+    // Nouvelle façon: validation immédiate + retour des champs manquants
+    const missing = validateAllFields();
+    if (missing.length > 0) {
+      toast.error("Formulaire incomplet", {
+        description: `${missing.length} champ(s) obligatoire(s) non rempli(s)`,
+        duration: 5000
+      });
       setIsSubmitting(false);
       return;
     }
@@ -358,10 +351,10 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         evaluation_id: evaluationId,
         responses: convertToApiFormat()
       });
-      
+
       toast.success("Évaluation soumise avec succès");
       navigate('/evaluations');
-      
+
     } catch (error) {
       console.error("Erreur lors de la soumission de l'évaluation:", error);
       toast.error("Erreur lors de la soumission", {
