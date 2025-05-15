@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pencil, Eye } from 'lucide-react';
+import { Pencil, Eye, MessageSquare } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface EvaluationItem {
@@ -38,6 +37,10 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
 
   const handleViewClick = (evaluationId: number) => {
     navigate(`/evaluation-view?id=${evaluationId}`);
+  };
+
+  const handleMessageClick = (evaluationId: number) => {
+    alert(`Envoyer un message pour l'évaluation #${evaluationId}`);
   };
 
   const getNiveauBadgeProps = (niveau: string) => {
@@ -84,6 +87,11 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
     
     // For team evaluations, show the view button for all statuses
     return true;
+  };
+
+  // Helper for the bouton message
+  const shouldShowMessageButton = (evaluation: EvaluationItem) => {
+    return activeFilter === 'self' && evaluation.statut === 'Debrief';
   };
 
   return (
@@ -179,6 +187,16 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                       onClick={() => handleEditClick(evaluation.id, evaluation.niveau)}
                     >
                       <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {shouldShowMessageButton(evaluation) && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Envoyer un message"
+                      onClick={() => handleMessageClick(evaluation.id)}
+                    >
+                      <MessageSquare className="h-4 w-4" />
                     </Button>
                   )}
                 </TableCell>
