@@ -5,17 +5,9 @@ import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
 import { useSearchParams } from 'react-router-dom';
 import HRISNavbar from '@/components/hris/HRISNavbar';
-import { 
-  SidebarProvider, 
-  Sidebar, 
-  SidebarContent, 
-  SidebarHeader, 
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton
-} from '@/components/ui/sidebar';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, ChevronRight, FileText, Star } from 'lucide-react';
 import EvaluationHeader from '@/components/evaluations/EvaluationHeader';
 import EvaluationStepOne from '@/components/evaluations/EvaluationStepOne';
@@ -86,6 +78,7 @@ const Evaluation = () => {
   const [approverId, setApproverId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMissionId, setSelectedMissionId] = useState<number | null>(null);
+  const [showFullGroupName, setShowFullGroupName] = useState<number | null>(null);
   
   useEffect(() => {
     if (stepParam) {
@@ -130,8 +123,14 @@ const Evaluation = () => {
     return Math.round(((currentGroupIndex + 1) / totalGroups) * 100);
   }, [criteriaGroups, currentGroupId]);
   
-  const handleGroupChange = useCallback((groupId: number) => {
-    setCurrentGroupId(groupId);
+  const handleGroupChange = useCallback((groupId: string) => {
+    setCurrentGroupId(parseInt(groupId));
+    
+    // Afficher le nom complet du groupe pendant 3 secondes
+    setShowFullGroupName(parseInt(groupId));
+    setTimeout(() => {
+      setShowFullGroupName(null);
+    }, 3000);
   }, []);
   
   const handlePreviousGroup = useCallback(() => {
@@ -268,93 +267,112 @@ const Evaluation = () => {
     }
   }, [criteriaGroups]);
   
+  // Helper function to truncate long titles for tab display
+  const truncateGroupName = (name: string, maxLength = 20) => {
+    if (name.length <= maxLength) return name;
+    return `${name.substring(0, maxLength)}...`;
+  };
+  
   return (
-    <SidebarProvider>
-      <div className="flex flex-col min-h-screen w-full bg-[#f8f9fc]">
-        <HRISNavbar />
-        
-        <div className="flex flex-1 h-full overflow-hidden">
-          <Sidebar>
-            <SidebarHeader className="p-4 pb-0">
-              <h3 className="text-lg font-medium mb-2">Évaluation</h3>
-              <Progress value={calculateProgress()} className="h-2 mb-4" />
-            </SidebarHeader>
-            <SidebarContent>
-              <SidebarMenu>
-                {criteriaGroups?.map((group) => (
-                  <SidebarMenuItem key={group.id}>
-                    <SidebarMenuButton 
-                      isActive={currentGroupId === group.id}
-                      onClick={() => handleGroupChange(group.id)}
-                      tooltip={group.name}
-                      className={`
-                        ${currentGroupId === group.id 
-                          ? 'bg-primary/10 text-primary font-semibold border-l-4 border-primary' 
-                          : 'hover:bg-gray-100'}
-                        transition-all duration-200 ease-in-out
-                      `}
-                    >
-                      <FileText className="h-5 w-5" />
-                      <span>{group.name}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarContent>
-          </Sidebar>
-
-          <div className="flex flex-col h-full w-full overflow-auto">
-            <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-fade-in">
-              <EvaluationHeader currentStep={currentStep} />
-              
-              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <Tabs defaultValue="content" className="w-full">
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="content">Évaluation</TabsTrigger>
-                    <TabsTrigger value="instructions">Instructions</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="content" className="animate-fade-in">
-                    {currentStep === 1 && (
-                      <EvaluationStepOne 
-                        criteriaItems={criteriaItems || []}
-                        onResponseChange={handleEmployeeResponseChange}
-                        responses={employeeResponses}
-                        employees={employees || []}
-                        onEvaluatorChange={setEvaluatorId}
-                        onApproverChange={setApproverId}
-                        isLoading={itemsLoading || isSubmitting}
-                        onSubmit={handleSubmitSelfAssessment}
-                        onMissionChange={handleMissionChange}
-                        selectedMissionId={selectedMissionId}
-                      />
-                    )}
-                    
-                    {currentStep === 2 && (
-                      <EvaluationStepTwo 
-                        criteriaItems={criteriaItems || []}
-                        onResponseChange={handleEvaluatorResponseChange}
-                        employeeResponses={employeeResponses}
-                        isLoading={itemsLoading || isSubmitting}
-                        onSubmit={handleSubmitEvaluation}
-                      />
-                    )}
-                    
-                    {currentStep === 3 && (
-                      <EvaluationStepThree 
-                        criteriaItems={criteriaItems || []}
-                        isLoading={itemsLoading || isSubmitting}
-                        onApprove={handleApprove}
-                      />
-                    )}
-                  </TabsContent>
-                  
-                  <TabsContent value="instructions">
-                    <EvaluationInstructions currentStep={currentStep} />
-                  </TabsContent>
-                </Tabs>
+    <div className="flex flex-col min-h-screen w-full bg-[#f8f9fc]">
+      <HRISNavbar />
+      
+      <div className="flex flex-col h-full w-full overflow-auto">
+        <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-fade-in">
+          <EvaluationHeader currentStep={currentStep} />
+          
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div className="flex flex-col space-y-4">
+              {/* Nouvelle barre de progression */}
+              <div className="flex flex-col space-y-2 mb-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-medium">Progression</h3>
+                  <span className="text-sm text-gray-500">{calculateProgress()}%</span>
+                </div>
+                <Progress value={calculateProgress()} className="h-2" />
               </div>
               
+              {/* Affichage des onglets de groupes */}
+              {criteriaGroups && criteriaGroups.length > 0 ? (
+                <div className="mb-4">
+                  <ScrollArea className="w-full">
+                    <Tabs 
+                      value={currentGroupId.toString()} 
+                      onValueChange={handleGroupChange} 
+                      className="w-full"
+                    >
+                      <TabsList className="mb-4 flex-nowrap w-max">
+                        {criteriaGroups.map((group) => (
+                          <TabsTrigger 
+                            key={group.id} 
+                            value={String(group.id)}
+                            title={group.name} // Tooltip complet au survol
+                            className="min-w-[100px] px-3 whitespace-normal text-center h-auto py-2"
+                          >
+                            {showFullGroupName === group.id ? (
+                              <span className="animate-fade-in">{group.name}</span>
+                            ) : (
+                              truncateGroupName(group.name, 18)
+                            )}
+                          </TabsTrigger>
+                        ))}
+                      </TabsList>
+                    </Tabs>
+                  </ScrollArea>
+                </div>
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  {groupsLoading ? "Chargement des groupes..." : "Aucun groupe disponible"}
+                </div>
+              )}
+              
+              <Tabs defaultValue="content" className="w-full">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="content">Évaluation</TabsTrigger>
+                  <TabsTrigger value="instructions">Instructions</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="content" className="animate-fade-in">
+                  {currentStep === 1 && (
+                    <EvaluationStepOne 
+                      criteriaItems={criteriaItems || []}
+                      onResponseChange={handleEmployeeResponseChange}
+                      responses={employeeResponses}
+                      employees={employees || []}
+                      onEvaluatorChange={setEvaluatorId}
+                      onApproverChange={setApproverId}
+                      isLoading={itemsLoading || isSubmitting}
+                      onSubmit={handleSubmitSelfAssessment}
+                      onMissionChange={handleMissionChange}
+                      selectedMissionId={selectedMissionId}
+                    />
+                  )}
+                  
+                  {currentStep === 2 && (
+                    <EvaluationStepTwo 
+                      criteriaItems={criteriaItems || []}
+                      onResponseChange={handleEvaluatorResponseChange}
+                      employeeResponses={employeeResponses}
+                      isLoading={itemsLoading || isSubmitting}
+                      onSubmit={handleSubmitEvaluation}
+                    />
+                  )}
+                  
+                  {currentStep === 3 && (
+                    <EvaluationStepThree 
+                      criteriaItems={criteriaItems || []}
+                      isLoading={itemsLoading || isSubmitting}
+                      onApprove={handleApprove}
+                    />
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="instructions">
+                  <EvaluationInstructions currentStep={currentStep} />
+                </TabsContent>
+              </Tabs>
+              
+              {/* Boutons de navigation entre groupes */}
               <div className="flex justify-between mt-4">
                 <button
                   onClick={handlePreviousGroup}
@@ -378,7 +396,7 @@ const Evaluation = () => {
           </div>
         </div>
       </div>
-    </SidebarProvider>
+    </div>
   );
 };
 
