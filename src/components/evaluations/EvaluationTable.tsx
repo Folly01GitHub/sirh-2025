@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pencil, Eye, PaperPlane } from 'lucide-react'; // Remplacement MessageSquare par PaperPlane
+import { Pencil, Eye } from 'lucide-react';
+import { LucideIcon } from '@/components/ui/LucideIcon';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface EvaluationItem {
@@ -197,8 +197,8 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                       aria-label="Envoyer un message"
                       onClick={() => handleMessageClick(evaluation.id)}
                     >
-                      {/* Utilisation de l'icône avion en papier */}
-                      <PaperPlane className="h-4 w-4" />
+                      {/* Icône avion en papier via LucideIcon dynamique */}
+                      <LucideIcon name="paper-plane" className="h-4 w-4" />
                     </Button>
                   )}
                 </TableCell>
@@ -212,4 +212,3 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
 };
 
 export default EvaluationTable;
-
