@@ -32,9 +32,8 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<DebriefItem[]>([]);
-  const [responses, setResponses] = useState<Record<number, string | boolean>>(
-    {}
-  );
+  // Always store responses as strings: observation => string, boolean => "oui" | "non" | ""
+  const [responses, setResponses] = useState<Record<number, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [submitLoading, setSubmitLoading] = useState(false);
 
@@ -45,6 +44,7 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
         .then((r) => r.json())
         .then((data) => {
           setItems(Array.isArray(data) ? data : []);
+          setResponses({}); // Clean old responses on open
           setLoading(false);
         })
         .catch(() => {
@@ -54,7 +54,7 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
     }
   }, [open]);
 
-  const handleChange = (itemId: number, value: string | boolean) => {
+  const handleChange = (itemId: number, value: string) => {
     setResponses((prev) => ({ ...prev, [itemId]: value }));
   };
 
@@ -109,11 +109,7 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
                 {item.type === "observation" ? (
                   <Textarea
                     placeholder="Votre observation..."
-                    value={
-                      typeof responses[item.id] === "string"
-                        ? responses[item.id]
-                        : ""
-                    }
+                    value={responses[item.id] || ""}
                     onChange={(e) => handleChange(item.id, e.target.value)}
                   />
                 ) : item.type === "boolean" ? (
