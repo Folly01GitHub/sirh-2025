@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -22,6 +21,11 @@ interface CriteriaGroup {
   items: CriteriaItem[];
 }
 
+interface GroupeItem {
+  id: number;
+  name: string;
+}
+
 const EvaluationView = () => {
   const [searchParams] = useSearchParams();
   const evaluationId = searchParams.get("id");
@@ -37,15 +41,28 @@ const EvaluationView = () => {
     }
   });
 
-  // Group criteria items by group_id and group_name
+  // Nouvelle requête pour obtenir la liste des groupes depuis l'API
+  const { data: groupeItems, isLoading: groupesLoading } = useQuery({
+    queryKey: ["groupeItems"],
+    queryFn: async () => {
+      const response = await apiClient.get("/groupe_items");
+      return response.data;
+    }
+  });
+
+  // Regrouper les criteriaItems par groupes, en intégrant le vrai nom via l’API /groupe_items
   const groupedCriteria: CriteriaGroup[] =
     Array.isArray(criteriaItems) && criteriaItems.length > 0
       ? criteriaItems.reduce((acc: CriteriaGroup[], item: CriteriaItem) => {
           let group = acc.find((g) => g.group_id === item.group_id);
+          // Chercher le vrai nom du groupe depuis l’API
+          const groupFromApi = Array.isArray(groupeItems)
+            ? groupeItems.find((g: GroupeItem) => g.id === item.group_id)
+            : undefined;
           if (!group) {
             group = {
               group_id: item.group_id,
-              group_name: item.group_name || `Groupe ${item.group_id}`,
+              group_name: groupFromApi?.name || `Groupe ${item.group_id}`,
               items: []
             };
             acc.push(group);
@@ -143,7 +160,7 @@ const EvaluationView = () => {
 
   const { employeeAvg, evaluatorAvg } = calculateAverages();
 
-  if (itemsLoading) {
+  if (itemsLoading || groupesLoading) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-6 w-1/3" />
@@ -179,7 +196,7 @@ const EvaluationView = () => {
           </div>
         </div>
 
-        {/* Détail complet en tab par groupe */}
+        {/* Détail complet en tabs par groupe, avec noms dynamiques */}
         <div className="bg-white p-6 rounded-lg border shadow-sm space-y-6 mt-4">
           <h3 className="text-xl font-medium mb-6">Détail complet des évaluations</h3>
           {groupedCriteria.length > 0 && (
@@ -187,6 +204,7 @@ const EvaluationView = () => {
               <TabsList className="mb-4 flex-wrap gap-2">
                 {groupedCriteria.map((group) => (
                   <TabsTrigger key={group.group_id} value={String(group.group_id)}>
+                    {/* Affichage du vrai nom du groupe, récupéré depuis l’API groupe_items */}
                     {group.group_name}
                   </TabsTrigger>
                 ))}
@@ -198,6 +216,7 @@ const EvaluationView = () => {
                   className="space-y-6"
                 >
                   {group.items.map((item: CriteriaItem) => (
+                    // ... keep rendering of each item as before ...
                     <div key={item.id} className="p-4 border rounded-md">
                       <h3 className="text-lg font-medium mb-4">{item.label}</h3>
 
