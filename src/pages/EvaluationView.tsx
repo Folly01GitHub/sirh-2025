@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -10,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import apiClient from '@/utils/apiClient';
+import NumericBoxGroup from '@/components/evaluations/NumericBoxGroup';
 
 interface EvaluationResponse {
   item_id: number;
@@ -74,16 +74,9 @@ const EvaluationView = () => {
     return response ? response.value : "";
   };
 
-  const renderStarRating = (value: number) => {
+  const renderNumericBoxGroup = (value: number) => {
     return (
-      <div className="flex space-x-1">
-        {[1, 2, 3, 4, 5].map((starValue) => (
-          <Star 
-            key={starValue}
-            className={`h-5 w-5 ${starValue <= value ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-          />
-        ))}
-      </div>
+      <NumericBoxGroup value={value} readOnly />
     );
   };
 
@@ -145,7 +138,8 @@ const EvaluationView = () => {
               <h4 className="font-medium text-gray-700">Auto-évaluation</h4>
               <div className="flex items-center">
                 <div className="text-3xl font-bold text-yellow-500 mr-3">{employeeAvg}</div>
-                {renderStarRating(parseFloat(employeeAvg))}
+                {/* Numérique résumé employé */}
+                {renderNumericBoxGroup(parseFloat(employeeAvg))}
               </div>
             </div>
             
@@ -153,7 +147,8 @@ const EvaluationView = () => {
               <h4 className="font-medium text-primary">Évaluation du manager</h4>
               <div className="flex items-center">
                 <div className="text-3xl font-bold text-primary mr-3">{evaluatorAvg}</div>
-                {renderStarRating(parseFloat(evaluatorAvg))}
+                {/* Numérique résumé manager */}
+                {renderNumericBoxGroup(parseFloat(evaluatorAvg))}
               </div>
             </div>
           </div>
@@ -176,7 +171,8 @@ const EvaluationView = () => {
                         
                         {item.type === 'numeric' ? (
                           <div className="mt-4">
-                            {renderStarRating(Number(getResponseValue(employeeResponses, item.id)) || 0)}
+                            {/* Cases numériques employé (readOnly) */}
+                            <NumericBoxGroup value={Number(getResponseValue(employeeResponses, item.id)) || 0} readOnly />
                           </div>
                         ) : item.type === 'boolean' ? (
                           <div className="mt-4">
@@ -202,7 +198,8 @@ const EvaluationView = () => {
                         
                         {item.type === 'numeric' ? (
                           <div className="mt-4">
-                            {renderStarRating(Number(getResponseValue(evaluatorResponses, item.id)) || 0)}
+                            {/* Cases numériques manager (readOnly) */}
+                            <NumericBoxGroup value={Number(getResponseValue(evaluatorResponses, item.id)) || 0} readOnly />
                           </div>
                         ) : item.type === 'boolean' ? (
                           <div className="mt-4">
