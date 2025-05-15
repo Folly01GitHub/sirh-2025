@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pencil, Eye, MessageSquare, PaperPlane } from 'lucide-react';
+import { Pencil, Eye, MessageSquare } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface EvaluationItem {
@@ -90,9 +90,9 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
   };
 
   // Helper for the bouton message
-  const shouldShowPaperPlaneButton = (evaluation: EvaluationItem) => {
-    return activeFilter === 'self' && evaluation.statut === 'Debrief';
-  };
+  // SUPPRIMÉ : const shouldShowMessageButton = (evaluation: EvaluationItem) => {
+  //   return activeFilter === 'self' && evaluation.statut === 'Debrief';
+  // };
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -189,18 +189,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                       <Pencil className="h-4 w-4" />
                     </Button>
                   )}
-                  {/* Ajout du bouton d'avion en papier (section Mes évaluations + statut Debrief uniquement) */}
-                  {shouldShowPaperPlaneButton(evaluation) && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Envoyer"
-                      // Placeholder pour future action : à définir selon besoin
-                      onClick={() => alert(`Envoyer un message pour l'évaluation #${evaluation.id}`)}
-                    >
-                      <PaperPlane className="h-4 w-4" />
-                    </Button>
-                  )}
+                  {/* Bouton message supprimé */}
                 </TableCell>
               </TableRow>
             ))
