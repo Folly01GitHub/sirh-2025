@@ -67,8 +67,25 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
     setResponses((prev) => ({ ...prev, [itemId]: value }));
   };
 
+  // Pour vérifier si tous les champs ont une réponse
+  const allFieldsFilled =
+    items.length > 0 &&
+    items.every(
+      (item) =>
+        (item.type === "observation" && !!responses[item.id]?.trim()) ||
+        (item.type === "boolean" &&
+          (responses[item.id] === "oui" || responses[item.id] === "non"))
+    );
+
   const handleSend = async () => {
     setError(null);
+
+    // Vérifier les champs obligatoires AVANT d'envoyer
+    if (!allFieldsFilled) {
+      setError("Merci de remplir tous les champs avant de soumettre le formulaire.");
+      return;
+    }
+
     setSubmitLoading(true);
     try {
       const toSend = items.map((item) => ({
@@ -121,6 +138,7 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
                     placeholder="Votre observation..."
                     value={responses[item.id] || ""}
                     onChange={(e) => handleChange(item.id, e.target.value)}
+                    required
                   />
                 ) : item.type === "boolean" ? (
                   <div className="flex gap-4">
@@ -131,6 +149,10 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
                         value="oui"
                         checked={responses[item.id] === "oui"}
                         onChange={() => handleChange(item.id, "oui")}
+                        required={
+                          // On ne met "required" que sur le premier radio pour groupe radio
+                          !responses[item.id]
+                        }
                       />
                       Oui
                     </label>
@@ -163,7 +185,7 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
               </Button>
               <Button
                 type="submit"
-                disabled={submitLoading}
+                disabled={submitLoading || !allFieldsFilled}
                 className="bg-[#171c8f] text-white"
               >
                 {submitLoading ? "Envoi..." : "Envoyer à l'approbateur"}
@@ -177,4 +199,3 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
 };
 
 export default DebriefDialog;
-
