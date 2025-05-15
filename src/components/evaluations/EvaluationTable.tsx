@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -94,7 +95,12 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
             <TableHead>Client</TableHead>
             <TableHead>Date Auto-Eval</TableHead>
             <TableHead>Date Eval</TableHead>
-            <TableHead>Date Validation</TableHead>
+            {/* Affichage dynamique du header */}
+            {activeFilter === 'team' ? (
+              <TableHead>Demandeur</TableHead>
+            ) : (
+              <TableHead>Date Validation</TableHead>
+            )}
             <TableHead>Evaluateur</TableHead>
             <TableHead>Approbateur</TableHead>
             <TableHead>Statut</TableHead>
@@ -129,7 +135,12 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                 <TableCell>{evaluation.client || "-"}</TableCell>
                 <TableCell>{evaluation.date_auto_eval}</TableCell>
                 <TableCell>{evaluation.date_eval}</TableCell>
-                <TableCell>{evaluation.date_validation}</TableCell>
+                {/* Affichage dynamique de la cellule : soit demandeur, soit date_validation */}
+                {activeFilter === 'team' ? (
+                  <TableCell>{evaluation.demandeur || "-"}</TableCell>
+                ) : (
+                  <TableCell>{evaluation.date_validation}</TableCell>
+                )}
                 <TableCell>{evaluation.evaluateur}</TableCell>
                 <TableCell>{evaluation.approbateur || "-"}</TableCell>
                 <TableCell>
