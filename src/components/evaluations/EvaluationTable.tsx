@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pencil, Eye } from 'lucide-react';
-import { LucideIcon } from '@/components/ui/LucideIcon';
+import { Pencil, Eye, MessageSquare } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface EvaluationItem {
@@ -197,8 +196,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                       aria-label="Envoyer un message"
                       onClick={() => handleMessageClick(evaluation.id)}
                     >
-                      {/* Icône avion en papier via LucideIcon dynamique */}
-                      <LucideIcon name="paper-plane" className="h-4 w-4" />
+                      <MessageSquare className="h-4 w-4" />
                     </Button>
                   )}
                 </TableCell>
