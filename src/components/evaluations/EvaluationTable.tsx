@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pencil, Eye, MessageSquare } from 'lucide-react';
+import { Pencil, Eye, Send } from 'lucide-react'; // Ajout de l'icône Send
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface EvaluationItem {
@@ -189,7 +190,20 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                       <Pencil className="h-4 w-4" />
                     </Button>
                   )}
-                  {/* Bouton message supprimé */}
+                  {/* Bouton d'envoi d'évaluation (avion en papier) */}
+                  {activeFilter === 'self' && evaluation.statut === 'Debrief' && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Envoyer l'évaluation"
+                      onClick={() => {
+                        // Remplacer ceci par la logique réelle d'envoi si besoin
+                        alert(`Envoyer l'évaluation #${evaluation.id}`);
+                      }}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  )}
                 </TableCell>
               </TableRow>
             ))
