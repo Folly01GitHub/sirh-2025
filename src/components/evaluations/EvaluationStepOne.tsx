@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
@@ -5,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star, Save } from 'lucide-react';
+import { Star, Save, Loader } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -593,7 +594,12 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
               className="w-full md:w-auto" 
               disabled={isLoading || allItemsLoading || submitting}
             >
-              {submitting ? "Soumission en cours..." : "Soumettre mon auto-évaluation"}
+              {submitting ? (
+                <>
+                  <Loader className="h-4 w-4 mr-2 animate-spin" />
+                  Soumission en cours...
+                </>
+              ) : "Soumettre mon auto-évaluation"}
             </Button>
             
             <Button 
@@ -603,8 +609,17 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
               onClick={handleSaveAsDraft}
               disabled={isLoading || allItemsLoading || savingDraft}
             >
-              <Save className="mr-2 h-4 w-4" />
-              {savingDraft ? "Sauvegarde en cours..." : "Enregistrer comme brouillon"}
+              {savingDraft ? (
+                <>
+                  <Loader className="h-4 w-4 mr-2 animate-spin" />
+                  Sauvegarde en cours...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Enregistrer comme brouillon
+                </>
+              )}
             </Button>
           </div>
         </form>

@@ -4,7 +4,7 @@ import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star, CheckCircle, XCircle } from 'lucide-react';
+import { Star, CheckCircle, XCircle, Loader } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import apiClient from '@/utils/apiClient';
@@ -45,6 +45,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   const [employeeResponses, setEmployeeResponses] = useState<EvaluationResponse[]>([]);
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   const [isLoadingResponses, setIsLoadingResponses] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchResponses = async () => {
@@ -127,6 +128,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
       return;
     }
 
+    setIsSubmitting(true);
     try {
       await apiClient.patch(`/evaluations/${evaluationId}/validate`, {
         statut_eval: "Accepté",
@@ -139,6 +141,8 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
     } catch (error) {
       console.error("Error validating evaluation:", error);
       toast.error("Erreur lors de la validation de l'évaluation");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -153,6 +157,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
       return;
     }
     
+    setIsSubmitting(true);
     try {
       await apiClient.patch(`/evaluations/${evaluationId}/validate`, {
         statut_eval: "Refusé",
@@ -165,6 +170,8 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
     } catch (error) {
       console.error("Error rejecting evaluation:", error);
       toast.error("Erreur lors du rejet de l'évaluation");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -300,16 +307,26 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
               <Button 
                 onClick={() => setShowRejectionComment(false)}
                 variant="outline"
+                disabled={isSubmitting}
               >
                 Annuler
               </Button>
               <Button 
                 onClick={handleReject}
                 variant="destructive"
-                disabled={isLoading || comment.trim().length < 10}
+                disabled={isLoading || isSubmitting || comment.trim().length < 10}
               >
-                <XCircle className="h-4 w-4 mr-2" />
-                Confirmer le rejet
+                {isSubmitting ? (
+                  <>
+                    <Loader className="h-4 w-4 mr-2 animate-spin" />
+                    Traitement en cours...
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Confirmer le rejet
+                  </>
+                )}
               </Button>
             </div>
           </div>
@@ -318,15 +335,24 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
             <Button 
               onClick={handleApprove}
               className="bg-green-600 hover:bg-green-700"
-              disabled={isLoading}
+              disabled={isLoading || isSubmitting}
             >
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Valider l'évaluation
+              {isSubmitting ? (
+                <>
+                  <Loader className="h-4 w-4 mr-2 animate-spin" />
+                  Validation en cours...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Valider l'évaluation
+                </>
+              )}
             </Button>
             <Button 
               onClick={() => setShowRejectionComment(true)}
               variant="destructive"
-              disabled={isLoading}
+              disabled={isLoading || isSubmitting}
             >
               <XCircle className="h-4 w-4 mr-2" />
               Rejeter l'évaluation

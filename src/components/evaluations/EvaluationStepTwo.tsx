@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star, AlertTriangle, Save } from 'lucide-react';
+import { Star, AlertTriangle, Save, Loader } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
 import { toast } from 'sonner';
@@ -68,6 +67,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   const [refusalDialogOpen, setRefusalDialogOpen] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Added state for submission loading
   
   const refusalForm = useForm<RefusalFormData>({
     resolver: zodResolver(refusalSchema),
@@ -341,6 +341,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       return;
     }
 
+    setIsSubmitting(true); // Set loading state when starting submission
+
     try {
       const response = await apiClient.post('/submit_evaluator', {
         evaluation_id: evaluationId,
@@ -355,6 +357,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       toast.error("Erreur lors de la soumission", {
         description: "Veuillez réessayer ultérieurement"
       });
+    } finally {
+      setIsSubmitting(false); // Reset loading state after submission completes
     }
   };
   
@@ -500,26 +504,40 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         <Button 
           onClick={handleSubmit} 
           className="w-full md:w-auto" 
-          disabled={isLoading || responsesLoading || savingDraft}
+          disabled={isLoading || responsesLoading || savingDraft || isSubmitting}
         >
-          Soumettre mon évaluation
+          {isSubmitting ? (
+            <>
+              <Loader className="h-4 w-4 mr-2 animate-spin" />
+              Soumission en cours...
+            </>
+          ) : "Soumettre mon évaluation"}
         </Button>
         
         <Button 
           onClick={handleSaveAsDraft} 
           className="w-full md:w-auto" 
           variant="outline"
-          disabled={isLoading || responsesLoading || savingDraft}
+          disabled={isLoading || responsesLoading || savingDraft || isSubmitting}
         >
-          <Save className="mr-2 h-4 w-4" />
-          {savingDraft ? "Sauvegarde en cours..." : "Enregistrer comme brouillon"}
+          {savingDraft ? (
+            <>
+              <Loader className="h-4 w-4 mr-2 animate-spin" />
+              Sauvegarde en cours...
+            </>
+          ) : (
+            <>
+              <Save className="mr-2 h-4 w-4" />
+              Enregistrer comme brouillon
+            </>
+          )}
         </Button>
         
         <Button 
           onClick={() => setRefusalDialogOpen(true)} 
           className="w-full md:w-auto" 
           variant="outline"
-          disabled={isLoading || responsesLoading || savingDraft}
+          disabled={isLoading || responsesLoading || savingDraft || isSubmitting}
         >
           Refuser l'auto-évaluation
         </Button>
@@ -567,7 +585,12 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
                   variant="destructive"
                   disabled={refusalForm.formState.isSubmitting}
                 >
-                  Confirmer le refus
+                  {refusalForm.formState.isSubmitting ? (
+                    <>
+                      <Loader className="h-4 w-4 mr-2 animate-spin" />
+                      Traitement...
+                    </>
+                  ) : "Confirmer le refus"}
                 </Button>
               </DialogFooter>
             </form>
