@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
@@ -84,7 +83,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const [missionsError, setMissionsError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
-
+  
   const [evaluatorQuery, setEvaluatorQuery] = useState("");
   const [evaluatorOptions, setEvaluatorOptions] = useState<Employee[]>([]);
   const [evaluatorLoading, setEvaluatorLoading] = useState(false);
@@ -156,6 +155,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       approver: "",
       mission: selectedMissionId ? selectedMissionId.toString() : "",
     },
+    mode: "onSubmit"
   });
 
   useEffect(() => {
@@ -292,36 +292,40 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     return true;
   };
 
-  const handleSubmit = form.handleSubmit((data) => {
-    console.log('Form submit handler triggered');
-    console.log('Form data:', data);
-    
-    if (!validateAllFields()) {
-      console.error('Field validation failed');
-      return;
-    }
-
-    console.log('All validations passed, proceeding with submission');
-    
-    const missionId = Number(form.getValues("mission"));
-    const evaluatorId = Number(form.getValues("evaluator"));
-    const approverId = Number(form.getValues("approver"));
-    
-    const submissionData = {
-      mission_id: missionId,
-      evaluator_id: evaluatorId,
-      approver_id: approverId,
-      evaluation_id: evaluationId ? Number(evaluationId) : null,
-      responses: responses.map(r => ({
-        item_id: r.item_id,
-        value: r.value
-      }))
-    };
-    
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     setSubmitting(true);
     
-    apiClient.post('/submit_auto_evaluation', submissionData)
-      .then(response => {
+    console.log('Form submit handler triggered');
+    
+    form.handleSubmit(async (data) => {
+      console.log('Form data:', data);
+      
+      if (!validateAllFields()) {
+        console.error('Field validation failed');
+        setSubmitting(false);
+        return;
+      }
+
+      console.log('All validations passed, proceeding with submission');
+      
+      const missionId = Number(form.getValues("mission"));
+      const evaluatorId = Number(form.getValues("evaluator"));
+      const approverId = Number(form.getValues("approver"));
+      
+      const submissionData = {
+        mission_id: missionId,
+        evaluator_id: evaluatorId,
+        approver_id: approverId,
+        evaluation_id: evaluationId ? Number(evaluationId) : null,
+        responses: responses.map(r => ({
+          item_id: r.item_id,
+          value: r.value
+        }))
+      };
+      
+      try {
+        const response = await apiClient.post('/submit_auto_evaluation', submissionData);
         console.log('Auto-evaluation submitted successfully:', response.data);
         toast.success(evaluationId ? "Auto-évaluation mise à jour" : "Auto-évaluation soumise", {
           description: "Votre évaluateur a été notifié"
@@ -333,25 +337,26 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         setTimeout(() => {
           navigate('/evaluations');
         }, 1000);
-      })
-      .catch(error => {
+      } catch (error) {
         console.error("Erreur lors de la soumission de l'auto-évaluation:", error);
         
         let errorMessage = "Une erreur est survenue. Veuillez réessayer.";
-        if (error.response?.data?.message) {
-          errorMessage = error.response.data.message;
+        if ((error as any).response?.data?.message) {
+          errorMessage = (error as any).response.data.message;
         }
         
         toast.error("Échec de la soumission", {
           description: errorMessage
         });
-      })
-      .finally(() => {
+      } finally {
         setSubmitting(false);
-      });
-  });
+      }
+    })();
+  };
 
   const handleSaveAsDraft = async () => {
+    setSavingDraft(true);
+    
     const formValues = form.getValues();
     const missionId = formValues.mission ? Number(formValues.mission) : null;
     const evaluatorId = formValues.evaluator ? Number(formValues.evaluator) : null;
@@ -368,8 +373,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         value: r.value
       }))
     };
-    
-    setSavingDraft(true);
     
     try {
       const response = await apiClient.post('/auto_draft', draftData);

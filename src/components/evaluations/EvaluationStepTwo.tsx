@@ -67,7 +67,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   const [refusalDialogOpen, setRefusalDialogOpen] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // Added state for submission loading
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const refusalForm = useForm<RefusalFormData>({
     resolver: zodResolver(refusalSchema),
@@ -329,6 +329,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const handleSubmit = async () => {
+    setIsSubmitting(true);
+    
     if (!validateAllFields()) {
       console.log("Échec de la validation du formulaire. Champs manquants :", missingFields);
       
@@ -338,10 +340,10 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
           duration: 5000
         });
       }
+      
+      setIsSubmitting(false);
       return;
     }
-
-    setIsSubmitting(true); // Set loading state when starting submission
 
     try {
       const response = await apiClient.post('/submit_evaluator', {
@@ -358,7 +360,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         description: "Veuillez réessayer ultérieurement"
       });
     } finally {
-      setIsSubmitting(false); // Reset loading state after submission completes
+      setIsSubmitting(false);
     }
   };
   
