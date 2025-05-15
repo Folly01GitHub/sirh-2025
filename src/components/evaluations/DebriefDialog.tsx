@@ -24,6 +24,9 @@ interface DebriefDialogProps {
   onSuccess?: () => void;
 }
 
+const DEBRIEF_ITEMS_URL = "https://10.172.225.11:8082/api/debriefitems";
+const DEBRIEF_RESPONSES_URL = "https://10.172.225.11:8082/api/debriefresponses";
+
 const DebriefDialog: React.FC<DebriefDialogProps> = ({
   open,
   onOpenChange,
@@ -40,7 +43,7 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
   useEffect(() => {
     if (open) {
       setLoading(true);
-      fetch("/debriefitems")
+      fetch(DEBRIEF_ITEMS_URL)
         .then((r) => r.json())
         .then((data) => {
           setItems(Array.isArray(data) ? data : []);
@@ -67,7 +70,7 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
         value: responses[item.id],
       }));
 
-      const res = await fetch("/debriefresponses", {
+      const res = await fetch(DEBRIEF_RESPONSES_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -167,3 +170,4 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
 };
 
 export default DebriefDialog;
+
