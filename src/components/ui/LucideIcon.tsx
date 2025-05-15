@@ -9,10 +9,18 @@ interface LucideIconProps extends LucideProps {
   className?: string;
 }
 
-const LucideIcon: React.FC<LucideIconProps> = ({ name, size = 16, color, className, ...rest }) => {
+const LucideIcon: React.FC<LucideIconProps> = ({
+  name,
+  size = 16,
+  color,
+  className,
+  ...rest
+}) => {
   const IconComponent = icons[name];
   if (!IconComponent) return null;
-  return <IconComponent size={size} color={color} className={className} {...rest} />;
+  return (
+    <IconComponent size={size} color={color} className={className} {...rest} />
+  );
 };
 
 export default LucideIcon;
