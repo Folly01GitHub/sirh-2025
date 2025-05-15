@@ -90,9 +90,9 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
   };
 
   // Helper for the bouton message
-  const shouldShowMessageButton = (evaluation: EvaluationItem) => {
-    return activeFilter === 'self' && evaluation.statut === 'Debrief';
-  };
+  // SUPPRIMÉ : const shouldShowMessageButton = (evaluation: EvaluationItem) => {
+  //   return activeFilter === 'self' && evaluation.statut === 'Debrief';
+  // };
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -189,16 +189,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                       <Pencil className="h-4 w-4" />
                     </Button>
                   )}
-                  {shouldShowMessageButton(evaluation) && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Envoyer un message"
-                      onClick={() => handleMessageClick(evaluation.id)}
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                    </Button>
-                  )}
+                  {/* Bouton message supprimé */}
                 </TableCell>
               </TableRow>
             ))
