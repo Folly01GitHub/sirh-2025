@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface DebriefItem {
   id: number;
@@ -35,19 +36,24 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<DebriefItem[]>([]);
-  // Always store responses as strings: observation => string, boolean => "oui" | "non" | ""
   const [responses, setResponses] = useState<Record<number, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [submitLoading, setSubmitLoading] = useState(false);
 
+  const { token } = useAuth();
+
   useEffect(() => {
-    if (open) {
+    if (open && token) {
       setLoading(true);
-      fetch(DEBRIEF_ITEMS_URL)
+      fetch(DEBRIEF_ITEMS_URL, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        }
+      })
         .then((r) => r.json())
         .then((data) => {
           setItems(Array.isArray(data) ? data : []);
-          setResponses({}); // Clean old responses on open
+          setResponses({});
           setLoading(false);
         })
         .catch(() => {
@@ -55,7 +61,7 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
           setLoading(false);
         });
     }
-  }, [open]);
+  }, [open, token]);
 
   const handleChange = (itemId: number, value: string) => {
     setResponses((prev) => ({ ...prev, [itemId]: value }));
@@ -74,6 +80,7 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
           evaluation_id: evaluationId,
