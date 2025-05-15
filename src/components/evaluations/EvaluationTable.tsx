@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -198,7 +197,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                       aria-label="Envoyer un message"
                       onClick={() => handleMessageClick(evaluation.id)}
                     >
-                      <LucideIcon name="paper-plane" className="h-4 w-4" />
+                      <LucideIcon name="PaperPlane" className="h-4 w-4" />
                     </Button>
                   )}
                 </TableCell>
