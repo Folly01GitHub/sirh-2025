@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
@@ -83,7 +84,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const [missionsError, setMissionsError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
-  const [validationAttempted, setValidationAttempted] = useState(false);
 
   const [evaluatorQuery, setEvaluatorQuery] = useState("");
   const [evaluatorOptions, setEvaluatorOptions] = useState<Employee[]>([]);
@@ -296,15 +296,8 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     console.log('Form submit handler triggered');
     console.log('Form data:', data);
     
-    // Activez l'état de soumission immédiatement pour afficher le chargement
-    setSubmitting(true);
-    setValidationAttempted(true);
-    
-    // Vérifiez ensuite si tous les champs sont valides
     if (!validateAllFields()) {
       console.error('Field validation failed');
-      // Désactivez l'état de soumission si la validation échoue
-      setSubmitting(false);
       return;
     }
 
@@ -324,6 +317,8 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         value: r.value
       }))
     };
+    
+    setSubmitting(true);
     
     apiClient.post('/submit_auto_evaluation', submissionData)
       .then(response => {
@@ -587,7 +582,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
             </div>
           ))}
           
-          {validationAttempted && form.formState.errors.root && (
+          {form.formState.errors.root && (
             <p className="text-sm font-medium text-destructive">
               {form.formState.errors.root.message}
             </p>

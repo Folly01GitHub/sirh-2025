@@ -68,7 +68,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   const [refusalDialogOpen, setRefusalDialogOpen] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false); // Added state for submission loading
-  const [validationAttempted, setValidationAttempted] = useState(false);
   
   const refusalForm = useForm<RefusalFormData>({
     resolver: zodResolver(refusalSchema),
@@ -317,16 +316,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     });
 
     setMissingFields(missing);
-    
-    if (missing.length > 0) {
-      console.log("Validation failed with missing items:", missing);
-      toast.error("Formulaire incomplet", {
-        description: `${missing.length} champ(s) obligatoire(s) non rempli(s)`,
-        duration: 5000
-      });
-      return false;
-    }
-    
     return missing.length === 0;
   };
   
@@ -340,17 +329,19 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const handleSubmit = async () => {
-    // Activez l'état de soumission immédiatement
-    setIsSubmitting(true);
-    setValidationAttempted(true);
-    
-    // Effectuez la validation ensuite
     if (!validateAllFields()) {
       console.log("Échec de la validation du formulaire. Champs manquants :", missingFields);
-      // Désactivez l'état de soumission si la validation échoue
-      setIsSubmitting(false);
+      
+      if (missingFields.length > 0) {
+        toast.error("Formulaire incomplet", {
+          description: `${missingFields.length} champ(s) obligatoire(s) non rempli(s)`,
+          duration: 5000
+        });
+      }
       return;
     }
+
+    setIsSubmitting(true); // Set loading state when starting submission
 
     try {
       const response = await apiClient.post('/submit_evaluator', {
@@ -367,7 +358,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         description: "Veuillez réessayer ultérieurement"
       });
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // Reset loading state after submission completes
     }
   };
   
@@ -508,17 +499,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
           </div>
         </div>
       ))}
-      
-      {validationAttempted && missingFields.length > 0 && (
-        <div className="bg-red-50 p-4 rounded-md border border-red-200">
-          <div className="flex">
-            <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
-            <p className="text-red-800">
-              Veuillez compléter tous les champs obligatoires avant de soumettre.
-            </p>
-          </div>
-        </div>
-      )}
       
       <div className="flex flex-col md:flex-row gap-4">
         <Button 
