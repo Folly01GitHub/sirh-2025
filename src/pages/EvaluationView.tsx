@@ -9,8 +9,6 @@ import { toast } from "sonner";
 import HRISNavbar from "@/components/hris/HRISNavbar";
 import apiClient from "@/utils/apiClient";
 import NumericBoxGroup from "@/components/evaluations/NumericBoxGroup";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface EvaluationResponse {
   item_id: number;
@@ -34,8 +32,6 @@ const EvaluationView = () => {
   const [employeeResponses, setEmployeeResponses] = useState<EvaluationResponse[]>([]);
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
-  const [clickedGroupName, setClickedGroupName] = useState<string | null>(null);
-  const [showFullName, setShowFullName] = useState<boolean>(false);
 
   const { data: criteriaItems, isLoading: itemsLoading } = useQuery({
     queryKey: ["criteriaItems", evaluationId],
@@ -170,17 +166,6 @@ const EvaluationView = () => {
     return `${name.substring(0, maxLength)}...`;
   };
 
-  // Function to handle tab click and show the full name
-  const handleTabClick = (groupName: string) => {
-    setClickedGroupName(groupName);
-    setShowFullName(true);
-    
-    // Automatically hide the full name after a delay
-    setTimeout(() => {
-      setShowFullName(false);
-    }, 3000); // Hide after 3 seconds
-  };
-
   if (itemsLoading || groupesLoading) {
     return (
       <div className="space-y-6">
@@ -220,35 +205,20 @@ const EvaluationView = () => {
         {/* Détail complet en tabs par groupe, avec noms dynamiques */}
         <div className="bg-white p-6 rounded-lg border shadow-sm space-y-6 mt-4">
           <h3 className="text-xl font-medium mb-6">Détail complet des évaluations</h3>
-          
-          {/* Full group name display when tab is clicked */}
-          {showFullName && clickedGroupName && (
-            <div className="bg-primary/10 text-primary py-2 px-4 rounded-md mb-4 text-center animate-fade-in">
-              {clickedGroupName}
-            </div>
-          )}
-          
           {groupedCriteria.length > 0 && (
             <Tabs value={activeGroup ?? undefined} onValueChange={(v) => setActiveGroup(v)} className="w-full">
               <ScrollArea className="w-full">
                 <TabsList className="mb-4 flex-nowrap w-max">
                   {groupedCriteria.map((group) => (
-                    <TooltipProvider key={group.group_id}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <TabsTrigger 
-                            value={String(group.group_id)}
-                            className="min-w-[100px] px-3 whitespace-normal text-center h-auto py-2"
-                            onClick={() => handleTabClick(group.group_name)}
-                          >
-                            {truncateGroupName(group.group_name, 18)}
-                          </TabsTrigger>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="bg-white p-2 shadow-md z-50">
-                          {group.group_name}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <TabsTrigger 
+                      key={group.group_id} 
+                      value={String(group.group_id)}
+                      title={group.group_name} // Full name as tooltip on hover
+                      className="min-w-[100px] px-3 whitespace-normal text-center h-auto py-2"
+                    >
+                      {/* Afficher une version tronquée si le nom est trop long */}
+                      {truncateGroupName(group.group_name, 18)}
+                    </TabsTrigger>
                   ))}
                 </TabsList>
               </ScrollArea>
