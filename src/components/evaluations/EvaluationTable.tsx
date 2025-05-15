@@ -74,12 +74,12 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
 
   // Helper function to determine if the view button should be displayed
   const shouldShowViewButton = (evaluation: EvaluationItem) => {
-    // For self evaluations section, hide the view button if status is "brouillon"
-    if (activeFilter === 'self' && evaluation.statut === 'brouillon') {
-      return false;
+    // For self evaluations section, hide the view button if status is "brouillon" or "Evaluation en cours"
+    if (activeFilter === 'self') {
+      return !(evaluation.statut === 'brouillon' || evaluation.statut === 'Evaluation en cours');
     }
     
-    // For all other cases, show the view button
+    // For team evaluations, show the view button for all statuses
     return true;
   };
 
@@ -140,6 +140,10 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
                   ) : evaluation.statut === 'brouillon' ? (
                     <Badge variant="outline" className="border-amber-300 text-amber-600">
                       Brouillon
+                    </Badge>
+                  ) : evaluation.statut === 'Evaluation en cours' ? (
+                    <Badge variant="outline" className="border-blue-300 text-blue-600">
+                      Evaluation en cours
                     </Badge>
                   ) : (
                     <Badge>{evaluation.statut}</Badge>
