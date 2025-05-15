@@ -1,33 +1,66 @@
 
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { CriteriaItem } from '@/pages/Evaluation';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
-import HRISNavbar from '@/components/hris/HRISNavbar';
-import apiClient from '@/utils/apiClient';
-import NumericBoxGroup from '@/components/evaluations/NumericBoxGroup';
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { CriteriaItem } from "@/pages/Evaluation";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import HRISNavbar from "@/components/hris/HRISNavbar";
+import apiClient from "@/utils/apiClient";
+import NumericBoxGroup from "@/components/evaluations/NumericBoxGroup";
 
 interface EvaluationResponse {
   item_id: number;
   value: string | number;
 }
 
+interface CriteriaGroup {
+  group_id: number;
+  group_name: string;
+  items: CriteriaItem[];
+}
+
 const EvaluationView = () => {
   const [searchParams] = useSearchParams();
-  const evaluationId = searchParams.get('id');
+  const evaluationId = searchParams.get("id");
   const [employeeResponses, setEmployeeResponses] = useState<EvaluationResponse[]>([]);
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
+  const [activeGroup, setActiveGroup] = useState<string | null>(null);
 
   const { data: criteriaItems, isLoading: itemsLoading } = useQuery({
-    queryKey: ['criteriaItems', evaluationId],
+    queryKey: ["criteriaItems", evaluationId],
     queryFn: async () => {
-      const response = await apiClient.get('/items');
+      const response = await apiClient.get("/items");
       return response.data;
     }
   });
+
+  // Group criteria items by group_id and group_name
+  const groupedCriteria: CriteriaGroup[] =
+    Array.isArray(criteriaItems) && criteriaItems.length > 0
+      ? criteriaItems.reduce((acc: CriteriaGroup[], item: CriteriaItem) => {
+          let group = acc.find((g) => g.group_id === item.group_id);
+          if (!group) {
+            group = {
+              group_id: item.group_id,
+              group_name: item.group_name || `Groupe ${item.group_id}`,
+              items: []
+            };
+            acc.push(group);
+          }
+          group.items.push(item);
+          return acc;
+        }, [])
+      : [];
+
+  // Définir le groupe actif au premier onglet par défaut
+  useEffect(() => {
+    if (groupedCriteria.length > 0 && !activeGroup) {
+      setActiveGroup(String(groupedCriteria[0].group_id));
+    }
+  }, [groupedCriteria, activeGroup]);
 
   useEffect(() => {
     const fetchResponses = async () => {
@@ -51,9 +84,12 @@ const EvaluationView = () => {
             .filter((response: any) => response && response.id_item)
             .map((response: any) => ({
               item_id: parseInt(response.id_item),
-              value: response.type_item === "numerique" || response.type_item === "numeric"
-                ? (response.reponse_item ? parseInt(response.reponse_item) : 0)
-                : (response.reponse_item || "")
+              value:
+                response.type_item === "numerique" || response.type_item === "numeric"
+                  ? response.reponse_item
+                    ? parseInt(response.reponse_item)
+                    : 0
+                  : response.reponse_item || ""
             }));
         };
 
@@ -69,26 +105,19 @@ const EvaluationView = () => {
   }, [evaluationId]);
 
   const getResponseValue = (responses: EvaluationResponse[], itemId: number) => {
-    const response = responses.find(r => r.item_id === itemId);
+    const response = responses.find((r) => r.item_id === itemId);
     return response ? response.value : "";
   };
 
-  // On garde la fonction NumericBoxGroup car elle est utilisée dans la partie détail !
-  const renderNumericBoxGroup = (value: number) => {
-    return (
-      <NumericBoxGroup value={value} readOnly />
-    );
-  };
-
   const calculateAverages = () => {
-    if (!criteriaItems) return { employeeAvg: '0.0', evaluatorAvg: '0.0' };
+    if (!criteriaItems) return { employeeAvg: "0.0", evaluatorAvg: "0.0" };
 
-    const numericItems = criteriaItems.filter((item: CriteriaItem) => item.type === 'numeric');
-    if (numericItems.length === 0) return { employeeAvg: '0.0', evaluatorAvg: '0.0' };
+    const numericItems = criteriaItems.filter((item: CriteriaItem) => item.type === "numeric");
+    if (numericItems.length === 0) return { employeeAvg: "0.0", evaluatorAvg: "0.0" };
 
     let employeeSum = 0;
     let employeeCount = 0;
-    numericItems.forEach(item => {
+    numericItems.forEach((item) => {
       const value = Number(getResponseValue(employeeResponses, item.id));
       if (!isNaN(value) && value > 0) {
         employeeSum += value;
@@ -98,7 +127,7 @@ const EvaluationView = () => {
 
     let evaluatorSum = 0;
     let evaluatorCount = 0;
-    numericItems.forEach(item => {
+    numericItems.forEach((item) => {
       const value = Number(getResponseValue(evaluatorResponses, item.id));
       if (!isNaN(value) && value > 0) {
         evaluatorSum += value;
@@ -106,8 +135,8 @@ const EvaluationView = () => {
       }
     });
 
-    const employeeAvg = employeeCount > 0 ? (employeeSum / employeeCount).toFixed(1) : '0.0';
-    const evaluatorAvg = evaluatorCount > 0 ? (evaluatorSum / evaluatorCount).toFixed(1) : '0.0';
+    const employeeAvg = employeeCount > 0 ? (employeeSum / employeeCount).toFixed(1) : "0.0";
+    const evaluatorAvg = evaluatorCount > 0 ? (evaluatorSum / evaluatorCount).toFixed(1) : "0.0";
 
     return { employeeAvg, evaluatorAvg };
   };
@@ -137,89 +166,114 @@ const EvaluationView = () => {
             <div className="space-y-2">
               <h4 className="font-medium text-gray-700">Auto-évaluation</h4>
               <div className="flex items-center">
-                {/* Affichage de la note globale employé, sans cases numériques */}
-                <div className="text-3xl font-bold text-yellow-500 mr-3">
-                  {employeeAvg}/5
-                </div>
+                <div className="text-3xl font-bold text-yellow-500 mr-3">{employeeAvg}/5</div>
               </div>
             </div>
 
             <div className="space-y-2">
               <h4 className="font-medium text-primary">Évaluation du manager</h4>
               <div className="flex items-center">
-                {/* Affichage de la note globale manager, sans cases numériques */}
-                <div className="text-3xl font-bold text-primary mr-3">
-                  {evaluatorAvg}/5
-                </div>
+                <div className="text-3xl font-bold text-primary mr-3">{evaluatorAvg}/5</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Affichage direct du détail complet des évaluations */}
+        {/* Détail complet en tab par groupe */}
         <div className="bg-white p-6 rounded-lg border shadow-sm space-y-6 mt-4">
-          <h3 className="text-xl font-medium mb-4">Détail complet des évaluations</h3>
-          {criteriaItems?.map((item: CriteriaItem) => (
-            <div key={item.id} className="p-4 border rounded-md">
-              <h3 className="text-lg font-medium mb-4">{item.label}</h3>
+          <h3 className="text-xl font-medium mb-6">Détail complet des évaluations</h3>
+          {groupedCriteria.length > 0 && (
+            <Tabs value={activeGroup ?? undefined} onValueChange={(v) => setActiveGroup(v)} className="w-full">
+              <TabsList className="mb-4 flex-wrap gap-2">
+                {groupedCriteria.map((group) => (
+                  <TabsTrigger key={group.group_id} value={String(group.group_id)}>
+                    {group.group_name}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              {groupedCriteria.map((group) => (
+                <TabsContent
+                  key={group.group_id}
+                  value={String(group.group_id)}
+                  className="space-y-6"
+                >
+                  {group.items.map((item: CriteriaItem) => (
+                    <div key={item.id} className="p-4 border rounded-md">
+                      <h3 className="text-lg font-medium mb-4">{item.label}</h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2 bg-gray-50 p-4 rounded-md">
-                  <h4 className="font-medium text-gray-700">Auto-évaluation du collaborateur</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2 bg-gray-50 p-4 rounded-md">
+                          <h4 className="font-medium text-gray-700">
+                            Auto-évaluation du collaborateur
+                          </h4>
 
-                  {item.type === 'numeric' ? (
-                    <div className="mt-4">
-                      {/* Cases numériques employé (readOnly) */}
-                      <NumericBoxGroup value={Number(getResponseValue(employeeResponses, item.id)) || 0} readOnly />
-                    </div>
-                  ) : item.type === 'boolean' ? (
-                    <div className="mt-4">
-                      <div className="p-3 rounded">
-                        {getResponseValue(employeeResponses, item.id) === 'oui' ? 'Oui' :
-                          getResponseValue(employeeResponses, item.id) === 'non' ? 'Non' :
-                            'Non spécifié'}
+                          {item.type === "numeric" ? (
+                            <div className="mt-4">
+                              <NumericBoxGroup
+                                value={Number(getResponseValue(employeeResponses, item.id)) || 0}
+                                readOnly
+                              />
+                            </div>
+                          ) : item.type === "boolean" ? (
+                            <div className="mt-4">
+                              <div className="p-3 rounded">
+                                {getResponseValue(employeeResponses, item.id) === "oui"
+                                  ? "Oui"
+                                  : getResponseValue(employeeResponses, item.id) === "non"
+                                  ? "Non"
+                                  : "Non spécifié"}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="mt-2">
+                              <ScrollArea className="h-[100px] w-full rounded-md">
+                                <div className="p-3 bg-gray-100 rounded text-gray-600 whitespace-pre-wrap">
+                                  {getResponseValue(employeeResponses, item.id) ||
+                                    "Aucune observation fournie"}
+                                </div>
+                              </ScrollArea>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="space-y-2 bg-blue-50 p-4 rounded-md">
+                          <h4 className="font-medium text-primary">Évaluation du manager</h4>
+
+                          {item.type === "numeric" ? (
+                            <div className="mt-4">
+                              <NumericBoxGroup
+                                value={Number(getResponseValue(evaluatorResponses, item.id)) || 0}
+                                readOnly
+                              />
+                            </div>
+                          ) : item.type === "boolean" ? (
+                            <div className="mt-4">
+                              <div className="p-3 rounded">
+                                {getResponseValue(evaluatorResponses, item.id) === "oui"
+                                  ? "Oui"
+                                  : getResponseValue(evaluatorResponses, item.id) === "non"
+                                  ? "Non"
+                                  : "Non spécifié"}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="mt-2">
+                              <ScrollArea className="h-[100px] w-full rounded-md">
+                                <div className="p-3 bg-blue-100 rounded text-blue-800 whitespace-pre-wrap">
+                                  {getResponseValue(evaluatorResponses, item.id) ||
+                                    "Aucune observation fournie"}
+                                </div>
+                              </ScrollArea>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  ) : (
-                    <div className="mt-2">
-                      <ScrollArea className="h-[100px] w-full rounded-md">
-                        <div className="p-3 bg-gray-100 rounded text-gray-600 whitespace-pre-wrap">
-                          {getResponseValue(employeeResponses, item.id) || "Aucune observation fournie"}
-                        </div>
-                      </ScrollArea>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-2 bg-blue-50 p-4 rounded-md">
-                  <h4 className="font-medium text-primary">Évaluation du manager</h4>
-
-                  {item.type === 'numeric' ? (
-                    <div className="mt-4">
-                      {/* Cases numériques manager (readOnly) */}
-                      <NumericBoxGroup value={Number(getResponseValue(evaluatorResponses, item.id)) || 0} readOnly />
-                    </div>
-                  ) : item.type === 'boolean' ? (
-                    <div className="mt-4">
-                      <div className="p-3 rounded">
-                        {getResponseValue(evaluatorResponses, item.id) === 'oui' ? 'Oui' :
-                          getResponseValue(evaluatorResponses, item.id) === 'non' ? 'Non' :
-                            'Non spécifié'}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mt-2">
-                      <ScrollArea className="h-[100px] w-full rounded-md">
-                        <div className="p-3 bg-blue-100 rounded text-blue-800 whitespace-pre-wrap">
-                          {getResponseValue(evaluatorResponses, item.id) || "Aucune observation fournie"}
-                        </div>
-                      </ScrollArea>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+                  ))}
+                </TabsContent>
+              ))}
+            </Tabs>
+          )}
         </div>
       </div>
     </div>
@@ -227,4 +281,3 @@ const EvaluationView = () => {
 };
 
 export default EvaluationView;
-
