@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,20 +21,11 @@ const userSchema = z.object({
 
 type UserFormData = z.infer<typeof userSchema>;
 
-const positions = [
-  "Associate", 
-  "Director", 
-  "Senior Manager", 
-  "Manager", 
-  "Senior", 
-  "Assistant", 
-  "Trainee"
-];
-
-const departments = ["HR", "TDC", "FA"];
-
 const AddUserCard = () => {
   const [loading, setLoading] = useState(false);
+  const [positions, setPositions] = useState<string[]>([]);
+  const [departments, setDepartments] = useState<string[]>([]);
+  const [loadingLists, setLoadingLists] = useState(true);
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
@@ -47,6 +38,28 @@ const AddUserCard = () => {
     }
   });
 
+  // Fetch lists at mount
+  useEffect(() => {
+    async function fetchLists() {
+      setLoadingLists(true);
+      try {
+        const [gradesRes, deptsRes] = await Promise.all([
+          axios.get('https://10.172.225.11:8082/api/grades'),
+          axios.get('https://10.172.225.11:8082/api/departements'),
+        ]);
+        // grades API expected to return array of string names
+        // depts API expected to return array of string names
+        setPositions(Array.isArray(gradesRes.data) ? gradesRes.data : []);
+        setDepartments(Array.isArray(deptsRes.data) ? deptsRes.data : []);
+      } catch (err) {
+        toast.error('Impossible de charger les listes des postes ou départements.');
+      } finally {
+        setLoadingLists(false);
+      }
+    }
+    fetchLists();
+  }, []);
+
   const onSubmit = async (data: UserFormData) => {
     setLoading(true);
     try {
@@ -57,7 +70,6 @@ const AddUserCard = () => {
         position: data.position,
         department: data.department,
       });
-      
       toast.success("Invitation envoyée avec succès !");
       form.reset();
     } catch (error: any) {
@@ -127,13 +139,18 @@ const AddUserCard = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Poste</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingLists}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un poste" />
+                        <SelectValue placeholder={loadingLists ? "Chargement..." : "Sélectionner un poste"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      {positions.length === 0 && !loadingLists && (
+                        <SelectItem value="" disabled>
+                          Aucune donnée
+                        </SelectItem>
+                      )}
                       {positions.map((position) => (
                         <SelectItem key={position} value={position}>
                           {position}
@@ -151,13 +168,18 @@ const AddUserCard = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Département</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingLists}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner un département" />
+                        <SelectValue placeholder={loadingLists ? "Chargement..." : "Sélectionner un département"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      {departments.length === 0 && !loadingLists && (
+                        <SelectItem value="" disabled>
+                          Aucune donnée
+                        </SelectItem>
+                      )}
                       {departments.map((department) => (
                         <SelectItem key={department} value={department}>
                           {department}
@@ -172,7 +194,7 @@ const AddUserCard = () => {
             <Button 
               type="submit" 
               className="w-full mt-4"
-              disabled={loading}
+              disabled={loading || loadingLists}
             >
               {loading ? "Envoi en cours..." : "Envoyer l'invitation"}
             </Button>
@@ -184,4 +206,3 @@ const AddUserCard = () => {
 };
 
 export default AddUserCard;
-
