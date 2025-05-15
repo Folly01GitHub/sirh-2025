@@ -54,8 +54,27 @@ const AddUserCard = () => {
           axios.get('https://10.172.225.11:8082/api/grades', { headers }),
           axios.get('https://10.172.225.11:8082/api/departements', { headers }),
         ]);
-        setPositions(Array.isArray(gradesRes.data) ? gradesRes.data : []);
-        setDepartments(Array.isArray(deptsRes.data) ? deptsRes.data : []);
+        // On tente d'extraire soit la propriété spécifique, soit un tableau racine
+        // Pour les postes
+        let positions: string[] = [];
+        if (gradesRes.data) {
+          if (Array.isArray(gradesRes.data)) {
+            positions = gradesRes.data;
+          } else if (Array.isArray(gradesRes.data.grades)) {
+            positions = gradesRes.data.grades;
+          }
+        }
+        // Pour les départements
+        let departments: string[] = [];
+        if (deptsRes.data) {
+          if (Array.isArray(deptsRes.data)) {
+            departments = deptsRes.data;
+          } else if (Array.isArray(deptsRes.data.departements)) {
+            departments = deptsRes.data.departements;
+          }
+        }
+        setPositions(positions);
+        setDepartments(departments);
       } catch (err) {
         toast.error('Impossible de charger les listes des postes ou départements.');
       } finally {
@@ -211,4 +230,3 @@ const AddUserCard = () => {
 };
 
 export default AddUserCard;
-
