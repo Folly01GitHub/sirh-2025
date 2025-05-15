@@ -14,6 +14,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import NumericBoxGroup from "./NumericBoxGroup";
 
 interface ApiResponse {
   mission_id: string;
@@ -100,6 +101,10 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
       </div>
     );
   };
+
+  const renderNumericBoxReadOnly = (value: number) => (
+    <NumericBoxGroup value={value} readOnly />
+  );
 
   const calculateAverages = () => {
     const numericItems = criteriaItems.filter(item => item.type === 'numeric');
@@ -203,7 +208,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
             <h4 className="font-medium text-gray-700">Auto-évaluation</h4>
             <div className="flex items-center">
               <div className="text-3xl font-bold text-yellow-500 mr-3">{employeeAvg}</div>
-              {renderStarRating(parseFloat(employeeAvg))}
+              {renderNumericBoxReadOnly(parseFloat(employeeAvg))}
             </div>
           </div>
           
@@ -211,7 +216,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
             <h4 className="font-medium text-primary">Évaluation du manager</h4>
             <div className="flex items-center">
               <div className="text-3xl font-bold text-primary mr-3">{evaluatorAvg}</div>
-              {renderStarRating(parseFloat(evaluatorAvg))}
+              {renderNumericBoxReadOnly(parseFloat(evaluatorAvg))}
             </div>
           </div>
         </div>
@@ -234,7 +239,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                       
                       {item.type === 'numeric' ? (
                         <div className="mt-4">
-                          {renderStarRating(Number(getResponseValue(employeeResponses, item.id)) || 0)}
+                          {renderNumericBoxReadOnly(Number(getResponseValue(employeeResponses, item.id)) || 0)}
                         </div>
                       ) : item.type === 'boolean' ? (
                         <div className="mt-4">
@@ -260,7 +265,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                       
                       {item.type === 'numeric' ? (
                         <div className="mt-4">
-                          {renderStarRating(Number(getResponseValue(evaluatorResponses, item.id)) || 0)}
+                          {renderNumericBoxReadOnly(Number(getResponseValue(evaluatorResponses, item.id)) || 0)}
                         </div>
                       ) : item.type === 'boolean' ? (
                         <div className="mt-4">

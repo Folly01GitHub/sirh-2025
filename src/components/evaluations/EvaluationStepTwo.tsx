@@ -22,6 +22,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import NumericBoxGroup from './NumericBoxGroup';
 
 interface EvaluationStepTwoProps {
   criteriaItems: CriteriaItem[];
@@ -281,6 +282,23 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     );
   };
   
+  const renderCollaboratorNumericBox = (itemId: number) => {
+    const currentValue = Number(getCollaboratorResponseValue(itemId)) || 0;
+    return (
+      <NumericBoxGroup value={currentValue} readOnly />
+    );
+  };
+  
+  const renderEvaluatorNumericBox = (itemId: number) => {
+    const currentValue = Number(getEvaluatorResponseValue(itemId)) || 0;
+    return (
+      <NumericBoxGroup
+        value={currentValue}
+        onChange={(val) => handleEvaluatorResponseChange(itemId, val)}
+      />
+    );
+  };
+  
   const isValidResponse = (response: EvaluationResponse | undefined, type: string): boolean => {
     if (!response) return false;
     
@@ -445,7 +463,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
               
               {item.type === 'numeric' ? (
                 <div className="mt-4">
-                  {renderCollaboratorStarRating(item.id)}
+                  {renderCollaboratorNumericBox(item.id)}
                 </div>
               ) : item.type === 'boolean' ? (
                 <div className="mt-4">
@@ -467,12 +485,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
               
               {item.type === 'numeric' ? (
                 <div className="mt-4">
-                  {renderEvaluatorStarRating(item.id)}
-                  
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Très insuffisant</span>
-                    <span>Excellent</span>
-                  </div>
+                  {renderEvaluatorNumericBox(item.id)}
                 </div>
               ) : item.type === 'boolean' ? (
                 <div className="mt-4">
