@@ -68,6 +68,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   const [refusalDialogOpen, setRefusalDialogOpen] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationAttempted, setValidationAttempted] = useState(false);
   
   const refusalForm = useForm<RefusalFormData>({
     resolver: zodResolver(refusalSchema),
@@ -316,6 +317,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     });
 
     setMissingFields(missing);
+    setValidationAttempted(true);
     return missing.length === 0;
   };
   
@@ -329,8 +331,10 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const handleSubmit = async () => {
+    // Active immédiatement l'indicateur de chargement
     setIsSubmitting(true);
     
+    // Effectue la validation des champs
     if (!validateAllFields()) {
       console.log("Échec de la validation du formulaire. Champs manquants :", missingFields);
       
