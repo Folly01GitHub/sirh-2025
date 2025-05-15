@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,7 +10,6 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import Dashboard from "./pages/admin/Dashboard";
-import Users from "./pages/admin/Users";
 import Settings from "./pages/admin/Settings";
 import Activate from "./pages/Activate";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -37,7 +37,6 @@ const App = () => (
             <Route element={<AuthGuard />}>
               <Route path="/home" element={<Home />} />
               <Route path="/admin/dashboard" element={<Dashboard />} />
-              <Route path="/admin/users" element={<Users />} />
               <Route path="/admin/settings" element={<Settings />} />
               <Route path="/leave" element={<Home />} />
               <Route path="/assessments" element={<Home />} />
