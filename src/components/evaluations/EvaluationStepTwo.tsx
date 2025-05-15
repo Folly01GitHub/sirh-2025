@@ -69,6 +69,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   const [savingDraft, setSavingDraft] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationAttempted, setValidationAttempted] = useState(false);
+  const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
   
   const refusalForm = useForm<RefusalFormData>({
     resolver: zodResolver(refusalSchema),
@@ -97,7 +98,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   const [criteriaMissing, setCriteriaMissing] = useState<boolean>(false);
-  const [missingFields, setMissingFields] = useState<{ group?: string, label: string }[]>([]);
   
   // Query pour récupérer les réponses de l'évaluateur (format API mise à jour)
   const { data: evaluatorApiResponse, isLoading: evaluatorResponsesLoading } = useQuery({
@@ -331,12 +331,13 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const handleSubmit = async () => {
-    // Active immédiatement l'indicateur de chargement
+    // Activate loading indicator immediately 
     setIsSubmitting(true);
+    console.log("Submit button clicked, isSubmitting set to true");
     
-    // Effectue la validation des champs
+    // Perform field validation
     if (!validateAllFields()) {
-      console.log("Échec de la validation du formulaire. Champs manquants :", missingFields);
+      console.error("Form validation failed. Missing fields:", missingFields);
       
       if (missingFields.length > 0) {
         toast.error("Formulaire incomplet", {
@@ -350,6 +351,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
 
     try {
+      console.log("Submitting evaluation data...");
       const response = await apiClient.post('/submit_evaluator', {
         evaluation_id: evaluationId,
         responses: convertToApiFormat()
