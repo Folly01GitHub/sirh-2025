@@ -16,6 +16,7 @@ import PermissionRequestForm from '@/components/permissions/PermissionRequestFor
 import PermissionRequests from '@/components/permissions/PermissionRequests';
 import PermissionValidations from '@/components/permissions/PermissionValidations';
 import { FormInput, PanelBottom, ClipboardCheck } from 'lucide-react';
+import { Toaster } from '@/components/ui/toaster';
 
 const Permissions = () => {
   const [activeSection, setActiveSection] = useState("form");
@@ -115,6 +116,8 @@ const Permissions = () => {
             </div>
           </SidebarInset>
         </div>
+        
+        <Toaster />
       </div>
     </SidebarProvider>
   );

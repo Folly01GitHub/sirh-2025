@@ -8,8 +8,9 @@ import { fr } from 'date-fns/locale';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import { CalendarIcon, Clock, Loader2 } from 'lucide-react';
+import { CalendarIcon, Clock, Loader2, AlertCircle } from 'lucide-react';
 import apiClient from '@/utils/apiClient';
+import { useToast } from '@/hooks/use-toast';
 
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +22,23 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface PermissionRequestFormProps {
   onSubmitSuccess: () => void;
@@ -52,10 +70,12 @@ type FormData = z.infer<typeof formSchema>;
 
 const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) => {
   const { user, token } = useAuth();
+  const { toast: showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [approverQuery, setApproverQuery] = useState("");
   const [approverOptions, setApproverOptions] = useState<Approver[]>([]);
   const [approverLoading, setApproverLoading] = useState(false);
+  const [showAlertDialog, setShowAlertDialog] = useState(false);
   
   // Updated time options: from 8:00 to 18:00 with 30-minute intervals
   const timeOptions = Array.from({ length: 21 }, (_, i) => {
@@ -92,7 +112,22 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
     },
   });
   
-  const onSubmit = async (data: FormData) => {
+  const checkSelectors = () => {
+    const { approver_id, start_time, end_time } = form.getValues();
+    return approver_id && start_time && end_time;
+  };
+  
+  const handleFormSubmit = (data: FormData) => {
+    if (!checkSelectors()) {
+      console.log("Sélecteurs manquants détectés");
+      setShowAlertDialog(true);
+      return;
+    }
+    
+    submitRequest(data);
+  };
+  
+  const submitRequest = async (data: FormData) => {
     setIsSubmitting(true);
     
     try {
@@ -125,6 +160,12 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
         description: 'Votre demande de permission a été soumise avec succès.',
       });
       
+      showToast({
+        title: "Demande de permission envoyée",
+        description: "Votre demande a été soumise avec succès.",
+        variant: "success",
+      });
+      
       form.reset({
         permission_date: new Date(),
         start_time: '',
@@ -149,108 +190,47 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
       toast.error('Échec de l\'envoi', {
         description: 'Vérifiez vos données et réessayez.',
       });
+      
+      showToast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi de votre demande.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
   
   return (
-    <Card className="w-full shadow-md animate-fade-in">
-      <CardHeader>
-        <CardTitle className="text-xl font-semibold text-center text-[#172b4d]">
-          Formulaire de demande
-        </CardTitle>
-      </CardHeader>
-      
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="approver_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Approbateur</FormLabel>
-                  <SearchableSelect
-                    label=""
-                    placeholder="Sélectionnez ou cherchez un approbateur..."
-                    value={field.value}
-                    onChange={field.onChange}
-                    onSearch={setApproverQuery}
-                    options={approverOptions.map(approver => ({
-                      label: `${approver.name} - ${approver.position}`,
-                      value: approver.id.toString()
-                    }))}
-                    loading={approverLoading}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="permission_date"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Date de permission</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full pl-3 text-left font-normal flex justify-between items-center hover:bg-gray-50 transition-colors",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, 'PPP', { locale: fr })
-                          ) : (
-                            <span>Sélectionnez une date</span>
-                          )}
-                          <CalendarIcon className="h-4 w-4 opacity-70" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <>
+      <Card className="w-full shadow-md animate-fade-in">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold text-center text-[#172b4d]">
+            Formulaire de demande
+          </CardTitle>
+        </CardHeader>
+        
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
-                name="start_time"
+                name="approver_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Heure de départ</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="hover:bg-gray-50 transition-colors">
-                          <SelectValue placeholder="Sélectionnez l'heure de départ" />
-                          <Clock className="h-4 w-4 opacity-70" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="max-h-[200px]">
-                        {timeOptions.map((time) => (
-                          <SelectItem key={`start-${time}`} value={time}>
-                            {time}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>Approbateur</FormLabel>
+                    <SearchableSelect
+                      label=""
+                      placeholder="Sélectionnez ou cherchez un approbateur..."
+                      value={field.value}
+                      onChange={field.onChange}
+                      onSearch={setApproverQuery}
+                      options={approverOptions.map(approver => ({
+                        label: `${approver.name} - ${approver.position}`,
+                        value: approver.id.toString()
+                      }))}
+                      loading={approverLoading}
+                    />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -258,78 +238,169 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
               
               <FormField
                 control={form.control}
-                name="end_time"
+                name="permission_date"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Heure de retour</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="hover:bg-gray-50 transition-colors">
-                          <SelectValue placeholder="Sélectionnez l'heure de retour" />
-                          <Clock className="h-4 w-4 opacity-70" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="max-h-[200px]">
-                        {timeOptions.map((time) => (
-                          <SelectItem 
-                            key={`end-${time}`} 
-                            value={time}
-                            disabled={time <= form.watch('start_time')}
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Date de permission</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full pl-3 text-left font-normal flex justify-between items-center hover:bg-gray-50 transition-colors",
+                              !field.value && "text-muted-foreground"
+                            )}
                           >
-                            {time}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                            {field.value ? (
+                              format(field.value, 'PPP', { locale: fr })
+                            ) : (
+                              <span>Sélectionnez une date</span>
+                            )}
+                            <CalendarIcon className="h-4 w-4 opacity-70" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
-            
-            <FormField
-              control={form.control}
-              name="reason"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Motif de la demande</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Entrez le motif de votre demande..."
-                      className="resize-none h-24 hover:bg-gray-50 transition-colors"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Veuillez fournir des détails suffisants pour faciliter l'approbation.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <input type="hidden" {...form.register('validation_level')} value="0" />
-            
-            <CardFooter className="flex justify-end px-0 pt-4">
-              <Button 
-                type="submit" 
-                className="w-full sm:w-auto bg-[#28a745] hover:bg-[#218838] transition-all duration-300 transform hover:scale-105"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Envoi en cours...
-                  </>
-                ) : (
-                  'Soumettre la demande'
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="start_time"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Heure de départ</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="hover:bg-gray-50 transition-colors">
+                            <SelectValue placeholder="Sélectionnez l'heure de départ" />
+                            <Clock className="h-4 w-4 opacity-70" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="max-h-[200px]">
+                          {timeOptions.map((time) => (
+                            <SelectItem key={`start-${time}`} value={time}>
+                              {time}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="end_time"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Heure de retour</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="hover:bg-gray-50 transition-colors">
+                            <SelectValue placeholder="Sélectionnez l'heure de retour" />
+                            <Clock className="h-4 w-4 opacity-70" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="max-h-[200px]">
+                          {timeOptions.map((time) => (
+                            <SelectItem 
+                              key={`end-${time}`} 
+                              value={time}
+                              disabled={time <= form.watch('start_time')}
+                            >
+                              {time}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormField
+                control={form.control}
+                name="reason"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Motif de la demande</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Entrez le motif de votre demande..."
+                        className="resize-none h-24 hover:bg-gray-50 transition-colors"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Veuillez fournir des détails suffisants pour faciliter l'approbation.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </Button>
-            </CardFooter>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+              />
+              
+              <input type="hidden" {...form.register('validation_level')} value="0" />
+              
+              <CardFooter className="flex justify-end px-0 pt-4">
+                <Button 
+                  type="submit" 
+                  className="w-full sm:w-auto bg-[#28a745] hover:bg-[#218838] transition-all duration-300 transform hover:scale-105"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Envoi en cours...
+                    </>
+                  ) : (
+                    'Soumettre la demande'
+                  )}
+                </Button>
+              </CardFooter>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+      
+      <AlertDialog open={showAlertDialog} onOpenChange={setShowAlertDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center text-red-600">
+              <AlertCircle className="h-5 w-5 mr-2" />
+              Champs requis manquants
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              Assurez-vous d'avoir bien sélectionné l'évaluateur, l'approbateur et la mission svp !
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction 
+              onClick={() => setShowAlertDialog(false)}
+              className="bg-primary hover:bg-primary/90"
+            >
+              Compris
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
