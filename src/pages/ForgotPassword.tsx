@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,31 +29,6 @@ const ForgotPassword = () => {
   
   const queryParams = new URLSearchParams(location.search);
   const token = queryParams.get('token');
-  
-  // Effacer tous les cookies au chargement de la page
-  useEffect(() => {
-    const clearAllCookies = () => {
-      const cookies = document.cookie.split(";");
-      
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i];
-        const eqPos = cookie.indexOf("=");
-        const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
-      }
-      
-      // Pour couvrir différents chemins potentiels
-      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
-
-      console.log("Tous les cookies ont été supprimés sur la page de réinitialisation de mot de passe");
-    };
-    
-    clearAllCookies();
-    
-    // Vider également localStorage et sessionStorage pour plus de sécurité
-    localStorage.clear();
-    sessionStorage.clear();
-  }, []);
 
   const form = useForm<PasswordForm>({
     resolver: zodResolver(passwordSchema),
