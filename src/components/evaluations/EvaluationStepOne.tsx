@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -77,6 +77,39 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const evaluationId = searchParams.get('id');
+  
+  const formRef = useRef<HTMLFormElement>(null);
+  const formTopRef = useRef<HTMLDivElement>(null);
+  
+  // Fonction de défilement modifiée et simplifiée
+  const scrollToTop = () => {
+    // Tentative 1: Utilisation de formTopRef
+    if (formTopRef.current) {
+      console.log("Référence formTopRef trouvée, utilisation de scrollIntoView");
+      formTopRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+      return; // Si cela fonctionne, sortir de la fonction
+    }
+    
+    // Tentative 2: Utilisation de formRef
+    if (formRef.current) {
+      console.log("Référence formRef trouvée, utilisation de scrollIntoView");
+      formRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+      return; // Si cela fonctionne, sortir de la fonction
+    }
+    
+    // Méthode de dernier recours
+    console.log("Aucune référence trouvée, utilisation de scrollTo");
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
   
   const [missionQuery, setMissionQuery] = useState("");
   const [missionOptions, setMissionOptions] = useState<Mission[]>([]);
@@ -299,12 +332,53 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
     
     console.log('Form submit handler triggered');
+    console.log('Form reference exists:', !!formRef.current);
+    console.log('FormTop reference exists:', !!formTopRef.current);
     
     form.handleSubmit(async (data) => {
       console.log('Form data:', data);
+      
+      // Check if all selectors are filled
+      const hasAllSelectors = data.evaluator && data.approver && data.mission;
+      
+      if (!hasAllSelectors) {
+        console.log('Missing selector fields, attempting to scroll to top');
+        
+        // Important: forcer la validation du formulaire d'abord
+        await form.trigger();
+        
+        // Essayer de défiler vers le haut immédiatement
+        scrollToTop();
+        
+        // Essayer à nouveau après un court délai au cas où le DOM a besoin de temps pour se mettre à jour
+        setTimeout(() => {
+          scrollToTop();
+          
+          // Notifier l'utilisateur des champs manquants
+          toast.error("Champs obligatoires manquants", {
+            description: "Veuillez remplir tous les champs obligatoires."
+          });
+          
+          // Forcer le focus sur le premier champ en erreur
+          const firstErrorField = document.querySelector('[aria-invalid="true"]');
+          if (firstErrorField instanceof HTMLElement) {
+            firstErrorField.focus();
+            console.log("Focus mis sur le premier champ en erreur");
+          }
+        }, 100);
+        
+        // Essayer une dernière fois après un délai plus long
+        setTimeout(() => {
+          scrollToTop();
+        }, 300);
+        
+        return;
+      }
+      
+      // Only set submitting state if all selectors are filled
+      setSubmitting(true);
       
       if (!validateAllFields()) {
         console.error('Field validation failed');
@@ -353,7 +427,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         toast.error("Échec de la soumission", {
           description: errorMessage
         });
-      } finally {
         setSubmitting(false);
       }
     })();
@@ -461,7 +534,21 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   return (
     <div className="space-y-8">
       <Form {...form}>
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form 
+          ref={formRef} 
+          onSubmit={handleSubmit} 
+          className="space-y-8" 
+          id="evaluation-form"
+        >
+          {/* Référence pour le défilement - position absolue pour éviter de perturber la mise en page */}
+          <div 
+            ref={formTopRef} 
+            id="form-top" 
+            className="absolute top-0"
+            style={{ scrollMarginTop: '20px' }}
+            aria-hidden="true"
+          ></div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <FormField
               control={form.control}
@@ -582,9 +669,9 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
             <Button 
               type="submit" 
               className="w-full md:w-auto" 
-              disabled={isLoading || allItemsLoading || submitting}
+              disabled={isLoading || allItemsLoading}
             >
-              {submitting ? (
+              {submitting && form.getValues("evaluator") && form.getValues("approver") && form.getValues("mission") ? (
                 <>
                   <Loader className="h-4 w-4 mr-2 animate-spin" />
                   Soumission en cours...
