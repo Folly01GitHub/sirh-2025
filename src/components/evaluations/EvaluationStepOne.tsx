@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
@@ -5,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star, Save, Loader } from 'lucide-react';
+import { Star, Save, Loader, AlertTriangle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -78,37 +79,78 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const searchParams = new URLSearchParams(location.search);
   const evaluationId = searchParams.get('id');
   
-  const formRef = useRef<HTMLFormElement>(null);
+  // Référence pour le défilement au haut du formulaire - position fixe pour être toujours accessible
   const formTopRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   
-  // Fonction de défilement modifiée et simplifiée
+  // Fonction de défilement améliorée avec plusieurs tentatives à délais progressifs
   const scrollToTop = () => {
-    // Tentative 1: Utilisation de formTopRef
+    console.log("Tentative de défilement vers le haut du formulaire");
+    
+    // Première tentative immédiate
     if (formTopRef.current) {
-      console.log("Référence formTopRef trouvée, utilisation de scrollIntoView");
+      console.log("Référence formTopRef trouvée, tentative 1 de scrollIntoView");
       formTopRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
       });
-      return; // Si cela fonctionne, sortir de la fonction
-    }
-    
-    // Tentative 2: Utilisation de formRef
-    if (formRef.current) {
-      console.log("Référence formRef trouvée, utilisation de scrollIntoView");
-      formRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
+    } else {
+      console.log("formTopRef non disponible, tentative 1 de scrollTo");
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
       });
-      return; // Si cela fonctionne, sortir de la fonction
     }
     
-    // Méthode de dernier recours
-    console.log("Aucune référence trouvée, utilisation de scrollTo");
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+    // Deuxième tentative après 100ms
+    setTimeout(() => {
+      if (formTopRef.current) {
+        console.log("Référence formTopRef trouvée, tentative 2 de scrollIntoView");
+        formTopRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      } else {
+        console.log("formTopRef non disponible, tentative 2 de scrollTo");
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }
+      
+      // Forcer le focus sur le premier champ en erreur
+      const firstErrorField = document.querySelector('[aria-invalid="true"]');
+      if (firstErrorField instanceof HTMLElement) {
+        firstErrorField.focus();
+        console.log("Focus mis sur le premier champ en erreur");
+      }
+    }, 100);
+    
+    // Troisième tentative après 300ms
+    setTimeout(() => {
+      if (formTopRef.current) {
+        console.log("Référence formTopRef trouvée, tentative 3 de scrollIntoView");
+        formTopRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      } else {
+        console.log("formTopRef non disponible, tentative 3 de scrollTo");
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }
+    }, 300);
+    
+    // Quatrième tentative après 600ms
+    setTimeout(() => {
+      console.log("Tentative finale de défilement");
+      window.scrollTo({
+        top: 0,
+        behavior: 'auto'  // Utiliser 'auto' pour un défilement instantané en dernier recours
+      });
+    }, 600);
   };
   
   const [missionQuery, setMissionQuery] = useState("");
@@ -344,35 +386,29 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       const hasAllSelectors = data.evaluator && data.approver && data.mission;
       
       if (!hasAllSelectors) {
-        console.log('Missing selector fields, attempting to scroll to top');
+        console.log('Champs sélecteurs manquants détectés');
         
         // Important: forcer la validation du formulaire d'abord
         await form.trigger();
         
+        // Notification visuelle pour l'utilisateur
+        toast.error("Champs requis manquants", {
+          description: "Veuillez compléter tous les champs obligatoires en haut du formulaire.",
+          icon: <AlertTriangle className="h-5 w-5" />,
+          duration: 5000
+        });
+        
+        // Mettre en évidence visuellement les champs requis
+        const selectorsDiv = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-3');
+        if (selectorsDiv instanceof HTMLElement) {
+          selectorsDiv.classList.add('border-red-300', 'border', 'p-4', 'rounded-md', 'bg-red-50');
+          setTimeout(() => {
+            selectorsDiv.classList.remove('border-red-300', 'border', 'p-4', 'rounded-md', 'bg-red-50');
+          }, 3000);
+        }
+        
         // Essayer de défiler vers le haut immédiatement
         scrollToTop();
-        
-        // Essayer à nouveau après un court délai au cas où le DOM a besoin de temps pour se mettre à jour
-        setTimeout(() => {
-          scrollToTop();
-          
-          // Notifier l'utilisateur des champs manquants
-          toast.error("Champs obligatoires manquants", {
-            description: "Veuillez remplir tous les champs obligatoires."
-          });
-          
-          // Forcer le focus sur le premier champ en erreur
-          const firstErrorField = document.querySelector('[aria-invalid="true"]');
-          if (firstErrorField instanceof HTMLElement) {
-            firstErrorField.focus();
-            console.log("Focus mis sur le premier champ en erreur");
-          }
-        }, 100);
-        
-        // Essayer une dernière fois après un délai plus long
-        setTimeout(() => {
-          scrollToTop();
-        }, 300);
         
         return;
       }
@@ -533,6 +569,15 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
 
   return (
     <div className="space-y-8">
+      {/* Référence pour le défilement - positionnée en dehors du formulaire */}
+      <div 
+        ref={formTopRef} 
+        id="form-top" 
+        className="scroll-mt-8 mb-4"
+        style={{ scrollMarginTop: '80px' }}
+        aria-hidden="true"
+      ></div>
+      
       <Form {...form}>
         <form 
           ref={formRef} 
@@ -540,15 +585,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
           className="space-y-8" 
           id="evaluation-form"
         >
-          {/* Référence pour le défilement - position absolue pour éviter de perturber la mise en page */}
-          <div 
-            ref={formTopRef} 
-            id="form-top" 
-            className="absolute top-0"
-            style={{ scrollMarginTop: '20px' }}
-            aria-hidden="true"
-          ></div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <FormField
               control={form.control}
@@ -669,9 +705,9 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
             <Button 
               type="submit" 
               className="w-full md:w-auto" 
-              disabled={isLoading || allItemsLoading}
+              disabled={isLoading || allItemsLoading || submitting}
             >
-              {submitting && form.getValues("evaluator") && form.getValues("approver") && form.getValues("mission") ? (
+              {submitting ? (
                 <>
                   <Loader className="h-4 w-4 mr-2 animate-spin" />
                   Soumission en cours...

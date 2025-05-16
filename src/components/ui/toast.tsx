@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -30,6 +31,9 @@ const toastVariants = cva(
         default: "border bg-background text-foreground",
         destructive:
           "destructive group border-destructive bg-destructive text-destructive-foreground",
+        success: "border-green-600 bg-green-50 text-green-800",
+        warning: "border-yellow-600 bg-yellow-50 text-yellow-800",
+        info: "border-blue-600 bg-blue-50 text-blue-800",
       },
     },
     defaultVariants: {
