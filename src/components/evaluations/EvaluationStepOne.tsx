@@ -15,16 +15,6 @@ import apiClient from '@/utils/apiClient';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { NumericBoxGroup } from './NumericBoxGroup';
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from "@/components/ui/alert-dialog";
 
 interface Mission {
   id: number;
@@ -113,9 +103,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const [approverQuery, setApproverQuery] = useState("");
   const [approverOptions, setApproverOptions] = useState<Employee[]>([]);
   const [approverLoading, setApproverLoading] = useState(false);
-
-  // État pour gérer l'affichage de l'alerte
-  const [showSelectorAlert, setShowSelectorAlert] = useState(false);
 
   const { data: allCriteriaItems, isLoading: allItemsLoading } = useQuery({
     queryKey: ['allCriteriaItems'],
@@ -348,8 +335,11 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     
     // Vérification préalable des sélecteurs avant la validation complète
     if (!checkSelectors()) {
-      console.log('Selectors check failed, showing alert');
-      setShowSelectorAlert(true);
+      console.log('Selectors check failed, showing toast');
+      toast.error("Champs obligatoires manquants", {
+        description: "Assurez-vous d'avoir bien sélectionné l'évaluateur, l'approbateur et la mission en début de formulaire svp !",
+        duration: 5000
+      });
       scrollToTop();
       return;
     }
@@ -666,35 +656,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
           </div>
         </form>
       </Form>
-      
-      {/* AlertDialog pour les champs manquants */}
-      <AlertDialog 
-        open={showSelectorAlert} 
-        onOpenChange={(open) => {
-          console.log('Alert dialog open state changed:', open);
-          setShowSelectorAlert(open);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-5 w-5" />
-              Champs obligatoires manquants
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Assurez-vous d'avoir bien sélectionné l'évaluateur, l'approbateur et la mission en début de formulaire svp !
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => {
-              console.log('Alert dialog action clicked');
-              setShowSelectorAlert(false);
-            }}>
-              Compris
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };
