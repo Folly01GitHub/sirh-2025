@@ -78,6 +78,12 @@ const LoginForm = ({
   };
 
   const handleForgotPassword = async () => {
+    // Effacer les messages d'erreur locaux
+    setError(null);
+    
+    // Réinitialiser les erreurs de validation du formulaire
+    form.clearErrors();
+    
     const currentEmail = form.getValues().email;
     
     if (!currentEmail || !currentEmail.match(/^\S+@\S+\.\S+$/)) {
