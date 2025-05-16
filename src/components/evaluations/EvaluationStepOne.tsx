@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -77,17 +77,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const evaluationId = searchParams.get('id');
-  
-  const formRef = useRef<HTMLFormElement>(null);
-  
-  // Add the scrollToTop function
-  const scrollToTop = () => {
-    if (formRef.current) {
-      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
   
   const [missionQuery, setMissionQuery] = useState("");
   const [missionOptions, setMissionOptions] = useState<Mission[]>([]);
@@ -310,25 +299,12 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     
     console.log('Form submit handler triggered');
     
     form.handleSubmit(async (data) => {
       console.log('Form data:', data);
-      
-      // Check if all selectors are filled
-      const hasAllSelectors = data.evaluator && data.approver && data.mission;
-      
-      if (!hasAllSelectors) {
-        // If any selector is missing, don't set submitting state, don't show loading,
-        // and scroll to top to show validation errors
-        console.log('Missing selector fields');
-        scrollToTop();
-        return;
-      }
-      
-      // Only set submitting state if all selectors are filled
-      setSubmitting(true);
       
       if (!validateAllFields()) {
         console.error('Field validation failed');
@@ -377,6 +353,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         toast.error("Échec de la soumission", {
           description: errorMessage
         });
+      } finally {
         setSubmitting(false);
       }
     })();
@@ -484,7 +461,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   return (
     <div className="space-y-8">
       <Form {...form}>
-        <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <FormField
               control={form.control}
@@ -605,9 +582,9 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
             <Button 
               type="submit" 
               className="w-full md:w-auto" 
-              disabled={isLoading || allItemsLoading}
+              disabled={isLoading || allItemsLoading || submitting}
             >
-              {submitting && form.getValues("evaluator") && form.getValues("approver") && form.getValues("mission") ? (
+              {submitting ? (
                 <>
                   <Loader className="h-4 w-4 mr-2 animate-spin" />
                   Soumission en cours...
