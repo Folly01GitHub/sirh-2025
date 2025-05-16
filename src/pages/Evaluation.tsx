@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -5,7 +6,7 @@ import apiClient from '@/utils/apiClient';
 import { useSearchParams } from 'react-router-dom';
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, ChevronRight, FileText, Star } from 'lucide-react';
 import EvaluationHeader from '@/components/evaluations/EvaluationHeader';
