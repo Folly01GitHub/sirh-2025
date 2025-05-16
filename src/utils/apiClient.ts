@@ -1,9 +1,8 @@
-
 import axios from 'axios';
 
 // Create an axios instance with base configuration
 const apiClient = axios.create({
-  baseURL: 'http://backend.local.com/api'
+  baseURL: 'https://10.172.225.11:8082/api'
 });
 
 // Add a request interceptor to include the auth token
