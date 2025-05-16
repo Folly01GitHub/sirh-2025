@@ -8,7 +8,7 @@ import { fr } from 'date-fns/locale';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import { CalendarIcon, Clock, Loader2 } from 'lucide-react';
+import { CalendarIcon, Clock, Loader2, AlertTriangle } from 'lucide-react';
 import apiClient from '@/utils/apiClient';
 
 import { cn } from '@/lib/utils';
@@ -21,6 +21,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface PermissionRequestFormProps {
   onSubmitSuccess: () => void;
@@ -56,6 +57,7 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
   const [approverQuery, setApproverQuery] = useState("");
   const [approverOptions, setApproverOptions] = useState<Approver[]>([]);
   const [approverLoading, setApproverLoading] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
   
   // Updated time options: from 8:00 to 18:00 with 30-minute intervals
   const timeOptions = Array.from({ length: 21 }, (_, i) => {
@@ -134,6 +136,9 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
         approver_id: '',
       });
       
+      // Clear any previous validation errors
+      setValidationError(null);
+      
       console.log('About to call onSubmitSuccess callback from form');
       // Make sure this callback is executed after successful API call
       if (typeof onSubmitSuccess === 'function') {
@@ -153,6 +158,37 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
       setIsSubmitting(false);
     }
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Clear any previous validation error
+    setValidationError(null);
+    
+    // Check if approver_id is empty before form submission
+    if (!form.getValues('approver_id')) {
+      setValidationError("Assurez-vous d'avoir bien sélectionné l'approbateur svp !");
+      
+      // Highlight the selector section
+      const selectorSection = document.querySelector('.selector-section');
+      if (selectorSection) {
+        selectorSection.classList.add('border-red-500', 'border-2', 'p-4', 'rounded-md', 'bg-red-50', 'animate-pulse');
+        setTimeout(() => {
+          selectorSection.classList.remove('animate-pulse');
+          setTimeout(() => {
+            selectorSection.classList.remove('border-red-500', 'border-2', 'p-4', 'rounded-md', 'bg-red-50');
+          }, 5000);
+        }, 1000);
+      }
+      
+      // Scroll to top where the error is shown
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      return;
+    }
+    
+    form.handleSubmit(onSubmit)(e);
+  };
   
   return (
     <Card className="w-full shadow-md animate-fade-in">
@@ -163,30 +199,40 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
       </CardHeader>
       
       <CardContent>
+        {validationError && (
+          <Alert variant="destructive" className="mb-6 animate-fade-in">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Erreur de validation</AlertTitle>
+            <AlertDescription>{validationError}</AlertDescription>
+          </Alert>
+        )}
+        
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="approver_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Approbateur</FormLabel>
-                  <SearchableSelect
-                    label=""
-                    placeholder="Sélectionnez ou cherchez un approbateur..."
-                    value={field.value}
-                    onChange={field.onChange}
-                    onSearch={setApproverQuery}
-                    options={approverOptions.map(approver => ({
-                      label: `${approver.name} - ${approver.position}`,
-                      value: approver.id.toString()
-                    }))}
-                    loading={approverLoading}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="selector-section">
+              <FormField
+                control={form.control}
+                name="approver_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Approbateur</FormLabel>
+                    <SearchableSelect
+                      label=""
+                      placeholder="Sélectionnez ou cherchez un approbateur..."
+                      value={field.value}
+                      onChange={field.onChange}
+                      onSearch={setApproverQuery}
+                      options={approverOptions.map(approver => ({
+                        label: `${approver.name} - ${approver.position}`,
+                        value: approver.id.toString()
+                      }))}
+                      loading={approverLoading}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             
             <FormField
               control={form.control}
