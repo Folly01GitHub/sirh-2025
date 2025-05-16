@@ -80,20 +80,44 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   
   const formRef = useRef<HTMLFormElement>(null);
   
-  // Amélioration de la fonction scrollToTop pour garantir qu'elle fonctionne
+  // Amélioration de la fonction scrollToTop pour garantir qu'elle fonctionne toujours
   const scrollToTop = () => {
     console.log("Tentative de scroll vers le haut du formulaire");
     
+    // Test pour vérifier que le formulaire existe dans le DOM
+    console.log("Form element exists:", !!formRef.current);
+    console.log("Form element ID:", formRef.current?.id);
+    
     if (formRef.current) {
       console.log("Référence du formulaire trouvée, exécution du scroll");
-      // Utiliser scrollIntoView avec un délai pour assurer que le DOM est prêt
+      
+      // Force le layout à se recalculer pour garantir que le formulaire est bien positionné
+      const offsetTop = formRef.current.offsetTop;
+      console.log("Position du formulaire:", offsetTop);
+      
+      // Utiliser plusieurs méthodes pour maximiser les chances de succès
       setTimeout(() => {
+        // Méthode 1: scrollIntoView
         formRef.current?.scrollIntoView({ 
           behavior: 'smooth', 
           block: 'start' 
         });
-        console.log("Scroll exécuté");
-      }, 100);
+        console.log("scrollIntoView exécuté");
+        
+        // Méthode 2: scrollTo comme backup
+        window.scrollTo({ 
+          top: offsetTop - 100, // Petit décalage pour voir le début du formulaire
+          behavior: 'smooth' 
+        });
+        console.log("scrollTo exécuté avec position:", offsetTop - 100);
+        
+        // Si besoin, forcer le focus sur le premier élément du formulaire
+        const firstInput = formRef.current?.querySelector('input, select');
+        if (firstInput instanceof HTMLElement) {
+          firstInput.focus();
+          console.log("Focus mis sur le premier élément du formulaire");
+        }
+      }, 200); // Délai augmenté pour s'assurer que le DOM est complètement chargé
     } else {
       console.log("Référence du formulaire non trouvée, utilisation de window.scrollTo");
       window.scrollTo({ 
@@ -326,6 +350,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     e.preventDefault();
     
     console.log('Form submit handler triggered');
+    console.log('Form reference exists:', !!formRef.current);
     
     form.handleSubmit(async (data) => {
       console.log('Form data:', data);
@@ -334,10 +359,23 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       const hasAllSelectors = data.evaluator && data.approver && data.mission;
       
       if (!hasAllSelectors) {
-        // If any selector is missing, don't set submitting state, don't show loading,
-        // and scroll to top to show validation errors
+        // Si les sélecteurs sont manquants, on déclenche le scroll
         console.log('Missing selector fields, scrolling to top');
-        scrollToTop();
+        console.log('Form height:', formRef.current?.clientHeight);
+        console.log('Form position:', formRef.current?.getBoundingClientRect().top);
+        
+        // Forcer une mise à jour du formulaire avant de scroller
+        form.trigger();
+        
+        // Délai court pour laisser le temps aux erreurs d'apparaître dans le DOM
+        setTimeout(() => {
+          scrollToTop();
+          
+          // Notifier l'utilisateur des champs manquants
+          toast.error("Champs obligatoires manquants", {
+            description: "Veuillez remplir tous les champs obligatoires."
+          });
+        }, 100);
         return;
       }
       
@@ -498,7 +536,15 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   return (
     <div className="space-y-8">
       <Form {...form}>
-        <form ref={formRef} onSubmit={handleSubmit} className="space-y-8" id="evaluation-form">
+        <form 
+          ref={formRef} 
+          onSubmit={handleSubmit} 
+          className="space-y-8" 
+          id="evaluation-form"
+        >
+          {/* Add a div at the top of the form as a scroll target */}
+          <div id="form-top" className="h-1"></div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <FormField
               control={form.control}
