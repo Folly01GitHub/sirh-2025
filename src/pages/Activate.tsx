@@ -45,7 +45,7 @@ const Activate = () => {
       }
       
       // Pour couvrir différents chemins potentiels
-      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + location.hostname;
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
 
       console.log("Tous les cookies ont été supprimés sur la page d'activation");
     };
