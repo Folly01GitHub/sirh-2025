@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -165,28 +164,49 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
     // Clear any previous validation error
     setValidationError(null);
     
+    // Récupérer la valeur de l'approbateur
+    const approverValue = form.getValues('approver_id');
+    console.log('TEST VERIFICATION - Valeur de l\'approbateur:', approverValue);
+    
     // Check if approver_id is empty before form submission
-    if (!form.getValues('approver_id')) {
-      setValidationError("Assurez-vous d'avoir bien sélectionné l'approbateur svp !");
+    if (!approverValue) {
+      console.log('TEST VERIFICATION - Approbateur non sélectionné, affichage du message d\'erreur');
+      setValidationError("Assurez-vous d'avoir bien sélectionné l'évaluateur, l'approbateur et la mission svp !");
       
       // Highlight the selector section
       const selectorSection = document.querySelector('.selector-section');
+      console.log('TEST VERIFICATION - Élément selector-section trouvé:', !!selectorSection);
+      
       if (selectorSection) {
+        // Ajout des classes pour la mise en évidence visuelle
         selectorSection.classList.add('border-red-500', 'border-2', 'p-4', 'rounded-md', 'bg-red-50', 'animate-pulse');
+        console.log('TEST VERIFICATION - Classes de mise en évidence ajoutées');
+        
         setTimeout(() => {
           selectorSection.classList.remove('animate-pulse');
+          console.log('TEST VERIFICATION - Animation pulse retirée après 1000ms');
+          
           setTimeout(() => {
             selectorSection.classList.remove('border-red-500', 'border-2', 'p-4', 'rounded-md', 'bg-red-50');
+            console.log('TEST VERIFICATION - Classes de style retirées après 5000ms');
           }, 5000);
         }, 1000);
       }
       
       // Scroll to top where the error is shown
+      console.log('TEST VERIFICATION - Défilement vers le haut pour voir le message d\'erreur');
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      // Vérifier si l'alerte d'erreur est affichée
+      setTimeout(() => {
+        const alertElement = document.querySelector('.alert-error-validation');
+        console.log('TEST VERIFICATION - Alerte d\'erreur visible:', !!alertElement);
+      }, 100);
       
       return;
     }
     
+    console.log('TEST VERIFICATION - Validation réussie, poursuite de la soumission du formulaire');
     form.handleSubmit(onSubmit)(e);
   };
   
@@ -200,7 +220,7 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
       
       <CardContent>
         {validationError && (
-          <Alert variant="destructive" className="mb-6 animate-fade-in">
+          <Alert variant="destructive" className="mb-6 animate-fade-in alert-error-validation">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Erreur de validation</AlertTitle>
             <AlertDescription>{validationError}</AlertDescription>
@@ -220,7 +240,10 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
                       label=""
                       placeholder="Sélectionnez ou cherchez un approbateur..."
                       value={field.value}
-                      onChange={field.onChange}
+                      onChange={(value) => {
+                        console.log('TEST VERIFICATION - Approbateur sélectionné:', value);
+                        field.onChange(value);
+                      }}
                       onSearch={setApproverQuery}
                       options={approverOptions.map(approver => ({
                         label: `${approver.name} - ${approver.position}`,
@@ -361,6 +384,7 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
                 type="submit" 
                 className="w-full sm:w-auto bg-[#28a745] hover:bg-[#218838] transition-all duration-300 transform hover:scale-105"
                 disabled={isSubmitting}
+                onClick={() => console.log('TEST VERIFICATION - Bouton de soumission cliqué')}
               >
                 {isSubmitting ? (
                   <>
