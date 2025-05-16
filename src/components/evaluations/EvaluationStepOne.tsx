@@ -306,9 +306,17 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     form.handleSubmit(async (data) => {
       console.log('Form data:', data);
       
+      // Vérification des champs obligatoires
+      const formState = form.getState();
+      if (Object.keys(formState.errors).length > 0) {
+        console.log('Form has validation errors:', formState.errors);
+        setSubmitting(false); // Désactive l'état de soumission si le formulaire a des erreurs
+        return;
+      }
+      
       if (!validateAllFields()) {
         console.error('Field validation failed');
-        setSubmitting(false);
+        setSubmitting(false); // Désactive l'état de soumission si la validation personnalisée échoue
         return;
       }
 
