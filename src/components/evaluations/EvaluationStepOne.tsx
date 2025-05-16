@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
@@ -307,9 +308,9 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       console.log('Form data:', data);
       
       // Vérification des champs obligatoires
-      const formState = form.getState();
-      if (Object.keys(formState.errors).length > 0) {
-        console.log('Form has validation errors:', formState.errors);
+      const formErrors = form.formState.errors;
+      if (Object.keys(formErrors).length > 0) {
+        console.log('Form has validation errors:', formErrors);
         setSubmitting(false); // Désactive l'état de soumission si le formulaire a des erreurs
         return;
       }
