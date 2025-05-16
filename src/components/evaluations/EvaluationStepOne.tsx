@@ -114,6 +114,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const [approverOptions, setApproverOptions] = useState<Employee[]>([]);
   const [approverLoading, setApproverLoading] = useState(false);
 
+  // État pour gérer l'affichage de l'alerte
   const [showSelectorAlert, setShowSelectorAlert] = useState(false);
 
   const { data: allCriteriaItems, isLoading: allItemsLoading } = useQuery({
@@ -320,25 +321,42 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     return true;
   };
 
+  // Nouvelle fonction de vérification des sélecteurs uniquement
+  const checkSelectors = (): boolean => {
+    console.log("Checking selectors");
+    const formValues = form.getValues();
+    const hasEvaluator = !!formValues.evaluator;
+    const hasApprover = !!formValues.approver;
+    const hasMission = !!formValues.mission;
+    
+    console.log({
+      evaluator: formValues.evaluator,
+      approver: formValues.approver,
+      mission: formValues.mission,
+      hasEvaluator,
+      hasApprover,
+      hasMission
+    });
+    
+    return hasEvaluator && hasApprover && hasMission;
+  };
+
+  // Modification de la fonction handleSubmit pour vérifier d'abord les sélecteurs
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
     console.log('Form submit handler triggered');
     
+    // Vérification préalable des sélecteurs avant la validation complète
+    if (!checkSelectors()) {
+      console.log('Selectors check failed, showing alert');
+      setShowSelectorAlert(true);
+      scrollToTop();
+      return;
+    }
+    
+    // Si les sélecteurs sont présents, procéder à la validation complète
     form.handleSubmit(async (data) => {
-      console.log('Form data:', data);
-      
-      // Check if all selectors are filled
-      const hasAllSelectors = data.evaluator && data.approver && data.mission;
-      
-      if (!hasAllSelectors) {
-        // Show alert dialog for missing selectors
-        setShowSelectorAlert(true);
-        scrollToTop();
-        return;
-      }
-      
-      // Only set submitting state if all selectors are filled
+      console.log('Form data passed validation:', data);
       setSubmitting(true);
       
       if (!validateAllFields()) {
@@ -390,7 +408,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         });
         setSubmitting(false);
       }
-    })();
+    })(e);  // Passer l'événement à handleSubmit
   };
 
   const handleSaveAsDraft = async () => {
@@ -649,8 +667,14 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         </form>
       </Form>
       
-      {/* Alert Dialog for missing selector fields */}
-      <AlertDialog open={showSelectorAlert} onOpenChange={setShowSelectorAlert}>
+      {/* AlertDialog pour les champs manquants */}
+      <AlertDialog 
+        open={showSelectorAlert} 
+        onOpenChange={(open) => {
+          console.log('Alert dialog open state changed:', open);
+          setShowSelectorAlert(open);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-destructive">
@@ -662,7 +686,10 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setShowSelectorAlert(false)}>
+            <AlertDialogAction onClick={() => {
+              console.log('Alert dialog action clicked');
+              setShowSelectorAlert(false);
+            }}>
               Compris
             </AlertDialogAction>
           </AlertDialogFooter>
