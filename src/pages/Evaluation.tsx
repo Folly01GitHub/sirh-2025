@@ -152,16 +152,19 @@ const Evaluation = () => {
     if (currentStep === 1) {
       if (!allCriteriaItems || allCriteriaItems.length === 0) return 0;
       
+      // Filtrer les items qui ne sont pas des commentaires (facultatifs)
+      const requiredItems = allCriteriaItems.filter(item => item.type !== 'commentaire');
+      
       // Check basic fields (evaluator, approver, mission)
       let completedFields = 0;
-      const totalRequiredFields = allCriteriaItems.length + 3; // +3 for evaluator, approver, mission fields
+      const totalRequiredFields = requiredItems.length + 3; // +3 for evaluator, approver, mission fields
       
       if (evaluatorId) completedFields++;
       if (approverId) completedFields++;
       if (selectedMissionId) completedFields++;
       
-      // Check criteria items
-      allCriteriaItems.forEach(item => {
+      // Check criteria items (ignoring 'commentaire' type)
+      requiredItems.forEach(item => {
         const response = employeeResponses.find(r => r.item_id === item.id);
         if (isValidResponse(response, item.type)) {
           completedFields++;
@@ -172,11 +175,14 @@ const Evaluation = () => {
     } else if (currentStep === 2) {
       if (!allCriteriaItems || allCriteriaItems.length === 0) return 0;
       
-      let completedFields = 0;
-      const totalRequiredFields = allCriteriaItems.length;
+      // Filtrer les items qui ne sont pas des commentaires (facultatifs)
+      const requiredItems = allCriteriaItems.filter(item => item.type !== 'commentaire');
       
-      // Check criteria items
-      allCriteriaItems.forEach(item => {
+      let completedFields = 0;
+      const totalRequiredFields = requiredItems.length;
+      
+      // Check criteria items (ignoring 'commentaire' type)
+      requiredItems.forEach(item => {
         const response = evaluatorResponses.find(r => r.item_id === item.id);
         if (isValidResponse(response, item.type)) {
           completedFields++;

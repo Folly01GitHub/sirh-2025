@@ -327,6 +327,11 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     const missing: { group?: string, label: string }[] = [];
 
     allCriteriaItems.forEach(item => {
+      // Ignorer les items de type commentaire pour la validation obligatoire
+      if (item.type === 'commentaire') {
+        return;
+      }
+      
       const response = evaluatorResponses.find(r => r.item_id === item.id);
       if (!isValidResponse(response, item.type)) {
         missing.push({

@@ -250,7 +250,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         console.log(`Observation validation: ${isObservationValid} (length: ${response.value.length})`);
         return isObservationValid;
       case 'commentaire':
-        // Pour les commentaires, n'importe quelle valeur (même vide) est valide
+        // Pour les commentaires, toujours considérer comme valide (facultatif)
         console.log('Commentaire validation: always valid');
         return true;
       case 'boolean':
@@ -295,6 +295,12 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     }
 
     allCriteriaItems.forEach(item => {
+      // Ignorer les items de type commentaire pour la validation obligatoire
+      if (item.type === 'commentaire') {
+        console.log(`✅ SKIPPED (optional): ${item.label}`);
+        return;
+      }
+      
       const response = responses.find(r => r.item_id === item.id);
       console.log(`Checking item: ${item.label} (type: ${item.type}, group: ${item.group_name || item.group_id})`);
       
