@@ -80,12 +80,26 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   
   const formRef = useRef<HTMLFormElement>(null);
   
-  // Add the scrollToTop function
+  // Amélioration de la fonction scrollToTop pour garantir qu'elle fonctionne
   const scrollToTop = () => {
+    console.log("Tentative de scroll vers le haut du formulaire");
+    
     if (formRef.current) {
-      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      console.log("Référence du formulaire trouvée, exécution du scroll");
+      // Utiliser scrollIntoView avec un délai pour assurer que le DOM est prêt
+      setTimeout(() => {
+        formRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+        console.log("Scroll exécuté");
+      }, 100);
     } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      console.log("Référence du formulaire non trouvée, utilisation de window.scrollTo");
+      window.scrollTo({ 
+        top: 0, 
+        behavior: 'smooth' 
+      });
     }
   };
   
@@ -322,7 +336,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       if (!hasAllSelectors) {
         // If any selector is missing, don't set submitting state, don't show loading,
         // and scroll to top to show validation errors
-        console.log('Missing selector fields');
+        console.log('Missing selector fields, scrolling to top');
         scrollToTop();
         return;
       }
@@ -484,7 +498,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   return (
     <div className="space-y-8">
       <Form {...form}>
-        <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-8" id="evaluation-form">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <FormField
               control={form.control}
