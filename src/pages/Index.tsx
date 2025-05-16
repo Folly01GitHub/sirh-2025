@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import WaveBackground from '@/components/ui/WaveBackground';
 import LoginForm from '@/components/auth/LoginForm';
-import axios from 'axios';
+import apiClient from '@/utils/apiClient';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -36,8 +36,8 @@ const Index = () => {
     try {
       console.log('Attempting login with:', { email });
       
-      // Call the login API
-      const response = await axios.post('http://backend.local.com/api/login', {
+      // Use apiClient instead of direct axios call
+      const response = await apiClient.post('/login', {
         email,
         password
       });

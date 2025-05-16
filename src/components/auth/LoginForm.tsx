@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Mail, AlertCircle } from 'lucide-react';
 import PasswordInput from './PasswordInput';
-import axios from 'axios';
+import apiClient from '@/utils/apiClient';
 import { toast } from 'sonner';
 
 // Form schema with validation
@@ -88,7 +88,7 @@ const LoginForm = ({
     setForgotPasswordLoading(true);
     
     try {
-      await axios.post('http://backend.local.com/api/mdp-oublie', {
+      await apiClient.post('/mdp-oublie', {
         email: currentEmail
       });
       
