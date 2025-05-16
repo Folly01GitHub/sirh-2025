@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
@@ -79,78 +78,62 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const searchParams = new URLSearchParams(location.search);
   const evaluationId = searchParams.get('id');
   
-  // Référence pour le défilement au haut du formulaire - position fixe pour être toujours accessible
+  // Référence pour le défilement - élément en haut du composant, pas dans le formulaire
   const formTopRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const selectorsRef = useRef<HTMLDivElement>(null);
   
-  // Fonction de défilement améliorée avec plusieurs tentatives à délais progressifs
+  // Fonction de défilement simplifiée et plus fiable
   const scrollToTop = () => {
     console.log("Tentative de défilement vers le haut du formulaire");
     
-    // Première tentative immédiate
-    if (formTopRef.current) {
-      console.log("Référence formTopRef trouvée, tentative 1 de scrollIntoView");
-      formTopRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-    } else {
-      console.log("formTopRef non disponible, tentative 1 de scrollTo");
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
+    // Mettre en évidence les champs obligatoires
+    if (selectorsRef.current) {
+      selectorsRef.current.classList.add('border-red-500', 'border-2', 'p-4', 'rounded-md', 'bg-red-50', 'animate-pulse');
+      setTimeout(() => {
+        if (selectorsRef.current) {
+          selectorsRef.current.classList.remove('animate-pulse');
+          
+          // Garder les styles visuels d'erreur
+          setTimeout(() => {
+            if (selectorsRef.current) {
+              selectorsRef.current.classList.remove('border-red-500', 'border-2', 'p-4', 'rounded-md', 'bg-red-50');
+            }
+          }, 5000);
+        }
+      }, 1000);
     }
+    
+    // Première tentative - immédiate avec window.scrollTo
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     
     // Deuxième tentative après 100ms
     setTimeout(() => {
       if (formTopRef.current) {
-        console.log("Référence formTopRef trouvée, tentative 2 de scrollIntoView");
-        formTopRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
+        formTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
-        console.log("formTopRef non disponible, tentative 2 de scrollTo");
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
-      }
-      
-      // Forcer le focus sur le premier champ en erreur
-      const firstErrorField = document.querySelector('[aria-invalid="true"]');
-      if (firstErrorField instanceof HTMLElement) {
-        firstErrorField.focus();
-        console.log("Focus mis sur le premier champ en erreur");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }, 100);
     
-    // Troisième tentative après 300ms
+    // Troisième tentative après 300ms - scroll forcé
     setTimeout(() => {
-      if (formTopRef.current) {
-        console.log("Référence formTopRef trouvée, tentative 3 de scrollIntoView");
-        formTopRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      } else {
-        console.log("formTopRef non disponible, tentative 3 de scrollTo");
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      
+      // Mettre le focus sur le premier champ de sélecteur
+      const firstSelectField = document.querySelector('.selector-field input');
+      if (firstSelectField instanceof HTMLElement) {
+        firstSelectField.focus();
+        console.log("Focus mis sur le premier champ de sélecteur");
       }
     }, 300);
     
-    // Quatrième tentative après 600ms
+    // Quatrième tentative après 800ms - dernière chance
     setTimeout(() => {
-      console.log("Tentative finale de défilement");
-      window.scrollTo({
-        top: 0,
-        behavior: 'auto'  // Utiliser 'auto' pour un défilement instantané en dernier recours
-      });
-    }, 600);
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+      console.log("Tentative finale avec scrollTop = 0");
+    }, 800);
   };
   
   const [missionQuery, setMissionQuery] = useState("");
@@ -398,16 +381,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
           duration: 5000
         });
         
-        // Mettre en évidence visuellement les champs requis
-        const selectorsDiv = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-3');
-        if (selectorsDiv instanceof HTMLElement) {
-          selectorsDiv.classList.add('border-red-300', 'border', 'p-4', 'rounded-md', 'bg-red-50');
-          setTimeout(() => {
-            selectorsDiv.classList.remove('border-red-300', 'border', 'p-4', 'rounded-md', 'bg-red-50');
-          }, 3000);
-        }
-        
-        // Essayer de défiler vers le haut immédiatement
+        // Défiler vers le haut - plusieurs tentatives
         scrollToTop();
         
         return;
@@ -568,176 +542,188 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   }
 
   return (
-    <div className="space-y-8">
-      {/* Référence pour le défilement - positionnée en dehors du formulaire */}
+    <>
+      {/* Élément invisible pour le défilement - position absolue en haut de la page */}
       <div 
         ref={formTopRef} 
         id="form-top" 
-        className="scroll-mt-8 mb-4"
-        style={{ scrollMarginTop: '80px' }}
+        style={{ 
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '1px',
+          zIndex: -1,
+          scrollMarginTop: '0px'
+        }}
         aria-hidden="true"
       ></div>
       
-      <Form {...form}>
-        <form 
-          ref={formRef} 
-          onSubmit={handleSubmit} 
-          className="space-y-8" 
-          id="evaluation-form"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <FormField
-              control={form.control}
-              name="evaluator"
-              render={({ field }) => (
-                <FormItem>
-                  <SearchableSelect
-                    label="Évaluateur"
-                    placeholder="Sélectionnez ou cherchez…"
-                    value={field.value}
-                    onChange={value => {
-                      field.onChange(value);
-                      onEvaluatorChange(Number(value));
-                    }}
-                    onSearch={setEvaluatorQuery}
-                    options={evaluatorSelectOptions}
-                    loading={evaluatorLoading}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="approver"
-              render={({ field }) => (
-                <FormItem>
-                  <SearchableSelect
-                    label="Approbateur"
-                    placeholder="Sélectionnez ou cherchez…"
-                    value={field.value}
-                    onChange={value => {
-                      field.onChange(value);
-                      onApproverChange(Number(value));
-                    }}
-                    onSearch={setApproverQuery}
-                    options={approverSelectOptions}
-                    loading={approverLoading}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="mission"
-              render={({ field }) => (
-                <FormItem>
-                  <SearchableSelect
-                    label="Mission"
-                    placeholder="Sélectionnez ou cherchez…"
-                    value={field.value}
-                    onChange={val => {
-                      field.onChange(val);
-                      if (onMissionChange) onMissionChange(Number(val));
-                    }}
-                    onSearch={setMissionQuery}
-                    options={missionSelectOptions}
-                    loading={missionsLoading}
-                    disabled={!!missionsError}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          
-          {criteriaItems.map((item) => (
-            <div key={item.id} className="p-4 border rounded-md shadow-sm">
-              <h3 className="text-lg font-medium mb-3">{item.label}</h3>
-              
-              {item.type === 'numeric' ? (
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-500 mb-2">Sélectionnez une note de 1 à 5</p>
-                  <NumericBoxGroup
-                    value={Number(getResponseValue(item.id)) || 0}
-                    onChange={val => onResponseChange(item.id, val)}
-                  />
-                </div>
-              ) : item.type === 'boolean' ? (
-                <div className="space-y-2">
-                  {renderBooleanResponse(item.id)}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-500 mb-2">
-                    {item.type === 'observation' ? "Minimum 50 caractères" : "Commentaire facultatif"}
-                  </p>
-                  <Textarea 
-                    value={getResponseValue(item.id) as string}
-                    onChange={(e) => onResponseChange(item.id, e.target.value)}
-                    placeholder={item.type === 'observation' 
-                      ? "Entrez votre observation…" 
-                      : "Entrez un commentaire (facultatif)…"}
-                    className="min-h-[120px]"
-                  />
-                  {item.type === 'observation' && (
-                    <div className="text-xs text-right">
-                      {typeof getResponseValue(item.id) === 'string' && (
-                        <span className={`${(getResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
-                          {(getResponseValue(item.id) as string).length} / 50 caractères minimum
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+      <div className="space-y-8">  
+        <Form {...form}>
+          <form 
+            ref={formRef} 
+            onSubmit={handleSubmit} 
+            className="space-y-8" 
+            id="evaluation-form"
+          >
+            <div 
+              ref={selectorsRef} 
+              className="grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-300"
+            >
+              <FormField
+                control={form.control}
+                name="evaluator"
+                render={({ field }) => (
+                  <FormItem className="selector-field">
+                    <SearchableSelect
+                      label="Évaluateur"
+                      placeholder="Sélectionnez ou cherchez…"
+                      value={field.value}
+                      onChange={value => {
+                        field.onChange(value);
+                        onEvaluatorChange(Number(value));
+                      }}
+                      onSearch={setEvaluatorQuery}
+                      options={evaluatorSelectOptions}
+                      loading={evaluatorLoading}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="approver"
+                render={({ field }) => (
+                  <FormItem className="selector-field">
+                    <SearchableSelect
+                      label="Approbateur"
+                      placeholder="Sélectionnez ou cherchez…"
+                      value={field.value}
+                      onChange={value => {
+                        field.onChange(value);
+                        onApproverChange(Number(value));
+                      }}
+                      onSearch={setApproverQuery}
+                      options={approverSelectOptions}
+                      loading={approverLoading}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="mission"
+                render={({ field }) => (
+                  <FormItem className="selector-field">
+                    <SearchableSelect
+                      label="Mission"
+                      placeholder="Sélectionnez ou cherchez…"
+                      value={field.value}
+                      onChange={val => {
+                        field.onChange(val);
+                        if (onMissionChange) onMissionChange(Number(val));
+                      }}
+                      onSearch={setMissionQuery}
+                      options={missionSelectOptions}
+                      loading={missionsLoading}
+                      disabled={!!missionsError}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-          ))}
-          
-          {form.formState.errors.root && (
-            <p className="text-sm font-medium text-destructive">
-              {form.formState.errors.root.message}
-            </p>
-          )}
-          
-          <div className="flex flex-col md:flex-row gap-4">
-            <Button 
-              type="submit" 
-              className="w-full md:w-auto" 
-              disabled={isLoading || allItemsLoading || submitting}
-            >
-              {submitting ? (
-                <>
-                  <Loader className="h-4 w-4 mr-2 animate-spin" />
-                  Soumission en cours...
-                </>
-              ) : "Soumettre mon auto-évaluation"}
-            </Button>
             
-            <Button 
-              type="button"
-              variant="outline"
-              className="w-full md:w-auto"
-              onClick={handleSaveAsDraft}
-              disabled={isLoading || allItemsLoading || savingDraft}
-            >
-              {savingDraft ? (
-                <>
-                  <Loader className="h-4 w-4 mr-2 animate-spin" />
-                  Sauvegarde en cours...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Enregistrer comme brouillon
-                </>
-              )}
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </div>
+            {criteriaItems.map((item) => (
+              <div key={item.id} className="p-4 border rounded-md shadow-sm">
+                <h3 className="text-lg font-medium mb-3">{item.label}</h3>
+                
+                {item.type === 'numeric' ? (
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-500 mb-2">Sélectionnez une note de 1 à 5</p>
+                    <NumericBoxGroup
+                      value={Number(getResponseValue(item.id)) || 0}
+                      onChange={val => onResponseChange(item.id, val)}
+                    />
+                  </div>
+                ) : item.type === 'boolean' ? (
+                  <div className="space-y-2">
+                    {renderBooleanResponse(item.id)}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-500 mb-2">
+                      {item.type === 'observation' ? "Minimum 50 caractères" : "Commentaire facultatif"}
+                    </p>
+                    <Textarea 
+                      value={getResponseValue(item.id) as string}
+                      onChange={(e) => onResponseChange(item.id, e.target.value)}
+                      placeholder={item.type === 'observation' 
+                        ? "Entrez votre observation…" 
+                        : "Entrez un commentaire (facultatif)…"}
+                      className="min-h-[120px]"
+                    />
+                    {item.type === 'observation' && (
+                      <div className="text-xs text-right">
+                        {typeof getResponseValue(item.id) === 'string' && (
+                          <span className={`${(getResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
+                            {(getResponseValue(item.id) as string).length} / 50 caractères minimum
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            {form.formState.errors.root && (
+              <p className="text-sm font-medium text-destructive">
+                {form.formState.errors.root.message}
+              </p>
+            )}
+            
+            <div className="flex flex-col md:flex-row gap-4">
+              <Button 
+                type="submit" 
+                className="w-full md:w-auto" 
+                disabled={isLoading || allItemsLoading || submitting}
+              >
+                {submitting ? (
+                  <>
+                    <Loader className="h-4 w-4 mr-2 animate-spin" />
+                    Soumission en cours...
+                  </>
+                ) : "Soumettre mon auto-évaluation"}
+              </Button>
+              
+              <Button 
+                type="button"
+                variant="outline"
+                className="w-full md:w-auto"
+                onClick={handleSaveAsDraft}
+                disabled={isLoading || allItemsLoading || savingDraft}
+              >
+                {savingDraft ? (
+                  <>
+                    <Loader className="h-4 w-4 mr-2 animate-spin" />
+                    Sauvegarde en cours...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Enregistrer comme brouillon
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
+    </>
   );
 };
 
