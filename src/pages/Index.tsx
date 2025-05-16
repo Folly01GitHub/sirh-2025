@@ -66,16 +66,18 @@ const Index = () => {
       if (axios.isAxiosError(err) && err.response) {
         if (err.response.status === 401) {
           setError('Identifiants invalides');
+          toast.error("Identifiants invalides");
         } else if (err.response.status === 403) {
           setError('Compte bloqué ou inactif');
+          toast.error("Compte bloqué ou inactif");
         } else {
           setError('Erreur de connexion au serveur');
+          toast.error("Erreur de connexion au serveur");
         }
       } else {
         setError('Erreur de connexion au serveur');
+        toast.error("Erreur de connexion au serveur");
       }
-      
-      toast.error("Échec de connexion");
     } finally {
       setLoading(false);
     }
