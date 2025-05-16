@@ -80,6 +80,15 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   
   const formRef = useRef<HTMLFormElement>(null);
   
+  // Add the scrollToTop function
+  const scrollToTop = () => {
+    if (formRef.current) {
+      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+  
   const [missionQuery, setMissionQuery] = useState("");
   const [missionOptions, setMissionOptions] = useState<Mission[]>([]);
   const [missionsLoading, setMissionsLoading] = useState(false);
