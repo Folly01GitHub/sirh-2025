@@ -1,7 +1,5 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -34,6 +32,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import apiClient from '@/utils/apiClient';
 
 interface PermissionToValidate {
   id: string;
@@ -51,7 +50,7 @@ interface PermissionToValidate {
 }
 
 const PermissionValidations = () => {
-  const { user, token } = useAuth(); // Correctly access both user and token
+  const { user, token } = useAuth();
   const queryClient = useQueryClient();
   const [selectedPermission, setSelectedPermission] = useState<PermissionToValidate | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,30 +60,20 @@ const PermissionValidations = () => {
   const { data: permissions, isLoading, isError } = useQuery({
     queryKey: ['permissionsToValidate'],
     queryFn: async () => {
-      console.log('Using token for validation requests:', token); // Log token for debugging
-      const response = await axios.get('http://backend.local.com/api/permissions_a_valider', {
-        headers: {
-          'Authorization': `Bearer ${token || ''}`, // Use token from AuthContext
-          'Content-Type': 'application/json',
-        },
-      });
+      console.log('Fetching permissions to validate with apiClient');
+      const response = await apiClient.get('/permissions_a_valider');
       return response.data;
     },
   });
 
   const validateMutation = useMutation({
     mutationFn: async ({ id, action, reason }: { id: string, action: 'approve' | 'reject', reason?: string }) => {
-      return axios.patch(`http://backend.local.com/api/permissions/${id}/validate`, {
+      return apiClient.patch(`/permissions/${id}/validate`, {
         niveau_permission: action === 'approve' ? 1 : 2,
         ...(action === 'reject' && { 
           statut_permission: 'rejeté',
           motif_refus: reason
         }),
-      }, {
-        headers: {
-          'Authorization': `Bearer ${token || ''}`, // Use token from AuthContext
-          'Content-Type': 'application/json',
-        },
       });
     },
     onSuccess: () => {

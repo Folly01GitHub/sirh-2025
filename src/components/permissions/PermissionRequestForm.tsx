@@ -1,11 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import axios from 'axios';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { CalendarIcon, Clock, Loader2 } from 'lucide-react';
@@ -108,15 +106,10 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
       
       console.log('Sending permission request:', payload);
       
-      const response = await axios.post(
-        'http://backend.local.com/api/permission',
-        payload,
-        {
-          headers: {
-            'Authorization': `Bearer ${token || ''}`,
-            'Content-Type': 'application/json',
-          },
-        }
+      // Using apiClient instead of direct axios call
+      const response = await apiClient.post(
+        '/permission',
+        payload
       );
       
       console.log('Permission request successful, response:', response.data);

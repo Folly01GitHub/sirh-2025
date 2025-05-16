@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -31,6 +30,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
+import apiClient from '@/utils/apiClient';
 
 interface Permission {
   id: string;
@@ -46,7 +46,7 @@ interface Permission {
 }
 
 const PermissionRequests = () => {
-  const { user, token } = useAuth(); // Correctly access both user and token
+  const { user, token } = useAuth();
   const [selectedPermission, setSelectedPermission] = useState<Permission | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -54,13 +54,8 @@ const PermissionRequests = () => {
   const { data: permissions, isLoading, isError, refetch } = useQuery({
     queryKey: ['permissionsInCurrent'],
     queryFn: async () => {
-      console.log('Using token for permissions list:', token); // Log token for debugging
-      const response = await axios.get('http://backend.local.com/api/permissions_in_current', {
-        headers: {
-          'Authorization': `Bearer ${token || ''}`, // Correctly use token from AuthContext
-          'Content-Type': 'application/json',
-        },
-      });
+      console.log('Fetching permission list with apiClient');
+      const response = await apiClient.get('/permissions_in_current');
       return response.data;
     },
   });
@@ -79,12 +74,7 @@ const PermissionRequests = () => {
     
     setIsDeleting(true);
     try {
-      await axios.delete(`http://backend.local.com/api/permissions/${selectedPermission.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token || ''}`, // Correctly use token from AuthContext
-          'Content-Type': 'application/json',
-        },
-      });
+      await apiClient.delete(`/permissions/${selectedPermission.id}`);
       
       toast.success('Demande annulée avec succès', {
         description: 'Votre demande de permission a été annulée.',
