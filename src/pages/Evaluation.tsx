@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -248,7 +247,7 @@ const Evaluation = () => {
       }
     });
   }, []);
-
+  
   const handleEvaluatorResponseChange = useCallback((itemId: number, value: string | number) => {
     setEvaluatorResponses(prev => {
       const existingIndex = prev.findIndex(response => response.item_id === itemId);
@@ -429,6 +428,8 @@ const Evaluation = () => {
                       onSubmit={handleSubmitSelfAssessment}
                       onMissionChange={handleMissionChange}
                       selectedMissionId={selectedMissionId}
+                      selectedEvaluatorId={evaluatorId}
+                      selectedApproverId={approverId}
                     />
                   )}
                   

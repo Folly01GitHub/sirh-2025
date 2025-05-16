@@ -32,6 +32,8 @@ interface EvaluationStepOneProps {
   onSubmit: () => void;
   onMissionChange?: (id: number) => void;
   selectedMissionId?: number | null;
+  selectedEvaluatorId?: number | null;
+  selectedApproverId?: number | null;
 }
 
 interface EvaluationResponse {
@@ -71,7 +73,9 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   isLoading,
   onSubmit,
   onMissionChange,
-  selectedMissionId
+  selectedMissionId,
+  selectedEvaluatorId,
+  selectedApproverId
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -163,18 +167,32 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      evaluator: "",
-      approver: "",
+      evaluator: selectedEvaluatorId ? selectedEvaluatorId.toString() : "",
+      approver: selectedApproverId ? selectedApproverId.toString() : "",
       mission: selectedMissionId ? selectedMissionId.toString() : "",
     },
     mode: "onSubmit"
   });
 
+  // Effect to update mission value when the prop changes
   useEffect(() => {
     if (selectedMissionId) {
       form.setValue("mission", selectedMissionId.toString());
     }
   }, [selectedMissionId, form]);
+
+  // New effects to update evaluator and approver values when the props change
+  useEffect(() => {
+    if (selectedEvaluatorId) {
+      form.setValue("evaluator", selectedEvaluatorId.toString());
+    }
+  }, [selectedEvaluatorId, form]);
+
+  useEffect(() => {
+    if (selectedApproverId) {
+      form.setValue("approver", selectedApproverId.toString());
+    }
+  }, [selectedApproverId, form]);
 
   useEffect(() => {
     if (evaluationId) {
@@ -308,7 +326,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     return true;
   };
 
-  // Nouvelle fonction de vérification des sélecteurs uniquement
+  // Check selectors function
   const checkSelectors = (): boolean => {
     console.log("Checking selectors");
     const formValues = form.getValues();
@@ -328,7 +346,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     return hasEvaluator && hasApprover && hasMission;
   };
 
-  // Modification de la fonction handleSubmit pour vérifier d'abord les sélecteurs
+  // Form submission handler
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Form submit handler triggered');
