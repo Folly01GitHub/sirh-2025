@@ -5,7 +5,7 @@ import apiClient from '@/utils/apiClient';
 import { useSearchParams } from 'react-router-dom';
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, ChevronRight, FileText, Star } from 'lucide-react';
 import EvaluationHeader from '@/components/evaluations/EvaluationHeader';
@@ -13,6 +13,7 @@ import EvaluationStepOne from '@/components/evaluations/EvaluationStepOne';
 import EvaluationStepTwo from '@/components/evaluations/EvaluationStepTwo';
 import EvaluationStepThree from '@/components/evaluations/EvaluationStepThree';
 import EvaluationInstructions from '@/components/evaluations/EvaluationInstructions';
+import GroupTabTrigger from '@/components/evaluations/GroupTabTrigger';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
@@ -83,7 +84,8 @@ const Evaluation = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMissionId, setSelectedMissionId] = useState<number | null>(null);
   const [showFullGroupName, setShowFullGroupName] = useState<number | null>(null);
-  
+  const [groupValidationState, setGroupValidationState] = useState<Record<number, boolean>>({});
+
   useEffect(() => {
     if (stepParam) {
       const step = parseInt(stepParam);
@@ -210,6 +212,67 @@ const Evaluation = () => {
     criteriaGroups, 
     currentGroupId, 
     isValidResponse
+  ]);
+  
+  // Nouvelle fonction pour calculer les erreurs par groupe
+  const calculateGroupErrors = useCallback(() => {
+    if (!allCriteriaItems || !criteriaGroups) return;
+
+    const newGroupValidation: Record<number, boolean> = {};
+
+    // Initialiser tous les groupes comme valides
+    criteriaGroups.forEach(group => {
+      newGroupValidation[group.id] = true;
+    });
+
+    // Vérifier les champs obligatoires par groupe
+    allCriteriaItems
+      .filter(item => item.type !== 'commentaire') // Ignorer les commentaires (facultatifs)
+      .forEach(item => {
+        const responses = currentStep === 1 ? employeeResponses : evaluatorResponses;
+        const response = responses.find(r => r.item_id === item.id);
+        
+        // Si une réponse n'est pas valide, marquer ce groupe comme ayant des erreurs
+        if (!isValidResponse(response, item.type)) {
+          newGroupValidation[item.group_id] = false;
+        }
+      });
+    
+    // En étape 1, vérifier également si les champs de base (évaluateur, approbateur, mission) sont remplis
+    if (currentStep === 1) {
+      const hasBasicFieldsErrors = !evaluatorId || !approverId || !selectedMissionId;
+      
+      // Si il y a des erreurs dans les champs de base, mettre le premier groupe en erreur
+      if (hasBasicFieldsErrors && criteriaGroups.length > 0) {
+        newGroupValidation[criteriaGroups[0].id] = false;
+      }
+    }
+    
+    setGroupValidationState(newGroupValidation);
+  }, [
+    allCriteriaItems,
+    criteriaGroups,
+    currentStep,
+    employeeResponses,
+    evaluatorResponses,
+    isValidResponse,
+    evaluatorId,
+    approverId,
+    selectedMissionId
+  ]);
+  
+  // Appeler calculateGroupErrors chaque fois que les données pertinentes changent
+  useEffect(() => {
+    calculateGroupErrors();
+  }, [
+    calculateGroupErrors,
+    allCriteriaItems,
+    employeeResponses,
+    evaluatorResponses,
+    evaluatorId,
+    approverId,
+    selectedMissionId,
+    currentStep
   ]);
   
   const handleGroupChange = useCallback((groupId: string) => {
@@ -381,7 +444,7 @@ const Evaluation = () => {
                 <Progress value={calculateProgress()} className="h-2" />
               </div>
               
-              {/* Affichage des onglets de groupes */}
+              {/* Affichage des onglets de groupes avec indicateurs d'erreur */}
               {criteriaGroups && criteriaGroups.length > 0 ? (
                 <div className="mb-4">
                   <ScrollArea className="w-full">
@@ -392,18 +455,15 @@ const Evaluation = () => {
                     >
                       <TabsList className="mb-4 flex-nowrap w-max">
                         {criteriaGroups.map((group) => (
-                          <TabsTrigger 
-                            key={group.id} 
+                          <GroupTabTrigger
+                            key={group.id}
                             value={String(group.id)}
-                            title={group.name} // Tooltip complet au survol
-                            className="min-w-[100px] px-3 whitespace-normal text-center h-auto py-2"
-                          >
-                            {showFullGroupName === group.id ? (
-                              <span className="animate-fade-in">{group.name}</span>
-                            ) : (
-                              truncateGroupName(group.name, 18)
-                            )}
-                          </TabsTrigger>
+                            title={group.name}
+                            showFullName={showFullGroupName === group.id}
+                            hasErrors={groupValidationState[group.id] === false}
+                            truncatedName={truncateGroupName(group.name, 18)}
+                            fullName={group.name}
+                          />
                         ))}
                       </TabsList>
                     </Tabs>
