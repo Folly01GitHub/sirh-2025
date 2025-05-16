@@ -310,7 +310,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
     
     console.log('Form submit handler triggered');
     
@@ -321,13 +320,15 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       const hasAllSelectors = data.evaluator && data.approver && data.mission;
       
       if (!hasAllSelectors) {
-        // If any selector is missing, reset submitting state, don't show loading,
+        // If any selector is missing, don't set submitting state, don't show loading,
         // and scroll to top to show validation errors
         console.log('Missing selector fields');
         scrollToTop();
-        setSubmitting(false);
         return;
       }
+      
+      // Only set submitting state if all selectors are filled
+      setSubmitting(true);
       
       if (!validateAllFields()) {
         console.error('Field validation failed');
@@ -604,7 +605,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
             <Button 
               type="submit" 
               className="w-full md:w-auto" 
-              disabled={isLoading || allItemsLoading || submitting}
+              disabled={isLoading || allItemsLoading}
             >
               {submitting && form.getValues("evaluator") && form.getValues("approver") && form.getValues("mission") ? (
                 <>
