@@ -30,6 +30,7 @@ interface LoginFormProps {
   remember: boolean;
   setRemember: Dispatch<SetStateAction<boolean>>;
   onSubmit: () => void;
+  clearErrors?: () => void; // Add optional clearErrors prop
 }
 
 const LoginForm = ({ 
@@ -40,7 +41,8 @@ const LoginForm = ({
   loading, 
   remember, 
   setRemember,
-  onSubmit 
+  onSubmit,
+  clearErrors 
 }: LoginFormProps) => {
   const [error, setError] = useState<string | null>(null);
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
@@ -83,6 +85,11 @@ const LoginForm = ({
     
     // Réinitialiser les erreurs de validation du formulaire
     form.clearErrors();
+    
+    // Clear parent component errors if clearErrors function is provided
+    if (clearErrors) {
+      clearErrors();
+    }
     
     const currentEmail = form.getValues().email;
     

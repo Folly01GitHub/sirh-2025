@@ -118,6 +118,7 @@ const Index = () => {
               remember={remember}
               setRemember={setRemember}
               onSubmit={handleSubmit}
+              clearErrors={clearErrors}  // Pass the clearErrors function to LoginForm
             />
           </div>
         </Card>
