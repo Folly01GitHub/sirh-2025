@@ -79,36 +79,14 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const evaluationId = searchParams.get('id');
   
   const formRef = useRef<HTMLFormElement>(null);
-  const formTopRef = useRef<HTMLDivElement>(null);
   
-  // Fonction de défilement modifiée et simplifiée
+  // Add the scrollToTop function
   const scrollToTop = () => {
-    // Tentative 1: Utilisation de formTopRef
-    if (formTopRef.current) {
-      console.log("Référence formTopRef trouvée, utilisation de scrollIntoView");
-      formTopRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-      return; // Si cela fonctionne, sortir de la fonction
-    }
-    
-    // Tentative 2: Utilisation de formRef
     if (formRef.current) {
-      console.log("Référence formRef trouvée, utilisation de scrollIntoView");
-      formRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-      return; // Si cela fonctionne, sortir de la fonction
+      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    
-    // Méthode de dernier recours
-    console.log("Aucune référence trouvée, utilisation de scrollTo");
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
   };
   
   const [missionQuery, setMissionQuery] = useState("");
@@ -334,8 +312,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     e.preventDefault();
     
     console.log('Form submit handler triggered');
-    console.log('Form reference exists:', !!formRef.current);
-    console.log('FormTop reference exists:', !!formTopRef.current);
     
     form.handleSubmit(async (data) => {
       console.log('Form data:', data);
@@ -344,36 +320,10 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       const hasAllSelectors = data.evaluator && data.approver && data.mission;
       
       if (!hasAllSelectors) {
-        console.log('Missing selector fields, attempting to scroll to top');
-        
-        // Important: forcer la validation du formulaire d'abord
-        await form.trigger();
-        
-        // Essayer de défiler vers le haut immédiatement
+        // If any selector is missing, don't set submitting state, don't show loading,
+        // and scroll to top to show validation errors
+        console.log('Missing selector fields');
         scrollToTop();
-        
-        // Essayer à nouveau après un court délai au cas où le DOM a besoin de temps pour se mettre à jour
-        setTimeout(() => {
-          scrollToTop();
-          
-          // Notifier l'utilisateur des champs manquants
-          toast.error("Champs obligatoires manquants", {
-            description: "Veuillez remplir tous les champs obligatoires."
-          });
-          
-          // Forcer le focus sur le premier champ en erreur
-          const firstErrorField = document.querySelector('[aria-invalid="true"]');
-          if (firstErrorField instanceof HTMLElement) {
-            firstErrorField.focus();
-            console.log("Focus mis sur le premier champ en erreur");
-          }
-        }, 100);
-        
-        // Essayer une dernière fois après un délai plus long
-        setTimeout(() => {
-          scrollToTop();
-        }, 300);
-        
         return;
       }
       
@@ -534,21 +484,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   return (
     <div className="space-y-8">
       <Form {...form}>
-        <form 
-          ref={formRef} 
-          onSubmit={handleSubmit} 
-          className="space-y-8" 
-          id="evaluation-form"
-        >
-          {/* Référence pour le défilement - position absolue pour éviter de perturber la mise en page */}
-          <div 
-            ref={formTopRef} 
-            id="form-top" 
-            className="absolute top-0"
-            style={{ scrollMarginTop: '20px' }}
-            aria-hidden="true"
-          ></div>
-
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <FormField
               control={form.control}
