@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star, Save, Loader, AlertTriangle } from 'lucide-react';
+import { Star, Save, Loader } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -78,62 +78,15 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const searchParams = new URLSearchParams(location.search);
   const evaluationId = searchParams.get('id');
   
-  // Référence pour le défilement - élément en haut du composant, pas dans le formulaire
-  const formTopRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
-  const selectorsRef = useRef<HTMLDivElement>(null);
   
-  // Fonction de défilement simplifiée et plus fiable
+  // Add the scrollToTop function
   const scrollToTop = () => {
-    console.log("Tentative de défilement vers le haut du formulaire");
-    
-    // Mettre en évidence les champs obligatoires
-    if (selectorsRef.current) {
-      selectorsRef.current.classList.add('border-red-500', 'border-2', 'p-4', 'rounded-md', 'bg-red-50', 'animate-pulse');
-      setTimeout(() => {
-        if (selectorsRef.current) {
-          selectorsRef.current.classList.remove('animate-pulse');
-          
-          // Garder les styles visuels d'erreur
-          setTimeout(() => {
-            if (selectorsRef.current) {
-              selectorsRef.current.classList.remove('border-red-500', 'border-2', 'p-4', 'rounded-md', 'bg-red-50');
-            }
-          }, 5000);
-        }
-      }, 1000);
+    if (formRef.current) {
+      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    
-    // Première tentative - immédiate avec window.scrollTo
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // Deuxième tentative après 100ms
-    setTimeout(() => {
-      if (formTopRef.current) {
-        formTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }, 100);
-    
-    // Troisième tentative après 300ms - scroll forcé
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'auto' });
-      
-      // Mettre le focus sur le premier champ de sélecteur
-      const firstSelectField = document.querySelector('.selector-field input');
-      if (firstSelectField instanceof HTMLElement) {
-        firstSelectField.focus();
-        console.log("Focus mis sur le premier champ de sélecteur");
-      }
-    }, 300);
-    
-    // Quatrième tentative après 800ms - dernière chance
-    setTimeout(() => {
-      document.body.scrollTop = 0;
-      document.documentElement.scrollTop = 0;
-      console.log("Tentative finale avec scrollTop = 0");
-    }, 800);
   };
   
   const [missionQuery, setMissionQuery] = useState("");
@@ -359,8 +312,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     e.preventDefault();
     
     console.log('Form submit handler triggered');
-    console.log('Form reference exists:', !!formRef.current);
-    console.log('FormTop reference exists:', !!formTopRef.current);
     
     form.handleSubmit(async (data) => {
       console.log('Form data:', data);
@@ -369,21 +320,10 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       const hasAllSelectors = data.evaluator && data.approver && data.mission;
       
       if (!hasAllSelectors) {
-        console.log('Champs sélecteurs manquants détectés');
-        
-        // Important: forcer la validation du formulaire d'abord
-        await form.trigger();
-        
-        // Notification visuelle pour l'utilisateur
-        toast.error("Champs requis manquants", {
-          description: "Veuillez compléter tous les champs obligatoires en haut du formulaire.",
-          icon: <AlertTriangle className="h-5 w-5" />,
-          duration: 5000
-        });
-        
-        // Défiler vers le haut - plusieurs tentatives
+        // If any selector is missing, don't set submitting state, don't show loading,
+        // and scroll to top to show validation errors
+        console.log('Missing selector fields');
         scrollToTop();
-        
         return;
       }
       
@@ -542,188 +482,162 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   }
 
   return (
-    <>
-      {/* Élément invisible pour le défilement - position absolue en haut de la page */}
-      <div 
-        ref={formTopRef} 
-        id="form-top" 
-        style={{ 
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '1px',
-          zIndex: -1,
-          scrollMarginTop: '0px'
-        }}
-        aria-hidden="true"
-      ></div>
-      
-      <div className="space-y-8">  
-        <Form {...form}>
-          <form 
-            ref={formRef} 
-            onSubmit={handleSubmit} 
-            className="space-y-8" 
-            id="evaluation-form"
-          >
-            <div 
-              ref={selectorsRef} 
-              className="grid grid-cols-1 md:grid-cols-3 gap-6 transition-all duration-300"
-            >
-              <FormField
-                control={form.control}
-                name="evaluator"
-                render={({ field }) => (
-                  <FormItem className="selector-field">
-                    <SearchableSelect
-                      label="Évaluateur"
-                      placeholder="Sélectionnez ou cherchez…"
-                      value={field.value}
-                      onChange={value => {
-                        field.onChange(value);
-                        onEvaluatorChange(Number(value));
-                      }}
-                      onSearch={setEvaluatorQuery}
-                      options={evaluatorSelectOptions}
-                      loading={evaluatorLoading}
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="approver"
-                render={({ field }) => (
-                  <FormItem className="selector-field">
-                    <SearchableSelect
-                      label="Approbateur"
-                      placeholder="Sélectionnez ou cherchez…"
-                      value={field.value}
-                      onChange={value => {
-                        field.onChange(value);
-                        onApproverChange(Number(value));
-                      }}
-                      onSearch={setApproverQuery}
-                      options={approverSelectOptions}
-                      loading={approverLoading}
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="mission"
-                render={({ field }) => (
-                  <FormItem className="selector-field">
-                    <SearchableSelect
-                      label="Mission"
-                      placeholder="Sélectionnez ou cherchez…"
-                      value={field.value}
-                      onChange={val => {
-                        field.onChange(val);
-                        if (onMissionChange) onMissionChange(Number(val));
-                      }}
-                      onSearch={setMissionQuery}
-                      options={missionSelectOptions}
-                      loading={missionsLoading}
-                      disabled={!!missionsError}
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            {criteriaItems.map((item) => (
-              <div key={item.id} className="p-4 border rounded-md shadow-sm">
-                <h3 className="text-lg font-medium mb-3">{item.label}</h3>
-                
-                {item.type === 'numeric' ? (
-                  <div className="space-y-2">
-                    <p className="text-sm text-gray-500 mb-2">Sélectionnez une note de 1 à 5</p>
-                    <NumericBoxGroup
-                      value={Number(getResponseValue(item.id)) || 0}
-                      onChange={val => onResponseChange(item.id, val)}
-                    />
-                  </div>
-                ) : item.type === 'boolean' ? (
-                  <div className="space-y-2">
-                    {renderBooleanResponse(item.id)}
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <p className="text-sm text-gray-500 mb-2">
-                      {item.type === 'observation' ? "Minimum 50 caractères" : "Commentaire facultatif"}
-                    </p>
-                    <Textarea 
-                      value={getResponseValue(item.id) as string}
-                      onChange={(e) => onResponseChange(item.id, e.target.value)}
-                      placeholder={item.type === 'observation' 
-                        ? "Entrez votre observation…" 
-                        : "Entrez un commentaire (facultatif)…"}
-                      className="min-h-[120px]"
-                    />
-                    {item.type === 'observation' && (
-                      <div className="text-xs text-right">
-                        {typeof getResponseValue(item.id) === 'string' && (
-                          <span className={`${(getResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
-                            {(getResponseValue(item.id) as string).length} / 50 caractères minimum
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-            
-            {form.formState.errors.root && (
-              <p className="text-sm font-medium text-destructive">
-                {form.formState.errors.root.message}
-              </p>
-            )}
-            
-            <div className="flex flex-col md:flex-row gap-4">
-              <Button 
-                type="submit" 
-                className="w-full md:w-auto" 
-                disabled={isLoading || allItemsLoading || submitting}
-              >
-                {submitting ? (
-                  <>
-                    <Loader className="h-4 w-4 mr-2 animate-spin" />
-                    Soumission en cours...
-                  </>
-                ) : "Soumettre mon auto-évaluation"}
-              </Button>
+    <div className="space-y-8">
+      <Form {...form}>
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <FormField
+              control={form.control}
+              name="evaluator"
+              render={({ field }) => (
+                <FormItem>
+                  <SearchableSelect
+                    label="Évaluateur"
+                    placeholder="Sélectionnez ou cherchez…"
+                    value={field.value}
+                    onChange={value => {
+                      field.onChange(value);
+                      onEvaluatorChange(Number(value));
+                    }}
+                    onSearch={setEvaluatorQuery}
+                    options={evaluatorSelectOptions}
+                    loading={evaluatorLoading}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="approver"
+              render={({ field }) => (
+                <FormItem>
+                  <SearchableSelect
+                    label="Approbateur"
+                    placeholder="Sélectionnez ou cherchez…"
+                    value={field.value}
+                    onChange={value => {
+                      field.onChange(value);
+                      onApproverChange(Number(value));
+                    }}
+                    onSearch={setApproverQuery}
+                    options={approverSelectOptions}
+                    loading={approverLoading}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="mission"
+              render={({ field }) => (
+                <FormItem>
+                  <SearchableSelect
+                    label="Mission"
+                    placeholder="Sélectionnez ou cherchez…"
+                    value={field.value}
+                    onChange={val => {
+                      field.onChange(val);
+                      if (onMissionChange) onMissionChange(Number(val));
+                    }}
+                    onSearch={setMissionQuery}
+                    options={missionSelectOptions}
+                    loading={missionsLoading}
+                    disabled={!!missionsError}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          {criteriaItems.map((item) => (
+            <div key={item.id} className="p-4 border rounded-md shadow-sm">
+              <h3 className="text-lg font-medium mb-3">{item.label}</h3>
               
-              <Button 
-                type="button"
-                variant="outline"
-                className="w-full md:w-auto"
-                onClick={handleSaveAsDraft}
-                disabled={isLoading || allItemsLoading || savingDraft}
-              >
-                {savingDraft ? (
-                  <>
-                    <Loader className="h-4 w-4 mr-2 animate-spin" />
-                    Sauvegarde en cours...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Enregistrer comme brouillon
-                  </>
-                )}
-              </Button>
+              {item.type === 'numeric' ? (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-500 mb-2">Sélectionnez une note de 1 à 5</p>
+                  <NumericBoxGroup
+                    value={Number(getResponseValue(item.id)) || 0}
+                    onChange={val => onResponseChange(item.id, val)}
+                  />
+                </div>
+              ) : item.type === 'boolean' ? (
+                <div className="space-y-2">
+                  {renderBooleanResponse(item.id)}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-500 mb-2">
+                    {item.type === 'observation' ? "Minimum 50 caractères" : "Commentaire facultatif"}
+                  </p>
+                  <Textarea 
+                    value={getResponseValue(item.id) as string}
+                    onChange={(e) => onResponseChange(item.id, e.target.value)}
+                    placeholder={item.type === 'observation' 
+                      ? "Entrez votre observation…" 
+                      : "Entrez un commentaire (facultatif)…"}
+                    className="min-h-[120px]"
+                  />
+                  {item.type === 'observation' && (
+                    <div className="text-xs text-right">
+                      {typeof getResponseValue(item.id) === 'string' && (
+                        <span className={`${(getResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
+                          {(getResponseValue(item.id) as string).length} / 50 caractères minimum
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          </form>
-        </Form>
-      </div>
-    </>
+          ))}
+          
+          {form.formState.errors.root && (
+            <p className="text-sm font-medium text-destructive">
+              {form.formState.errors.root.message}
+            </p>
+          )}
+          
+          <div className="flex flex-col md:flex-row gap-4">
+            <Button 
+              type="submit" 
+              className="w-full md:w-auto" 
+              disabled={isLoading || allItemsLoading}
+            >
+              {submitting && form.getValues("evaluator") && form.getValues("approver") && form.getValues("mission") ? (
+                <>
+                  <Loader className="h-4 w-4 mr-2 animate-spin" />
+                  Soumission en cours...
+                </>
+              ) : "Soumettre mon auto-évaluation"}
+            </Button>
+            
+            <Button 
+              type="button"
+              variant="outline"
+              className="w-full md:w-auto"
+              onClick={handleSaveAsDraft}
+              disabled={isLoading || allItemsLoading || savingDraft}
+            >
+              {savingDraft ? (
+                <>
+                  <Loader className="h-4 w-4 mr-2 animate-spin" />
+                  Sauvegarde en cours...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Enregistrer comme brouillon
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 };
 
