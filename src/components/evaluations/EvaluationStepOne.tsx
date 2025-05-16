@@ -310,13 +310,16 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     
     console.log('Form submit handler triggered');
     
+    // Vérifier d'abord les validations de base du formulaire zod
+    const formState = form.formState;
     form.handleSubmit(async (data) => {
       console.log('Form data:', data);
       
+      // Vérification complète des champs
       if (!validateAllFields()) {
         console.error('Field validation failed');
-        setSubmitting(false);
-        scrollToTop(); // Scroll to top to show validation errors
+        setSubmitting(false); // Réinitialiser l'état submitting pour rendre le bouton cliquable
+        scrollToTop(); // Défilement vers le haut pour afficher les erreurs
         return;
       }
 
@@ -364,6 +367,18 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         setSubmitting(false);
       }
     })();
+    
+    // Si le formulaire a des erreurs zod basiques (comme champs requis non remplis),
+    // réinitialiser l'état submitting et faire défiler vers le haut
+    // Cette partie s'exécute en parallèle à la soumission et s'assure que le bouton soit réactivé
+    // même si handleSubmit ne s'exécute pas complètement à cause d'erreurs de validation
+    if (Object.keys(formState.errors).length > 0) {
+      console.log('Form has basic validation errors:', formState.errors);
+      setTimeout(() => {
+        setSubmitting(false);
+        scrollToTop();
+      }, 500); // Court délai pour permettre l'affichage des erreurs
+    }
   };
 
   const handleSaveAsDraft = async () => {
