@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -77,8 +77,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const evaluationId = searchParams.get('id');
-  
-  const formRef = useRef<HTMLFormElement>(null);
   
   const [missionQuery, setMissionQuery] = useState("");
   const [missionOptions, setMissionOptions] = useState<Mission[]>([]);
@@ -299,27 +297,18 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     return true;
   };
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     
     console.log('Form submit handler triggered');
     
-    // Vérifier d'abord les validations de base du formulaire zod
-    const formState = form.formState;
     form.handleSubmit(async (data) => {
       console.log('Form data:', data);
       
-      // Vérification complète des champs
       if (!validateAllFields()) {
         console.error('Field validation failed');
-        setSubmitting(false); // Réinitialiser l'état submitting pour rendre le bouton cliquable
-        scrollToTop(); // Défilement vers le haut pour afficher les erreurs
+        setSubmitting(false);
         return;
       }
 
@@ -364,21 +353,10 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         toast.error("Échec de la soumission", {
           description: errorMessage
         });
+      } finally {
         setSubmitting(false);
       }
     })();
-    
-    // Si le formulaire a des erreurs zod basiques (comme champs requis non remplis),
-    // réinitialiser l'état submitting et faire défiler vers le haut
-    // Cette partie s'exécute en parallèle à la soumission et s'assure que le bouton soit réactivé
-    // même si handleSubmit ne s'exécute pas complètement à cause d'erreurs de validation
-    if (Object.keys(formState.errors).length > 0) {
-      console.log('Form has basic validation errors:', formState.errors);
-      setTimeout(() => {
-        setSubmitting(false);
-        scrollToTop();
-      }, 500); // Court délai pour permettre l'affichage des erreurs
-    }
   };
 
   const handleSaveAsDraft = async () => {
@@ -483,7 +461,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   return (
     <div className="space-y-8">
       <Form {...form}>
-        <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <FormField
               control={form.control}
