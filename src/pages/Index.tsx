@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import WaveBackground from '@/components/ui/WaveBackground';
 import LoginForm from '@/components/auth/LoginForm';
 import apiClient from '@/utils/apiClient';
-import axios from 'axios'; // Added this import for the isAxiosError method
+import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 

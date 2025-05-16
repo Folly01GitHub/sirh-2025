@@ -88,6 +88,7 @@ const LoginForm = ({
     setForgotPasswordLoading(true);
     
     try {
+      // Use apiClient instead of direct axios call
       await apiClient.post('/mdp-oublie', {
         email: currentEmail
       });
