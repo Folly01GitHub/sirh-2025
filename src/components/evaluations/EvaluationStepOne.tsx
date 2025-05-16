@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star, Save, Loader } from 'lucide-react';
+import { Star, Save, Loader, AlertTriangle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -15,6 +15,16 @@ import apiClient from '@/utils/apiClient';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { NumericBoxGroup } from './NumericBoxGroup';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 
 interface Mission {
   id: number;
@@ -103,6 +113,8 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const [approverQuery, setApproverQuery] = useState("");
   const [approverOptions, setApproverOptions] = useState<Employee[]>([]);
   const [approverLoading, setApproverLoading] = useState(false);
+
+  const [showSelectorAlert, setShowSelectorAlert] = useState(false);
 
   const { data: allCriteriaItems, isLoading: allItemsLoading } = useQuery({
     queryKey: ['allCriteriaItems'],
@@ -320,9 +332,8 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       const hasAllSelectors = data.evaluator && data.approver && data.mission;
       
       if (!hasAllSelectors) {
-        // If any selector is missing, don't set submitting state, don't show loading,
-        // and scroll to top to show validation errors
-        console.log('Missing selector fields');
+        // Show alert dialog for missing selectors
+        setShowSelectorAlert(true);
         scrollToTop();
         return;
       }
@@ -637,6 +648,26 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
           </div>
         </form>
       </Form>
+      
+      {/* Alert Dialog for missing selector fields */}
+      <AlertDialog open={showSelectorAlert} onOpenChange={setShowSelectorAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Champs obligatoires manquants
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Assurez-vous d'avoir bien sélectionné l'évaluateur, l'approbateur et la mission en début de formulaire svp !
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowSelectorAlert(false)}>
+              Compris
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
