@@ -3,15 +3,16 @@ import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-// Si useAuth est présent dans le projet, utilisez-le, sinon fallback sur localStorage.
-import { useAuth } from '@/contexts/AuthContext'; // S'il y a une erreur ici, commentez et utilisez localStorage.
+// Import apiClient instead of axios
+import apiClient from '@/utils/apiClient';
+// If useAuth is present in the project, use it, otherwise fallback to localStorage.
+import { useAuth } from '@/contexts/AuthContext'; // If there's an error here, comment and use localStorage.
 
 const userSchema = z.object({
   firstName: z.string().min(2, "Le prénom est requis"),
@@ -46,14 +47,12 @@ const AddUserCard = () => {
     async function fetchLists() {
       setLoadingLists(true);
       try {
-        const headers = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-
+        // Using apiClient instead of axios with hardcoded URLs
         const [gradesRes, deptsRes] = await Promise.all([
-          axios.get('https://10.172.225.11:8082/api/grades', { headers }),
-          axios.get('https://10.172.225.11:8082/api/departements', { headers }),
+          apiClient.get('/grades'),
+          apiClient.get('/departements'),
         ]);
+        
         // On tente d'extraire soit la propriété spécifique, soit un tableau racine
         // Pour les postes
         let positions: string[] = [];
@@ -87,7 +86,8 @@ const AddUserCard = () => {
   const onSubmit = async (data: UserFormData) => {
     setLoading(true);
     try {
-      await axios.post('http://backend.local.com/api/password', {
+      // Using apiClient instead of axios with hardcoded URL
+      await apiClient.post('/password', {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
