@@ -193,13 +193,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
 
   return (
     <div className="space-y-8">
-      <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
-        <p className="text-blue-800">
-          En tant qu'approbateur, vous devez valider ou rejeter cette évaluation de mission.
-          Vous pouvez consulter les évaluations du collaborateur et du manager côte à côte.
-        </p>
-      </div>
-      
       <div className="bg-white p-6 rounded-lg border shadow-sm">
         <h3 className="text-xl font-medium mb-4">Résumé de l'évaluation</h3>
         
