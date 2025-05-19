@@ -66,7 +66,13 @@ const UserFilterDialog: React.FC<UserFilterDialogProps> = ({
     value: position
   }));
   
-  const departmentOptions = availableDepartments.map(department => ({
+  // Ensure "TDC" department is included in the list
+  const departments = [...availableDepartments];
+  if (!departments.includes("TDC")) {
+    departments.push("TDC");
+  }
+  
+  const departmentOptions = departments.map(department => ({
     label: department,
     value: department
   }));
