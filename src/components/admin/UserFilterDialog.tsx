@@ -25,7 +25,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import apiClient from '@/utils/apiClient';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
 
 interface UserFilterDialogProps {
@@ -34,6 +33,8 @@ interface UserFilterDialogProps {
   onApplyFilters: (data: FilterFormData) => void;
   onResetFilters: () => void;
   currentFilters: FilterFormData;
+  availableDepartments: string[];
+  availablePositions: string[];
 }
 
 const UserFilterDialog: React.FC<UserFilterDialogProps> = ({ 
@@ -41,10 +42,10 @@ const UserFilterDialog: React.FC<UserFilterDialogProps> = ({
   onOpenChange, 
   onApplyFilters, 
   onResetFilters, 
-  currentFilters 
+  currentFilters,
+  availableDepartments,
+  availablePositions
 }) => {
-  const [positions, setPositions] = useState<string[]>([]);
-  const [departments, setDepartments] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   
   const form = useForm<FilterFormData>({
@@ -59,52 +60,13 @@ const UserFilterDialog: React.FC<UserFilterDialogProps> = ({
     }
   }, [currentFilters, form, isOpen]);
   
-  // Fetch positions and departments from API
-  useEffect(() => {
-    const fetchFilterOptions = async () => {
-      setLoading(true);
-      try {
-        const [gradesRes, deptsRes] = await Promise.all([
-          apiClient.get('/grades'),
-          apiClient.get('/departements'),
-        ]);
-        
-        // Process positions
-        let fetchedPositions: string[] = [];
-        if (Array.isArray(gradesRes.data)) {
-          fetchedPositions = gradesRes.data;
-        } else if (gradesRes.data && Array.isArray(gradesRes.data.grades)) {
-          fetchedPositions = gradesRes.data.grades;
-        }
-        setPositions(fetchedPositions);
-        
-        // Process departments
-        let fetchedDepartments: string[] = [];
-        if (Array.isArray(deptsRes.data)) {
-          fetchedDepartments = deptsRes.data;
-        } else if (deptsRes.data && Array.isArray(deptsRes.data.departements)) {
-          fetchedDepartments = deptsRes.data.departements;
-        }
-        setDepartments(fetchedDepartments);
-      } catch (error) {
-        console.error('Error fetching filter options:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (isOpen) {
-      fetchFilterOptions();
-    }
-  }, [isOpen]);
-
   // Map array data to options format for SearchableSelect
-  const positionOptions = positions.map(position => ({
+  const positionOptions = availablePositions.map(position => ({
     label: position,
     value: position
   }));
   
-  const departmentOptions = departments.map(department => ({
+  const departmentOptions = availableDepartments.map(department => ({
     label: department,
     value: department
   }));

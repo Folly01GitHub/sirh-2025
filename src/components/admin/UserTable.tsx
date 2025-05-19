@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Table, 
   TableHeader, 
@@ -33,6 +33,24 @@ const UserTable: React.FC = () => {
   const [filters, setFilters] = useState<FilterFormData>({});
   const [error, setError] = useState<string | null>(null);
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
+
+  // Extract unique departments from users
+  const uniqueDepartments = useMemo(() => {
+    if (!users || users.length === 0) return [];
+    const departments = users
+      .map(user => user.department)
+      .filter((department): department is string => !!department);
+    return [...new Set(departments)].sort();
+  }, [users]);
+
+  // Extract unique positions from users
+  const uniquePositions = useMemo(() => {
+    if (!users || users.length === 0) return [];
+    const positions = users
+      .map(user => user.position)
+      .filter((position): position is string => !!position);
+    return [...new Set(positions)].sort();
+  }, [users]);
 
   // Fetch users from API
   useEffect(() => {
@@ -276,7 +294,9 @@ const UserTable: React.FC = () => {
         onOpenChange={setIsFilterDialogOpen} 
         onApplyFilters={applyFilters} 
         onResetFilters={resetFilters} 
-        currentFilters={filters} 
+        currentFilters={filters}
+        availableDepartments={uniqueDepartments}
+        availablePositions={uniquePositions}
       />
     </div>
   );
