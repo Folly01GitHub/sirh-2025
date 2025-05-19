@@ -26,6 +26,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface UserFilterDialogProps {
   isOpen: boolean;
@@ -83,7 +84,7 @@ const UserFilterDialog: React.FC<UserFilterDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] sm:max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Filtrer les utilisateurs</DialogTitle>
           <DialogDescription>
@@ -145,14 +146,16 @@ const UserFilterDialog: React.FC<UserFilterDialogProps> = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Département</FormLabel>
-                      <SearchableSelect
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        options={departmentOptions}
-                        placeholder="Tous les départements"
-                        loading={loading}
-                        disabled={loading}
-                      />
+                      <ScrollArea className="h-[170px] rounded-md border p-0">
+                        <SearchableSelect
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          options={departmentOptions}
+                          placeholder="Tous les départements"
+                          loading={loading}
+                          disabled={loading}
+                        />
+                      </ScrollArea>
                     </FormItem>
                   )}
                 />
