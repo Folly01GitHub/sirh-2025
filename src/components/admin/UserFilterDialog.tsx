@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FilterFormData } from '@/types/user.types';
@@ -25,6 +25,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
+import apiClient from '@/utils/apiClient';
 
 interface UserFilterDialogProps {
   isOpen: boolean;
@@ -41,6 +42,10 @@ const UserFilterDialog: React.FC<UserFilterDialogProps> = ({
   onResetFilters, 
   currentFilters 
 }) => {
+  const [positions, setPositions] = useState<string[]>([]);
+  const [departments, setDepartments] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  
   const form = useForm<FilterFormData>({
     resolver: zodResolver(filterSchema),
     defaultValues: currentFilters
@@ -50,6 +55,45 @@ const UserFilterDialog: React.FC<UserFilterDialogProps> = ({
   React.useEffect(() => {
     form.reset(currentFilters);
   }, [currentFilters, form]);
+  
+  // Fetch positions and departments from API
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      setLoading(true);
+      try {
+        const [gradesRes, deptsRes] = await Promise.all([
+          apiClient.get('/grades'),
+          apiClient.get('/departements'),
+        ]);
+        
+        // Process positions
+        let fetchedPositions: string[] = [];
+        if (Array.isArray(gradesRes.data)) {
+          fetchedPositions = gradesRes.data;
+        } else if (gradesRes.data && Array.isArray(gradesRes.data.grades)) {
+          fetchedPositions = gradesRes.data.grades;
+        }
+        setPositions(fetchedPositions);
+        
+        // Process departments
+        let fetchedDepartments: string[] = [];
+        if (Array.isArray(deptsRes.data)) {
+          fetchedDepartments = deptsRes.data;
+        } else if (deptsRes.data && Array.isArray(deptsRes.data.departements)) {
+          fetchedDepartments = deptsRes.data.departements;
+        }
+        setDepartments(fetchedDepartments);
+      } catch (error) {
+        console.error('Error fetching filter options:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isOpen) {
+      fetchFilterOptions();
+    }
+  }, [isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -98,15 +142,15 @@ const UserFilterDialog: React.FC<UserFilterDialogProps> = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Poste</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value} disabled={loading}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Tous les postes" />
+                            <SelectValue placeholder={loading ? "Chargement..." : "Tous les postes"} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="">Tous les postes</SelectItem>
-                          {["Associate", "Director", "Senior Manager", "Manager", "Senior", "Assistant", "Trainee"].map((position) => (
+                          {positions.map((position) => (
                             <SelectItem key={position} value={position}>
                               {position}
                             </SelectItem>
@@ -122,15 +166,15 @@ const UserFilterDialog: React.FC<UserFilterDialogProps> = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Département</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value} disabled={loading}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Tous les départements" />
+                            <SelectValue placeholder={loading ? "Chargement..." : "Tous les départements"} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="">Tous les départements</SelectItem>
-                          {["HR", "TDC", "FA"].map((department) => (
+                          {departments.map((department) => (
                             <SelectItem key={department} value={department}>
                               {department}
                             </SelectItem>

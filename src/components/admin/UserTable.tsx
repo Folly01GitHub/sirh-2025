@@ -14,12 +14,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Filter, Download, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { User, FilterFormData, UserEditFormData, generateMockUsers } from '@/types/user.types';
+import { User, FilterFormData, UserEditFormData } from '@/types/user.types';
 import { exportToCsv } from '@/utils/exportUtils';
 import UserTableRow from './UserTableRow';
 import UserEditDialog from './UserEditDialog';
 import UserDeleteDialog from './UserDeleteDialog';
 import UserFilterDialog from './UserFilterDialog';
+import apiClient from '@/utils/apiClient';
 
 const UserTable: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -30,14 +31,36 @@ const UserTable: React.FC = () => {
   const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterFormData>({});
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch users (simulate API call)
+  // Fetch users from API
   useEffect(() => {
     const fetchUsers = async () => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setUsers(generateMockUsers());
-      setLoading(false);
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await apiClient.get('/employees');
+        console.log('API Response:', response.data);
+        
+        // Handle different API response structures
+        let fetchedUsers: User[] = [];
+        if (Array.isArray(response.data)) {
+          fetchedUsers = response.data;
+        } else if (response.data && Array.isArray(response.data.employees)) {
+          fetchedUsers = response.data.employees;
+        } else {
+          console.warn('Unexpected API response format:', response.data);
+          fetchedUsers = [];
+        }
+        
+        setUsers(fetchedUsers);
+      } catch (err) {
+        console.error('Error fetching users:', err);
+        setError('Impossible de charger la liste des utilisateurs. Veuillez réessayer plus tard.');
+        toast.error('Erreur lors du chargement des utilisateurs');
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchUsers();
@@ -57,11 +80,13 @@ const UserTable: React.FC = () => {
 
   // Submit the edit form
   const onEditSubmit = async (data: UserEditFormData) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    if (!selectedUser) return;
     
-    // Update the user in the local state
-    if (selectedUser) {
+    setLoading(true);
+    try {
+      await apiClient.put(`/employees/${selectedUser.id}`, data);
+      
+      // Update the user in the local state
       setUsers(users.map(user => 
         user.id === selectedUser.id 
           ? { ...user, ...data } 
@@ -69,6 +94,11 @@ const UserTable: React.FC = () => {
       ));
       toast.success("Utilisateur mis à jour avec succès");
       setIsEditDialogOpen(false);
+    } catch (err) {
+      console.error('Error updating user:', err);
+      toast.error("Erreur lors de la mise à jour de l'utilisateur");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -76,13 +106,20 @@ const UserTable: React.FC = () => {
   const confirmDelete = async () => {
     if (!selectedUser) return;
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Remove the user from the local state
-    setUsers(users.filter(user => user.id !== selectedUser.id));
-    toast.success("Utilisateur supprimé avec succès");
-    setIsDeleteDialogOpen(false);
+    setLoading(true);
+    try {
+      await apiClient.delete(`/employees/${selectedUser.id}`);
+      
+      // Remove the user from the local state
+      setUsers(users.filter(user => user.id !== selectedUser.id));
+      toast.success("Utilisateur supprimé avec succès");
+      setIsDeleteDialogOpen(false);
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      toast.error("Erreur lors de la suppression de l'utilisateur");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Apply filters
@@ -169,6 +206,12 @@ const UserTable: React.FC = () => {
                   ))}
                 </TableRow>
               ))
+            ) : error ? (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center py-6 text-red-500">
+                  {error}
+                </TableCell>
+              </TableRow>
             ) : filteredUsers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-6 text-gray-500">
