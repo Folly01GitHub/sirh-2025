@@ -109,9 +109,9 @@ const UserFilterDialog: React.FC<UserFilterDialogProps> = ({
     value: department
   }));
 
-  // Add empty option for "All" selections
-  positionOptions.unshift({ label: "Tous les postes", value: "" });
-  departmentOptions.unshift({ label: "Tous les départements", value: "" });
+  // Change empty string to "all" for "All" selections
+  positionOptions.unshift({ label: "Tous les postes", value: "all" });
+  departmentOptions.unshift({ label: "Tous les départements", value: "all" });
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -144,7 +144,7 @@ const UserFilterDialog: React.FC<UserFilterDialogProps> = ({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Tous les statuts</SelectItem>
+                          <SelectItem value="all">Tous les statuts</SelectItem>
                           <SelectItem value="active">Actif</SelectItem>
                           <SelectItem value="pending">En attente</SelectItem>
                         </SelectContent>

@@ -70,9 +70,9 @@ const UserTable: React.FC = () => {
   // Count active filters
   useEffect(() => {
     let count = 0;
-    if (filters.status) count++;
-    if (filters.position) count++;
-    if (filters.department) count++;
+    if (filters.status && filters.status !== "all") count++;
+    if (filters.position && filters.position !== "all") count++;
+    if (filters.department && filters.department !== "all") count++;
     if (filters.dateFrom) count++;
     if (filters.dateTo) count++;
     setActiveFiltersCount(count);
@@ -155,9 +155,10 @@ const UserTable: React.FC = () => {
       user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = !filters.status || user.status === filters.status;
-    const matchesPosition = !filters.position || user.position === filters.position;
-    const matchesDepartment = !filters.department || user.department === filters.department;
+    // Update filter logic to handle "all" value
+    const matchesStatus = !filters.status || filters.status === "all" || user.status === filters.status;
+    const matchesPosition = !filters.position || filters.position === "all" || user.position === filters.position;
+    const matchesDepartment = !filters.department || filters.department === "all" || user.department === filters.department;
     
     const userDate = user.dateCreated ? new Date(user.dateCreated) : null;
     const matchesDateFrom = !filters.dateFrom || (userDate && userDate >= filters.dateFrom);
