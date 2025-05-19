@@ -451,13 +451,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   return (
     <div className="space-y-8">
-      <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
-        <p className="text-blue-800">
-          En tant qu'évaluateur, vous pouvez consulter l'auto-évaluation du collaborateur 
-          et saisir votre propre évaluation. Les deux seront affichées côte à côte pour faciliter la comparaison.
-        </p>
-      </div>
-      
       {criteriaItems.map((item) => (
         <div key={item.id} className="p-4 border rounded-md shadow-sm">
           <h3 className="text-lg font-medium mb-4">{item.label}</h3>
