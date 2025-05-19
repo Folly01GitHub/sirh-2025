@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { TabsTrigger } from "@/components/ui/tabs";
 import { AlertCircle } from 'lucide-react';
 
 interface GroupTabTriggerProps {
@@ -10,6 +9,8 @@ interface GroupTabTriggerProps {
   hasErrors: boolean;
   truncatedName: string;
   fullName: string;
+  onClick: () => void;
+  active: boolean;
 }
 
 const GroupTabTrigger: React.FC<GroupTabTriggerProps> = ({
@@ -18,13 +19,19 @@ const GroupTabTrigger: React.FC<GroupTabTriggerProps> = ({
   showFullName,
   hasErrors,
   truncatedName,
-  fullName
+  fullName,
+  onClick,
+  active
 }) => {
   return (
-    <TabsTrigger
-      value={value}
+    <button
+      onClick={onClick}
       title={title}
-      className="min-w-[100px] px-3 whitespace-normal text-center h-auto py-2 relative"
+      className={`min-w-[100px] px-3 whitespace-normal text-center h-auto py-2 relative inline-flex items-center justify-center rounded-sm text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${
+        active 
+          ? "bg-background text-foreground shadow-sm" 
+          : "bg-muted text-muted-foreground hover:bg-muted/80"
+      }`}
     >
       <div className="flex items-center justify-center">
         {showFullName ? (
@@ -40,7 +47,7 @@ const GroupTabTrigger: React.FC<GroupTabTriggerProps> = ({
           />
         )}
       </div>
-    </TabsTrigger>
+    </button>
   );
 };
 

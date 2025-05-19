@@ -5,14 +5,12 @@ import apiClient from '@/utils/apiClient';
 import { useSearchParams } from 'react-router-dom';
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, ChevronRight, FileText, Star } from 'lucide-react';
 import EvaluationHeader from '@/components/evaluations/EvaluationHeader';
 import EvaluationStepOne from '@/components/evaluations/EvaluationStepOne';
 import EvaluationStepTwo from '@/components/evaluations/EvaluationStepTwo';
 import EvaluationStepThree from '@/components/evaluations/EvaluationStepThree';
-import EvaluationInstructions from '@/components/evaluations/EvaluationInstructions';
 import GroupTabTrigger from '@/components/evaluations/GroupTabTrigger';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -450,25 +448,21 @@ const Evaluation = () => {
               {criteriaGroups && criteriaGroups.length > 0 ? (
                 <div className="mb-4">
                   <ScrollArea className="w-full">
-                    <Tabs 
-                      value={currentGroupId.toString()} 
-                      onValueChange={handleGroupChange} 
-                      className="w-full"
-                    >
-                      <TabsList className="mb-4 flex-nowrap w-max">
-                        {criteriaGroups.map((group) => (
-                          <GroupTabTrigger
-                            key={group.id}
-                            value={String(group.id)}
-                            title={group.name}
-                            showFullName={showFullGroupName === group.id}
-                            hasErrors={currentStep === 3 ? false : groupValidationState[group.id] === false}
-                            truncatedName={truncateGroupName(group.name, 18)}
-                            fullName={group.name}
-                          />
-                        ))}
-                      </TabsList>
-                    </Tabs>
+                    <div className="mb-4 flex-nowrap w-max">
+                      {criteriaGroups.map((group) => (
+                        <GroupTabTrigger
+                          key={group.id}
+                          value={String(group.id)}
+                          title={group.name}
+                          showFullName={showFullGroupName === group.id}
+                          hasErrors={currentStep === 3 ? false : groupValidationState[group.id] === false}
+                          truncatedName={truncateGroupName(group.name, 18)}
+                          fullName={group.name}
+                          onClick={() => handleGroupChange(String(group.id))}
+                          active={currentGroupId === group.id}
+                        />
+                      ))}
+                    </div>
                   </ScrollArea>
                 </div>
               ) : (
@@ -477,53 +471,43 @@ const Evaluation = () => {
                 </div>
               )}
               
-              <Tabs defaultValue="content" className="w-full">
-                <TabsList className="mb-4">
-                  <TabsTrigger value="content">Évaluation</TabsTrigger>
-                  <TabsTrigger value="instructions">Instructions</TabsTrigger>
-                </TabsList>
+              {/* Removed the Tabs component and directly showing the content */}
+              <div className="animate-fade-in">
+                {currentStep === 1 && (
+                  <EvaluationStepOne 
+                    criteriaItems={criteriaItems || []}
+                    onResponseChange={handleEmployeeResponseChange}
+                    responses={employeeResponses}
+                    employees={employees || []}
+                    onEvaluatorChange={setEvaluatorId}
+                    onApproverChange={setApproverId}
+                    isLoading={itemsLoading || isSubmitting}
+                    onSubmit={handleSubmitSelfAssessment}
+                    onMissionChange={handleMissionChange}
+                    selectedMissionId={selectedMissionId}
+                    selectedEvaluatorId={evaluatorId}
+                    selectedApproverId={approverId}
+                  />
+                )}
                 
-                <TabsContent value="content" className="animate-fade-in">
-                  {currentStep === 1 && (
-                    <EvaluationStepOne 
-                      criteriaItems={criteriaItems || []}
-                      onResponseChange={handleEmployeeResponseChange}
-                      responses={employeeResponses}
-                      employees={employees || []}
-                      onEvaluatorChange={setEvaluatorId}
-                      onApproverChange={setApproverId}
-                      isLoading={itemsLoading || isSubmitting}
-                      onSubmit={handleSubmitSelfAssessment}
-                      onMissionChange={handleMissionChange}
-                      selectedMissionId={selectedMissionId}
-                      selectedEvaluatorId={evaluatorId}
-                      selectedApproverId={approverId}
-                    />
-                  )}
-                  
-                  {currentStep === 2 && (
-                    <EvaluationStepTwo 
-                      criteriaItems={criteriaItems || []}
-                      onResponseChange={handleEvaluatorResponseChange}
-                      employeeResponses={employeeResponses}
-                      isLoading={itemsLoading || isSubmitting}
-                      onSubmit={handleSubmitEvaluation}
-                    />
-                  )}
-                  
-                  {currentStep === 3 && (
-                    <EvaluationStepThree 
-                      criteriaItems={criteriaItems || []}
-                      isLoading={itemsLoading || isSubmitting}
-                      onApprove={handleApprove}
-                    />
-                  )}
-                </TabsContent>
+                {currentStep === 2 && (
+                  <EvaluationStepTwo 
+                    criteriaItems={criteriaItems || []}
+                    onResponseChange={handleEvaluatorResponseChange}
+                    employeeResponses={employeeResponses}
+                    isLoading={itemsLoading || isSubmitting}
+                    onSubmit={handleSubmitEvaluation}
+                  />
+                )}
                 
-                <TabsContent value="instructions">
-                  <EvaluationInstructions currentStep={currentStep} />
-                </TabsContent>
-              </Tabs>
+                {currentStep === 3 && (
+                  <EvaluationStepThree 
+                    criteriaItems={criteriaItems || []}
+                    isLoading={itemsLoading || isSubmitting}
+                    onApprove={handleApprove}
+                  />
+                )}
+              </div>
               
               {/* Boutons de navigation entre groupes */}
               <div className="flex justify-between mt-4">
