@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -436,16 +435,18 @@ const Evaluation = () => {
           
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <div className="flex flex-col space-y-4">
-              {/* Nouvelle barre de progression */}
-              <div className="flex flex-col space-y-2 mb-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium">Progression</h3>
-                  <span className="text-sm text-gray-500">{calculateProgress()}%</span>
+              {/* Barre de progression - Cachée à l'étape 3 */}
+              {currentStep !== 3 && (
+                <div className="flex flex-col space-y-2 mb-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-medium">Progression</h3>
+                    <span className="text-sm text-gray-500">{calculateProgress()}%</span>
+                  </div>
+                  <Progress value={calculateProgress()} className="h-2" />
                 </div>
-                <Progress value={calculateProgress()} className="h-2" />
-              </div>
+              )}
               
-              {/* Affichage des onglets de groupes avec indicateurs d'erreur */}
+              {/* Affichage des onglets de groupes avec indicateurs d'erreur - Indicateurs désactivés à l'étape 3 */}
               {criteriaGroups && criteriaGroups.length > 0 ? (
                 <div className="mb-4">
                   <ScrollArea className="w-full">
@@ -461,7 +462,7 @@ const Evaluation = () => {
                             value={String(group.id)}
                             title={group.name}
                             showFullName={showFullGroupName === group.id}
-                            hasErrors={groupValidationState[group.id] === false}
+                            hasErrors={currentStep === 3 ? false : groupValidationState[group.id] === false}
                             truncatedName={truncateGroupName(group.name, 18)}
                             fullName={group.name}
                           />
