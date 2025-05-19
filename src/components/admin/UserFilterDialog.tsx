@@ -26,6 +26,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import apiClient from '@/utils/apiClient';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
 
 interface UserFilterDialogProps {
   isOpen: boolean;
@@ -53,8 +54,10 @@ const UserFilterDialog: React.FC<UserFilterDialogProps> = ({
 
   // Update form values when currentFilters changes
   React.useEffect(() => {
-    form.reset(currentFilters);
-  }, [currentFilters, form]);
+    if (isOpen) {
+      form.reset(currentFilters);
+    }
+  }, [currentFilters, form, isOpen]);
   
   // Fetch positions and departments from API
   useEffect(() => {
@@ -95,6 +98,21 @@ const UserFilterDialog: React.FC<UserFilterDialogProps> = ({
     }
   }, [isOpen]);
 
+  // Map array data to options format for SearchableSelect
+  const positionOptions = positions.map(position => ({
+    label: position,
+    value: position
+  }));
+  
+  const departmentOptions = departments.map(department => ({
+    label: department,
+    value: department
+  }));
+
+  // Add empty option for "All" selections
+  positionOptions.unshift({ label: "Tous les postes", value: "" });
+  departmentOptions.unshift({ label: "Tous les départements", value: "" });
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -119,7 +137,7 @@ const UserFilterDialog: React.FC<UserFilterDialogProps> = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Statut de l'utilisateur</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value || ""}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Tous les statuts" />
@@ -142,21 +160,14 @@ const UserFilterDialog: React.FC<UserFilterDialogProps> = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Poste</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value} disabled={loading}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={loading ? "Chargement..." : "Tous les postes"} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="">Tous les postes</SelectItem>
-                          {positions.map((position) => (
-                            <SelectItem key={position} value={position}>
-                              {position}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <SearchableSelect
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        options={positionOptions}
+                        placeholder="Tous les postes"
+                        loading={loading}
+                        disabled={loading}
+                      />
                     </FormItem>
                   )}
                 />
@@ -166,21 +177,14 @@ const UserFilterDialog: React.FC<UserFilterDialogProps> = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Département</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value} disabled={loading}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={loading ? "Chargement..." : "Tous les départements"} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="">Tous les départements</SelectItem>
-                          {departments.map((department) => (
-                            <SelectItem key={department} value={department}>
-                              {department}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <SearchableSelect
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        options={departmentOptions}
+                        placeholder="Tous les départements"
+                        loading={loading}
+                        disabled={loading}
+                      />
                     </FormItem>
                   )}
                 />

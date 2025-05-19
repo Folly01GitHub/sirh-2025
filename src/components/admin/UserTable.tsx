@@ -32,6 +32,7 @@ const UserTable: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterFormData>({});
   const [error, setError] = useState<string | null>(null);
+  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
   // Fetch users from API
   useEffect(() => {
@@ -65,6 +66,17 @@ const UserTable: React.FC = () => {
 
     fetchUsers();
   }, []);
+
+  // Count active filters
+  useEffect(() => {
+    let count = 0;
+    if (filters.status) count++;
+    if (filters.position) count++;
+    if (filters.department) count++;
+    if (filters.dateFrom) count++;
+    if (filters.dateTo) count++;
+    setActiveFiltersCount(count);
+  }, [filters]);
 
   // Handle editing a user
   const handleEdit = (user: User) => {
@@ -124,6 +136,7 @@ const UserTable: React.FC = () => {
 
   // Apply filters
   const applyFilters = (data: FilterFormData) => {
+    console.log('Applying filters:', data);
     setFilters(data);
     setIsFilterDialogOpen(false);
   };
@@ -146,9 +159,9 @@ const UserTable: React.FC = () => {
     const matchesPosition = !filters.position || user.position === filters.position;
     const matchesDepartment = !filters.department || user.department === filters.department;
     
-    const userDate = new Date(user.dateCreated);
-    const matchesDateFrom = !filters.dateFrom || userDate >= filters.dateFrom;
-    const matchesDateTo = !filters.dateTo || userDate <= filters.dateTo;
+    const userDate = user.dateCreated ? new Date(user.dateCreated) : null;
+    const matchesDateFrom = !filters.dateFrom || (userDate && userDate >= filters.dateFrom);
+    const matchesDateTo = !filters.dateTo || (userDate && userDate <= filters.dateTo);
     
     return matchesSearch && matchesStatus && matchesPosition && matchesDepartment && matchesDateFrom && matchesDateTo;
   });
@@ -166,8 +179,18 @@ const UserTable: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="outline" size="icon" onClick={() => setIsFilterDialogOpen(true)}>
-            <Filter className="h-4 w-4" />
+          <Button 
+            variant={activeFiltersCount > 0 ? "default" : "outline"} 
+            size="icon" 
+            onClick={() => setIsFilterDialogOpen(true)}
+            className={activeFiltersCount > 0 ? "bg-primary" : ""}
+          >
+            <Filter className={`h-4 w-4 ${activeFiltersCount > 0 ? "text-white" : ""}`} />
+            {activeFiltersCount > 0 && (
+              <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white">
+                {activeFiltersCount}
+              </span>
+            )}
           </Button>
         </div>
         <Button 
