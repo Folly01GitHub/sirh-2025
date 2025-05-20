@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
@@ -47,6 +48,8 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   const [isLoadingResponses, setIsLoadingResponses] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Initialiser l'accordéon à "ouvert" par défaut
+  const [accordionValue, setAccordionValue] = useState<string>("details");
 
   useEffect(() => {
     const fetchResponses = async () => {
@@ -83,6 +86,13 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
 
     fetchResponses();
   }, [evaluationId]);
+
+  // Effet pour s'assurer que l'accordéon est toujours ouvert quand le contenu change
+  useEffect(() => {
+    // S'assurer que l'accordéon est ouvert lorsque les critères changent
+    // (ce qui indique un changement de groupe)
+    setAccordionValue("details");
+  }, [criteriaItems]);
 
   const getResponseValue = (responses: EvaluationResponse[], itemId: number) => {
     const response = responses.find(r => r.item_id === itemId);
@@ -215,7 +225,14 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </div>
       </div>
       
-      <Accordion type="single" collapsible className="w-full">
+      {/* Modifié pour rester ouvert par défaut et quand on change de groupe */}
+      <Accordion 
+        type="single" 
+        collapsible 
+        className="w-full"
+        value={accordionValue}
+        onValueChange={setAccordionValue}
+      >
         <AccordionItem value="details">
           <AccordionTrigger>
             Voir le détail complet des évaluations
