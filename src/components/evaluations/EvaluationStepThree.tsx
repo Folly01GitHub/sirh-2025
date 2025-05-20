@@ -192,23 +192,23 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
     }
   };
 
-    const handlePreviousGroup = () => {
-        if (criteriaGroups && criteriaGroups.length > 0) {
-            const currentIndex = criteriaGroups.findIndex(group => group.id === currentGroupId);
-            if (currentIndex > 0) {
-                setCurrentGroupId(criteriaGroups[currentIndex - 1].id);
-            }
-        }
-    };
+  const handlePreviousGroup = () => {
+    if (criteriaGroups && criteriaGroups.length > 0) {
+      const currentIndex = criteriaGroups.findIndex(group => group.id === currentGroupId);
+      if (currentIndex > 0) {
+        setCurrentGroupId(criteriaGroups[currentIndex - 1].id);
+      }
+    }
+  };
 
-    const handleNextGroup = () => {
-        if (criteriaGroups && criteriaGroups.length > 0) {
-            const currentIndex = criteriaGroups.findIndex(group => group.id === currentGroupId);
-            if (currentIndex < criteriaGroups.length - 1) {
-                setCurrentGroupId(criteriaGroups[currentIndex + 1].id);
-            }
-        }
-    };
+  const handleNextGroup = () => {
+    if (criteriaGroups && criteriaGroups.length > 0) {
+      const currentIndex = criteriaGroups.findIndex(group => group.id === currentGroupId);
+      if (currentIndex < criteriaGroups.length - 1) {
+        setCurrentGroupId(criteriaGroups[currentIndex + 1].id);
+      }
+    }
+  };
 
   if (isLoading && criteriaItems.length === 0) {
     return (
@@ -323,7 +323,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </AccordionItem>
       </Accordion>
       
-      {/* Boutons de navigation entre groupes - MOVED HERE */}
+      {/* Boutons de navigation entre groupes - Maintenant placés ici, au-dessus de la section "Décision finale" */}
       <div className="flex justify-between mt-4">
         <button
           onClick={handlePreviousGroup}
