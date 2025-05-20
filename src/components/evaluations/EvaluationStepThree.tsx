@@ -5,7 +5,7 @@ import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star, CheckCircle, XCircle, Loader } from 'lucide-react';
+import { Star, CheckCircle, XCircle, Loader, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import apiClient from '@/utils/apiClient';
@@ -32,12 +32,20 @@ interface EvaluationStepThreeProps {
   criteriaItems: CriteriaItem[];
   isLoading: boolean;
   onApprove: (approved: boolean, comment?: string) => void;
+  onPreviousGroup?: () => void;
+  onNextGroup?: () => void;
+  isFirstGroup?: boolean;
+  isLastGroup?: boolean;
 }
 
 const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   criteriaItems,
   isLoading,
-  onApprove
+  onApprove,
+  onPreviousGroup,
+  onNextGroup,
+  isFirstGroup = false,
+  isLastGroup = false
 }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -302,6 +310,28 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
           </AccordionContent>
         </AccordionItem>
       </Accordion>
+      
+      {/* Nouveaux boutons de navigation entre groupes */}
+      <div className="flex justify-between mt-6 mb-6">
+        <Button
+          onClick={onPreviousGroup}
+          variant="outline"
+          disabled={isFirstGroup || isLoading}
+          className="flex items-center"
+        >
+          <ChevronLeft className="mr-2" />
+          Précédent
+        </Button>
+        
+        <Button
+          onClick={onNextGroup}
+          disabled={isLastGroup || isLoading}
+          className="flex items-center"
+        >
+          Suivant
+          <ChevronRight className="ml-2" />
+        </Button>
+      </div>
       
       <div className="bg-gray-50 p-6 rounded-lg border mt-8">
         <h3 className="text-xl font-medium mb-4">Décision finale</h3>

@@ -505,6 +505,10 @@ const Evaluation = () => {
                     criteriaItems={criteriaItems || []}
                     isLoading={itemsLoading || isSubmitting}
                     onApprove={handleApprove}
+                    onPreviousGroup={handlePreviousGroup}
+                    onNextGroup={handleNextGroup}
+                    isFirstGroup={!criteriaGroups || criteriaGroups.findIndex(g => g.id === currentGroupId) === 0}
+                    isLastGroup={!criteriaGroups || criteriaGroups.findIndex(g => g.id === currentGroupId) === (criteriaGroups.length - 1)}
                   />
                 )}
               </div>
