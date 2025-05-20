@@ -136,7 +136,8 @@ const Evaluation = () => {
                           (typeof response.value === 'string' ? Number(response.value) : 0);
         return numericValue >= 1 && numericValue <= 5;
       case 'observation':
-        return typeof response.value === 'string' && response.value.length >= 50;
+        // Remove the 50-character minimum check, now just verify it's not empty
+        return typeof response.value === 'string' && response.value.trim().length > 0;
       case 'commentaire':
         // Pour les commentaires, vérifier qu'ils ne sont pas vides
         return typeof response.value === 'string' && response.value.trim().length > 0;

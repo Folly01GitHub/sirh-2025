@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
@@ -223,7 +223,8 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     return response ? response.value : "";
   };
 
-  const isValidResponse = (response: EvaluationResponse | undefined, type: string): boolean => {
+  // Helper function to validate a response based on criteria type
+  const isValidResponse = useCallback((response: EvaluationResponse | undefined, type: string): boolean => {
     console.log(`Validating response for ${type}:`, response);
     
     if (!response) {
@@ -243,7 +244,8 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
           console.log('Observation value is not a string');
           return false;
         }
-        const isObservationValid = response.value.length >= 50;
+        // Remove the 50-character minimum check and just verify it's not empty
+        const isObservationValid = response.value.trim().length > 0;
         console.log(`Observation validation: ${isObservationValid} (length: ${response.value.length})`);
         return isObservationValid;
       case 'commentaire':
@@ -266,7 +268,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         console.log('Unknown type');
         return false;
     }
-  };
+  }, []);
 
   const validateAllFields = (): boolean => {
     console.log('Starting full form validation');
@@ -574,7 +576,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
               ) : (
                 <div className="space-y-2">
                   <p className="text-sm text-gray-500 mb-2">
-                    {item.type === 'observation' ? "Minimum 50 caractères" : "Commentaire obligatoire"}
+                    {item.type === 'commentaire' ? "Commentaire obligatoire" : "Entrez votre observation"}
                   </p>
                   <Textarea 
                     value={getResponseValue(item.id) as string}
@@ -587,8 +589,8 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                   {item.type === 'observation' && (
                     <div className="text-xs text-right">
                       {typeof getResponseValue(item.id) === 'string' && (
-                        <span className={`${(getResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
-                          {(getResponseValue(item.id) as string).length} / 50 caractères minimum
+                        <span className={`${(getResponseValue(item.id) as string).length > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {(getResponseValue(item.id) as string).length} caractère(s)
                         </span>
                       )}
                     </div>

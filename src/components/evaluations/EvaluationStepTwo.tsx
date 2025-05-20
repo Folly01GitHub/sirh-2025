@@ -299,6 +299,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     );
   };
   
+  // Helper function to validate a response based on criteria type
   const isValidResponse = (response: EvaluationResponse | undefined, type: string): boolean => {
     if (!response) return false;
     
@@ -308,7 +309,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
                           (typeof response.value === 'string' ? Number(response.value) : 0);
         return numericValue >= 1 && numericValue <= 5;
       case 'observation':
-        return typeof response.value === 'string' && response.value.length >= 50;
+        // Remove the 50-character minimum check, now just verify it's not empty
+        return typeof response.value === 'string' && response.value.trim().length > 0;
       case 'commentaire':
         return typeof response.value === 'string' && response.value.trim().length > 0;
       case 'boolean':
@@ -495,9 +497,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
               ) : (
                 <div className="mt-2">
                   <p className="text-sm text-gray-500 mb-2">
-                    {item.type === 'observation' 
-                      ? "Minimum 50 caractères" 
-                      : "Commentaire obligatoire"}
+                    {item.type === 'commentaire' ? "Commentaire obligatoire" : "Entrez votre observation"}
                   </p>
                   <Textarea 
                     value={getEvaluatorResponseValue(item.id).toString()}
@@ -510,8 +510,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
                   {item.type === 'observation' && (
                     <div className="text-xs text-right">
                       {typeof getEvaluatorResponseValue(item.id) === 'string' && (
-                        <span className={`${(getEvaluatorResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
-                          {(getEvaluatorResponseValue(item.id) as string).length} / 50 caractères minimum
+                        <span className={`${(getEvaluatorResponseValue(item.id) as string).trim().length > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {(getEvaluatorResponseValue(item.id) as string).length} caractère(s)
                         </span>
                       )}
                     </div>
