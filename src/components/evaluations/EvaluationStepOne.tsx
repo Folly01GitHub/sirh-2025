@@ -285,16 +285,19 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     const missing: { group?: string, label: string }[] = [];
 
     const formValues = form.getValues();
-    if (!formValues.evaluator) {
-      missing.push({ label: 'Évaluateur', group: 'Informations générales' });
+    
+    // Check if any of the selectors (evaluator, approver, mission) are empty
+    const hasEmptySelectors = !formValues.evaluator || !formValues.approver || !formValues.mission;
+    
+    if (hasEmptySelectors) {
+      toast.error("Champs obligatoires manquants", {
+        description: "Assurez-vous d'avoir bien sélectionné l'évaluateur, l'approbateur et la mission en début de formulaire svp !",
+        duration: 6000
+      });
+      return false;
     }
-    if (!formValues.approver) {
-      missing.push({ label: 'Approbateur', group: 'Informations générales' });
-    }
-    if (!formValues.mission) {
-      missing.push({ label: 'Mission', group: 'Informations générales' });
-    }
-
+    
+    // Continue with other validations for mandatory fields
     allCriteriaItems.forEach(item => {
       if (item.type === 'commentaire') {
         const response = responses.find(r => r.item_id === item.id);
