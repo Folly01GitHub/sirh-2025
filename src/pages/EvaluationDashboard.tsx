@@ -101,19 +101,19 @@ const EvaluationDashboard = () => {
     }
     
     const term = searchTerm.toLowerCase();
-    return evaluations.filter(eval => {
+    return evaluations.filter(evaluation => {
       return (
-        eval.mission?.toLowerCase().includes(term) ||
-        eval.client?.toLowerCase().includes(term) ||
-        eval.code?.toLowerCase().includes(term) ||
-        eval.date_auto_eval?.toLowerCase().includes(term) ||
-        eval.date_eval?.toLowerCase().includes(term) ||
-        eval.date_validation?.toLowerCase().includes(term) ||
-        eval.evaluateur?.toLowerCase().includes(term) ||
-        eval.approbateur?.toLowerCase().includes(term) ||
-        eval.demandeur?.toLowerCase().includes(term) ||
-        eval.statut?.toLowerCase().includes(term) ||
-        eval.niveau?.toLowerCase().includes(term)
+        evaluation.mission?.toLowerCase().includes(term) ||
+        evaluation.client?.toLowerCase().includes(term) ||
+        evaluation.code?.toLowerCase().includes(term) ||
+        evaluation.date_auto_eval?.toLowerCase().includes(term) ||
+        evaluation.date_eval?.toLowerCase().includes(term) ||
+        evaluation.date_validation?.toLowerCase().includes(term) ||
+        evaluation.evaluateur?.toLowerCase().includes(term) ||
+        evaluation.approbateur?.toLowerCase().includes(term) ||
+        evaluation.demandeur?.toLowerCase().includes(term) ||
+        evaluation.statut?.toLowerCase().includes(term) ||
+        evaluation.niveau?.toLowerCase().includes(term)
       );
     });
   }, [evaluations, searchTerm]);
