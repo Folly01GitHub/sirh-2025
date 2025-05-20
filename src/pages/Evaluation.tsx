@@ -276,6 +276,9 @@ const Evaluation = () => {
   const handleGroupChange = useCallback((groupId: string) => {
     setCurrentGroupId(parseInt(groupId));
     
+    // Scroll to top when changing groups
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
     // Afficher le nom complet du groupe pendant 3 secondes
     setShowFullGroupName(parseInt(groupId));
     setTimeout(() => {
@@ -288,6 +291,9 @@ const Evaluation = () => {
       const currentIndex = criteriaGroups.findIndex(group => group.id === currentGroupId);
       if (currentIndex > 0) {
         setCurrentGroupId(criteriaGroups[currentIndex - 1].id);
+        
+        // Scroll to top when navigating to previous group
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
   }, [criteriaGroups, currentGroupId]);
@@ -297,6 +303,9 @@ const Evaluation = () => {
       const currentIndex = criteriaGroups.findIndex(group => group.id === currentGroupId);
       if (currentIndex < criteriaGroups.length - 1) {
         setCurrentGroupId(criteriaGroups[currentIndex + 1].id);
+        
+        // Scroll to top when navigating to next group
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
   }, [criteriaGroups, currentGroupId]);

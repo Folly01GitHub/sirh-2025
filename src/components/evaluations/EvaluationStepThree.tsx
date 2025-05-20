@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
@@ -203,6 +202,21 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
     }
   };
 
+  // Custom handlers for step three navigation that include scrolling
+  const handlePreviousGroupWithScroll = () => {
+    if (onPreviousGroup) {
+      onPreviousGroup();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleNextGroupWithScroll = () => {
+    if (onNextGroup) {
+      onNextGroup();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   if (isLoading && criteriaItems.length === 0) {
     return (
       <div className="space-y-6">
@@ -316,10 +330,10 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </AccordionItem>
       </Accordion>
       
-      {/* Nouveaux boutons de navigation entre groupes */}
+      {/* Boutons de navigation entre groupes */}
       <div className="flex justify-between mt-6 mb-6">
         <Button
-          onClick={onPreviousGroup}
+          onClick={handlePreviousGroupWithScroll}
           variant="outline"
           disabled={isFirstGroup || isLoading}
           className="flex items-center"
@@ -329,7 +343,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </Button>
         
         <Button
-          onClick={onNextGroup}
+          onClick={handleNextGroupWithScroll}
           disabled={isLastGroup || isLoading}
           className="flex items-center"
         >
