@@ -21,6 +21,7 @@ interface EvaluationItem {
   demandeur: string;
   statut: string;
   niveau: 'Evaluateur' | 'Approbateur' | 'Terminé' | 'Auto-évaluation';
+  isPencil?: boolean; // New attribute for controlling edit button display
 }
 
 interface EvaluationTableProps {
@@ -60,17 +61,9 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
     }
   };
 
+  // Updated: Show edit button only if isPencil is true
   const shouldShowEditButton = (evaluation: EvaluationItem) => {
-    if (activeFilter === 'team') {
-      return evaluation.statut === 'En cours' || 
-             evaluation.statut === 'brouillon' ||
-             evaluation.statut === 'Evaluation en cours' ||
-             evaluation.statut === 'Approbation en cours';
-    }
-    if (activeFilter === 'self') {
-      return evaluation.niveau === 'Auto-évaluation';
-    }
-    return false;
+    return evaluation.isPencil === true;
   };
 
   const shouldShowViewButton = (evaluation: EvaluationItem) => {

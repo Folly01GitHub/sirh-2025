@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,16 +18,17 @@ interface EvaluationStats {
 interface EvaluationItem {
   id: number;
   mission: string;
-  client: string; // Added client field
+  client: string;
   code: string;
   date_auto_eval: string;
   date_eval: string;
   date_validation: string;
   evaluateur: string;
-  approbateur: string; // Added approbateur field
+  approbateur: string;
   demandeur: string;
   statut: string;
   niveau: 'Evaluateur' | 'Approbateur' | 'Terminé';
+  isPencil?: boolean;
 }
 
 const fetchEvaluationStats = async (filter: string): Promise<EvaluationStats> => {
