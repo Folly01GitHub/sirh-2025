@@ -59,6 +59,11 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   // Initialiser l'accordéon à "ouvert" par défaut
   const [accordionValue, setAccordionValue] = useState<string>("details");
 
+  // Effet pour défiler en haut de la page lorsque le composant est monté
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   useEffect(() => {
     const fetchResponses = async () => {
       if (!evaluationId) {
