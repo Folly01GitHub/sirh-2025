@@ -16,67 +16,109 @@ interface EvaluationHeaderProps {
 const EvaluationHeader: React.FC<EvaluationHeaderProps> = ({ currentStep }) => {
   return (
     <div className="mb-8 text-center">
-      <h1 className="text-3xl md:text-4xl font-bold text-[#172b4d] mb-4 animate-fade-in">
+      <h1 className="text-3xl md:text-4xl font-bold text-[#172b4d] mb-3 animate-fade-in">
         Évaluation de mission
       </h1>
-      <p className="text-lg text-[#5e6c84] max-w-3xl mx-auto mb-8 animate-fade-in">
-        Processus d'évaluation des performances et du développement professionnel pour une mission précise
+      <p className="text-md text-[#5e6c84] max-w-2xl mx-auto mb-6 animate-fade-in">
+        Processus d'évaluation des performances et du développement professionnel
       </p>
       
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 w-full">
-          <div className={`flex items-center gap-2 ${currentStep >= 1 ? 'text-primary' : 'text-gray-400'}`}>
-            {currentStep > 1 ? (
-              <CheckCircle className="h-6 w-6" />
-            ) : currentStep === 1 ? (
-              <CircleDot className="h-6 w-6" />
-            ) : (
-              <Circle className="h-6 w-6" />
-            )}
-            <div>
-              <p className="font-medium">Étape 1</p>
-              <p className="text-sm">Auto-évaluation</p>
-            </div>
-          </div>
-          
-          <div className="hidden sm:block h-0.5 w-8 bg-gray-300" />
-          
-          <div className={`flex items-center gap-2 ${currentStep >= 2 ? 'text-primary' : 'text-gray-400'}`}>
-            {currentStep > 2 ? (
-              <CheckCircle className="h-6 w-6" />
-            ) : currentStep === 2 ? (
-              <CircleDot className="h-6 w-6" />
-            ) : (
-              <Circle className="h-6 w-6" />
-            )}
-            <div>
-              <p className="font-medium">Étape 2</p>
-              <p className="text-sm">Évaluation du manager</p>
-            </div>
-          </div>
-          
-          <div className="hidden sm:block h-0.5 w-8 bg-gray-300" />
-          
-          <div className={`flex items-center gap-2 ${currentStep >= 3 ? 'text-primary' : 'text-gray-400'}`}>
-            {currentStep > 3 ? (
-              <CheckCircle className="h-6 w-6" />
-            ) : currentStep === 3 ? (
-              <CircleDot className="h-6 w-6" />
-            ) : (
-              <Circle className="h-6 w-6" />
-            )}
-            <div>
-              <p className="font-medium">Étape 3</p>
-              <p className="text-sm">Validation finale</p>
-            </div>
-          </div>
-        </div>
+      <div className="relative flex justify-center mt-10 mb-6">
+        {/* Progress bar connecting the steps */}
+        <div className="absolute top-5 left-1/2 h-0.5 bg-gray-200 transform -translate-x-1/2 w-full max-w-xl z-0" />
         
-        <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-md">
-          {currentStep === 1 && <ClipboardEdit className="h-5 w-5" />}
-          {currentStep === 2 && <UserCheck className="h-5 w-5" />}
-          {currentStep === 3 && <ClipboardCheck className="h-5 w-5" />}
+        {/* Completed progress */}
+        <div 
+          className="absolute top-5 left-1/2 h-0.5 bg-primary transform -translate-x-1/2 transition-all duration-300 z-0"
+          style={{ width: `${(currentStep - 1) * 50}%`, maxWidth: '50%' }}
+        />
+        
+        {/* Steps */}
+        <div className="flex justify-between relative z-10 w-full max-w-xl px-10">
+          {/* Step 1 */}
+          <div className="flex flex-col items-center">
+            <div 
+              className={`rounded-full flex items-center justify-center w-10 h-10 mb-2 transition-all duration-300 ${
+                currentStep === 1 
+                  ? 'bg-primary text-white shadow-md' 
+                  : currentStep > 1 
+                    ? 'bg-primary/10 text-primary' 
+                    : 'bg-gray-100 text-gray-400'
+              }`}
+            >
+              {currentStep > 1 ? (
+                <CheckCircle className="h-5 w-5" />
+              ) : currentStep === 1 ? (
+                <ClipboardEdit className="h-5 w-5" />
+              ) : (
+                <Circle className="h-5 w-5" />
+              )}
+            </div>
+            <span className={`text-sm font-medium ${currentStep >= 1 ? 'text-primary' : 'text-gray-400'}`}>
+              Auto-évaluation
+            </span>
+          </div>
+          
+          {/* Step 2 */}
+          <div className="flex flex-col items-center">
+            <div 
+              className={`rounded-full flex items-center justify-center w-10 h-10 mb-2 transition-all duration-300 ${
+                currentStep === 2 
+                  ? 'bg-primary text-white shadow-md' 
+                  : currentStep > 2 
+                    ? 'bg-primary/10 text-primary' 
+                    : 'bg-gray-100 text-gray-400'
+              }`}
+            >
+              {currentStep > 2 ? (
+                <CheckCircle className="h-5 w-5" />
+              ) : currentStep === 2 ? (
+                <UserCheck className="h-5 w-5" />
+              ) : (
+                <Circle className="h-5 w-5" />
+              )}
+            </div>
+            <span className={`text-sm font-medium ${currentStep >= 2 ? 'text-primary' : 'text-gray-400'}`}>
+              Évaluation manager
+            </span>
+          </div>
+          
+          {/* Step 3 */}
+          <div className="flex flex-col items-center">
+            <div 
+              className={`rounded-full flex items-center justify-center w-10 h-10 mb-2 transition-all duration-300 ${
+                currentStep === 3 
+                  ? 'bg-primary text-white shadow-md' 
+                  : currentStep > 3 
+                    ? 'bg-primary/10 text-primary' 
+                    : 'bg-gray-100 text-gray-400'
+              }`}
+            >
+              {currentStep > 3 ? (
+                <CheckCircle className="h-5 w-5" />
+              ) : currentStep === 3 ? (
+                <ClipboardCheck className="h-5 w-5" />
+              ) : (
+                <Circle className="h-5 w-5" />
+              )}
+            </div>
+            <span className={`text-sm font-medium ${currentStep >= 3 ? 'text-primary' : 'text-gray-400'}`}>
+              Validation finale
+            </span>
+          </div>
         </div>
+      </div>
+      
+      {/* Current step indicator */}
+      <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 text-primary rounded-full text-sm font-medium">
+        {currentStep === 1 && <ClipboardEdit className="h-4 w-4" />}
+        {currentStep === 2 && <UserCheck className="h-4 w-4" />}
+        {currentStep === 3 && <ClipboardCheck className="h-4 w-4" />}
+        <span>
+          {currentStep === 1 && "Auto-évaluation en cours"}
+          {currentStep === 2 && "Évaluation du manager en cours"}
+          {currentStep === 3 && "Validation finale en cours"}
+        </span>
       </div>
     </div>
   );
