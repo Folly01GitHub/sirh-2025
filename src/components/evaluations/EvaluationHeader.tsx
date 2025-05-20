@@ -108,18 +108,6 @@ const EvaluationHeader: React.FC<EvaluationHeaderProps> = ({ currentStep }) => {
           </div>
         </div>
       </div>
-      
-      {/* Current step indicator */}
-      <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 text-primary rounded-full text-sm font-medium">
-        {currentStep === 1 && <ClipboardEdit className="h-4 w-4" />}
-        {currentStep === 2 && <UserCheck className="h-4 w-4" />}
-        {currentStep === 3 && <ClipboardCheck className="h-4 w-4" />}
-        <span>
-          {currentStep === 1 && "Auto-évaluation en cours"}
-          {currentStep === 2 && "Évaluation du manager en cours"}
-          {currentStep === 3 && "Validation finale en cours"}
-        </span>
-      </div>
     </div>
   );
 };
