@@ -8,10 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
-import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import WaveBackground from '@/components/ui/WaveBackground';
+import apiClient from '@/utils/apiClient';
 
 const passwordSchema = z.object({
   password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
@@ -72,7 +72,7 @@ const ForgotPassword = () => {
 
     setLoading(true);
     try {
-      await axios.post('http://backend.local.com/api/changepassword', {
+      await apiClient.post('/changepassword', {
         token,
         password: data.password
       });
