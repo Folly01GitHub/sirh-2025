@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
@@ -210,7 +209,6 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
           <div className="space-y-2">
             <h4 className="font-medium text-gray-700">Auto-évaluation</h4>
             <div className="flex items-center">
-              {/* Affichage uniquement de la note moyenne, exemple : 3.3/5 */}
               <div className="text-3xl font-bold text-yellow-500 mr-3">{employeeAvg}/5</div>
             </div>
           </div>
@@ -218,14 +216,12 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
           <div className="space-y-2">
             <h4 className="font-medium text-primary">Évaluation du manager</h4>
             <div className="flex items-center">
-              {/* Affichage uniquement de la note moyenne, exemple : 3.3/5 */}
               <div className="text-3xl font-bold text-primary mr-3">{evaluatorAvg}/5</div>
             </div>
           </div>
         </div>
       </div>
       
-      {/* Modifié pour rester ouvert par défaut et quand on change de groupe */}
       <Accordion 
         type="single" 
         collapsible 
@@ -303,6 +299,28 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </AccordionItem>
       </Accordion>
       
+      {/* Navigation buttons moved above the Final Decision section */}
+      <div className="flex justify-between mt-8">
+        <button
+          onClick={handlePreviousGroup}
+          disabled={!criteriaGroups || criteriaItems.findIndex(g => g.id === currentGroupId) === 0}
+          className="flex items-center px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <ChevronLeft className="h-5 w-5 mr-2" />
+          Précédent
+        </button>
+        
+        <button
+          onClick={handleNextGroup}
+          disabled={!criteriaItems || criteriaItems.findIndex(g => g.id === currentGroupId) === (criteriaItems.length - 1)}
+          className="flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Suivant
+          <ChevronRight className="h-5 w-5 ml-2" />
+        </button>
+      </div>
+      
+      {/* Final Decision section moved after the navigation buttons */}
       <div className="bg-gray-50 p-6 rounded-lg border mt-8">
         <h3 className="text-xl font-medium mb-4">Décision finale</h3>
         
