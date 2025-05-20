@@ -6,6 +6,8 @@ import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input'; 
+import { Search } from 'lucide-react';
 import EvaluationStatsSection from '@/components/evaluations/EvaluationStatsSection';
 import EvaluationTable from '@/components/evaluations/EvaluationTable';
 import { TabsContent, Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -29,7 +31,7 @@ interface EvaluationItem {
   demandeur: string;
   statut: string;
   niveau: 'Evaluateur' | 'Approbateur' | 'Terminé' | 'Auto-évaluation';
-  isPencil?: boolean; // Ajout de la nouvelle propriété isPencil
+  isPencil?: boolean;
 }
 
 const fetchEvaluationStats = async (filter: string): Promise<EvaluationStats> => {
@@ -46,6 +48,7 @@ const fetchEvaluations = async (filter: string): Promise<EvaluationItem[]> => {
 
 const EvaluationDashboard = () => {
   const [activeFilter, setActiveFilter] = useState<string>('self');
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const { user } = useAuth();
   const navigate = useNavigate();
   
@@ -67,6 +70,7 @@ const EvaluationDashboard = () => {
   
   const handleFilterChange = (value: string) => {
     setActiveFilter(value);
+    setSearchTerm('');
   };
   
   const handleActionClick = (id: number, niveau: string) => {
@@ -86,6 +90,33 @@ const EvaluationDashboard = () => {
   const handleNewEvaluation = () => {
     navigate('/evaluation');
   };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const filteredEvaluations = React.useMemo(() => {
+    if (!evaluations || !searchTerm.trim()) {
+      return evaluations;
+    }
+    
+    const term = searchTerm.toLowerCase();
+    return evaluations.filter(eval => {
+      return (
+        eval.mission?.toLowerCase().includes(term) ||
+        eval.client?.toLowerCase().includes(term) ||
+        eval.code?.toLowerCase().includes(term) ||
+        eval.date_auto_eval?.toLowerCase().includes(term) ||
+        eval.date_eval?.toLowerCase().includes(term) ||
+        eval.date_validation?.toLowerCase().includes(term) ||
+        eval.evaluateur?.toLowerCase().includes(term) ||
+        eval.approbateur?.toLowerCase().includes(term) ||
+        eval.demandeur?.toLowerCase().includes(term) ||
+        eval.statut?.toLowerCase().includes(term) ||
+        eval.niveau?.toLowerCase().includes(term)
+      );
+    });
+  }, [evaluations, searchTerm]);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8f9fc]">
@@ -125,8 +156,20 @@ const EvaluationDashboard = () => {
           activeFilter={activeFilter}
         />
         
+        <div className="mb-4 relative">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+            <Input 
+              placeholder="Rechercher une évaluation..." 
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="pl-9"
+            />
+          </div>
+        </div>
+        
         <EvaluationTable 
-          evaluations={evaluations || []}
+          evaluations={filteredEvaluations || []}
           isLoading={evaluationsLoading}
           activeFilter={activeFilter}
           onActionClick={handleActionClick}
