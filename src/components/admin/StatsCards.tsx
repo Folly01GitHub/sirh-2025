@@ -74,40 +74,32 @@ const StatsCards = () => {
     );
   }
 
-  // Use default values if stats are undefined
-  const userStats = stats || {
-    totalUsers: 0,
-    activeUsers: 0,
-    pendingUsers: 0,
-    newThisMonth: 0
-  };
-
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatCard
         title="Utilisateurs Totaux"
-        value={userStats.totalUsers}
+        value={stats?.totalUsers || 0}
         description="Tous les utilisateurs enregistrés"
         icon={<Users className="h-4 w-4 text-white" />}
         color="bg-blue-500"
       />
       <StatCard
         title="Utilisateurs Actifs"
-        value={userStats.activeUsers}
+        value={stats?.activeUsers || 0}
         description="Utilisateurs avec comptes actifs"
         icon={<UserCheck className="h-4 w-4 text-white" />}
         color="bg-green-500"
       />
       <StatCard
         title="En Attente d'Activation"
-        value={userStats.pendingUsers}
+        value={stats?.pendingUsers || 0}
         description="En attente d'activation du compte"
         icon={<Clock className="h-4 w-4 text-white" />}
         color="bg-amber-500"
       />
       <StatCard
         title="Nouveaux ce Mois"
-        value={userStats.newThisMonth}
+        value={stats?.newThisMonth || 0}
         description="Utilisateurs enregistrés ces 30 derniers jours"
         icon={<UserPlus className="h-4 w-4 text-white" />}
         color="bg-purple-500"
