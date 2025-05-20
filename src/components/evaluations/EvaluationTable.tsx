@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -21,6 +20,7 @@ interface EvaluationItem {
   demandeur: string;
   statut: string;
   niveau: 'Evaluateur' | 'Approbateur' | 'Terminé' | 'Auto-évaluation';
+  isPencil?: boolean; // Ajout de la nouvelle propriété isPencil
 }
 
 interface EvaluationTableProps {
@@ -62,12 +62,11 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
 
   const shouldShowEditButton = (evaluation: EvaluationItem) => {
     if (activeFilter === 'team') {
-      return evaluation.statut === 'En cours' || 
-             evaluation.statut === 'brouillon' ||
-             evaluation.statut === 'Evaluation en cours' ||
-             evaluation.statut === 'Approbation en cours';
+      // Pour "Mes collaborateurs", on utilise la nouvelle propriété isPencil
+      return evaluation.isPencil === true;
     }
     if (activeFilter === 'self') {
+      // Pour "Mes évaluations", on garde la logique existante
       return evaluation.niveau === 'Auto-évaluation';
     }
     return false;

@@ -19,16 +19,17 @@ interface EvaluationStats {
 interface EvaluationItem {
   id: number;
   mission: string;
-  client: string; // Added client field
+  client: string;
   code: string;
   date_auto_eval: string;
   date_eval: string;
   date_validation: string;
   evaluateur: string;
-  approbateur: string; // Added approbateur field
+  approbateur: string;
   demandeur: string;
   statut: string;
-  niveau: 'Evaluateur' | 'Approbateur' | 'Terminé';
+  niveau: 'Evaluateur' | 'Approbateur' | 'Terminé' | 'Auto-évaluation';
+  isPencil?: boolean; // Ajout de la nouvelle propriété isPencil
 }
 
 const fetchEvaluationStats = async (filter: string): Promise<EvaluationStats> => {
