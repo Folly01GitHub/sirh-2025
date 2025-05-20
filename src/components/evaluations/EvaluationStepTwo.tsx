@@ -160,6 +160,11 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
   }, [criteriaItems]);
   
+  useEffect(() => {
+    // Scroll to top when the component is mounted
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+  
   const getCollaboratorResponseValue = (itemId: number) => {
     if (!collaboratorResponses || !collaboratorResponses.length) return "";
     const response = collaboratorResponses.find(r => r.item_id === itemId);
