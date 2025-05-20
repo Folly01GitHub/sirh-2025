@@ -282,7 +282,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     console.log(`Total criteria items to validate: ${allCriteriaItems.length}`);
     console.log(`Total responses: ${responses.length}`);
     
-    const missing: { group?: string, label: string }[] = [];
+    const missing: { group?: string, label: string, type: string }[] = [];
 
     const formValues = form.getValues();
     
@@ -297,30 +297,29 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       return false;
     }
     
-    // Continue with other validations for mandatory fields
-    let missingCommentsCount = 0;
+    // Continue with other validations for all mandatory fields
+    let missingFieldsCount = 0;
     
     allCriteriaItems.forEach(item => {
-      if (item.type === 'commentaire') {
-        const response = responses.find(r => r.item_id === item.id);
-        if (!isValidResponse(response, item.type)) {
-          missing.push({
-            label: item.label,
-            group: item.group_name || `Group ${item.group_id}`
-          });
-          missingCommentsCount++;
-        }
+      const response = responses.find(r => r.item_id === item.id);
+      if (!isValidResponse(response, item.type)) {
+        missing.push({
+          label: item.label,
+          group: item.group_name || `Group ${item.group_id}`,
+          type: item.type
+        });
+        missingFieldsCount++;
       }
     });
 
-    if (missingCommentsCount > 0) {
+    if (missingFieldsCount > 0) {
       console.log('Validation failed with missing items:', missing);
       const message = `Veuillez compléter tous les champs obligatoires avant de soumettre votre auto-évaluation:\n\n${
         missing.map(item => `- ${item.group ? `${item.group}: ` : ''}${item.label}`).join('\n')
       }`;
       console.error('Validation failed:', message);
       toast.error("Formulaire incomplet", {
-        description: `${missingCommentsCount} champ(s) obligatoire(s) non rempli(s)`,
+        description: `${missingFieldsCount} champ(s) obligatoire(s) non rempli(s)`,
         duration: 5000
       });
       return false;

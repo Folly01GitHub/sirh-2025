@@ -327,11 +327,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     const missing: { group?: string, label: string }[] = [];
 
     allCriteriaItems.forEach(item => {
-      // Ignorer les items de type commentaire pour la validation obligatoire
-      if (item.type === 'commentaire') {
-        return;
-      }
-      
+      // Check all item types, not just commentaire
       const response = evaluatorResponses.find(r => r.item_id === item.id);
       if (!isValidResponse(response, item.type)) {
         missing.push({
@@ -357,7 +353,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    // Nouvelle façon: validation immédiate + retour des champs manquants
+    // Validation checks all types of fields now
     const missing = validateAllFields();
     if (missing.length > 0) {
       toast.error("Formulaire incomplet", {
