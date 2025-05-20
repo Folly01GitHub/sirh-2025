@@ -14,10 +14,10 @@ interface StatCardProps {
 }
 
 interface UserStats {
-  totalUsers: number;
-  activeUsers: number;
-  pendingUsers: number;
-  newThisMonth: number;
+  total_users: number;
+  active_users: number;
+  pending_activation: number;
+  new_this_month: number;
 }
 
 const fetchUserStats = async (): Promise<UserStats> => {
@@ -78,28 +78,28 @@ const StatsCards = () => {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatCard
         title="Utilisateurs Totaux"
-        value={stats?.totalUsers || 0}
+        value={stats?.total_users || 0}
         description="Tous les utilisateurs enregistrés"
         icon={<Users className="h-4 w-4 text-white" />}
         color="bg-blue-500"
       />
       <StatCard
         title="Utilisateurs Actifs"
-        value={stats?.activeUsers || 0}
+        value={stats?.active_users || 0}
         description="Utilisateurs avec comptes actifs"
         icon={<UserCheck className="h-4 w-4 text-white" />}
         color="bg-green-500"
       />
       <StatCard
         title="En Attente d'Activation"
-        value={stats?.pendingUsers || 0}
+        value={stats?.pending_activation || 0}
         description="En attente d'activation du compte"
         icon={<Clock className="h-4 w-4 text-white" />}
         color="bg-amber-500"
       />
       <StatCard
         title="Nouveaux ce Mois"
-        value={stats?.newThisMonth || 0}
+        value={stats?.new_this_month || 0}
         description="Utilisateurs enregistrés ces 30 derniers jours"
         icon={<UserPlus className="h-4 w-4 text-white" />}
         color="bg-purple-500"
