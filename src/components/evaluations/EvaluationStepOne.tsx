@@ -298,6 +298,8 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     }
     
     // Continue with other validations for mandatory fields
+    let missingCommentsCount = 0;
+    
     allCriteriaItems.forEach(item => {
       if (item.type === 'commentaire') {
         const response = responses.find(r => r.item_id === item.id);
@@ -306,18 +308,19 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
             label: item.label,
             group: item.group_name || `Group ${item.group_id}`
           });
+          missingCommentsCount++;
         }
       }
     });
 
-    if (missing.length > 0) {
+    if (missingCommentsCount > 0) {
       console.log('Validation failed with missing items:', missing);
       const message = `Veuillez compléter tous les champs obligatoires avant de soumettre votre auto-évaluation:\n\n${
         missing.map(item => `- ${item.group ? `${item.group}: ` : ''}${item.label}`).join('\n')
       }`;
       console.error('Validation failed:', message);
       toast.error("Formulaire incomplet", {
-        description: `${missing.length} champ(s) obligatoire(s) non rempli(s)`,
+        description: `${missingCommentsCount} champ(s) obligatoire(s) non rempli(s)`,
         duration: 5000
       });
       return false;
