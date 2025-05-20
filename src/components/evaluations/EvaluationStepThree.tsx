@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
@@ -338,7 +337,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </AccordionItem>
       </Accordion>
       
-      {/* Navigation buttons moved above the Final Decision section */}
+      {/* Navigation buttons */}
       <div className="flex justify-between mt-8">
         <button
           onClick={handlePreviousGroup}
@@ -351,7 +350,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         
         <button
           onClick={handleNextGroup}
-          disabled={!criteriaItems || criteriaItems.findIndex(g => g.id === currentGroupId) === (criteriaItems.length - 1)}
+          disabled={!criteriaItems || criteriaGroups.findIndex(g => g.id === currentGroupId) === (criteriaItems.length - 1)}
           className="flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Suivant
@@ -359,7 +358,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         </button>
       </div>
       
-      {/* Final Decision section moved after the navigation buttons */}
+      {/* Final Decision section */}
       <div className="bg-gray-50 p-6 rounded-lg border mt-8">
         <h3 className="text-xl font-medium mb-4">Décision finale</h3>
         
