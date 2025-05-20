@@ -2,6 +2,8 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, UserCheck, Clock, UserPlus } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '@/utils/apiClient';
 
 interface StatCardProps {
   title: string;
@@ -10,6 +12,18 @@ interface StatCardProps {
   icon: React.ReactNode;
   color: string;
 }
+
+interface UserStats {
+  totalUsers: number;
+  activeUsers: number;
+  pendingUsers: number;
+  newThisMonth: number;
+}
+
+const fetchUserStats = async (): Promise<UserStats> => {
+  const response = await apiClient.get('/user-stats');
+  return response.data;
+};
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, description, icon, color }) => (
   <Card className="glass-card">
@@ -27,40 +41,73 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, description, icon, co
 );
 
 const StatsCards = () => {
-  // This would typically come from an API
-  const stats = {
-    totalUsers: 120,
-    activeUsers: 98,
-    pendingUsers: 22,
-    newThisMonth: 15
+  const { data: stats, isLoading, error } = useQuery({
+    queryKey: ['userStats'],
+    queryFn: fetchUserStats
+  });
+
+  // Display loading state
+  if (isLoading) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i} className="glass-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Loading...</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-6 bg-gray-200 animate-pulse rounded"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  // Display error state
+  if (error) {
+    console.error('Error fetching user stats:', error);
+    return (
+      <div className="p-4 border border-red-200 bg-red-50 rounded-md">
+        <p className="text-red-600">Unable to load user statistics.</p>
+      </div>
+    );
+  }
+
+  // Use default values if stats are undefined
+  const userStats = stats || {
+    totalUsers: 0,
+    activeUsers: 0,
+    pendingUsers: 0,
+    newThisMonth: 0
   };
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatCard
         title="Utilisateurs Totaux"
-        value={stats.totalUsers}
+        value={userStats.totalUsers}
         description="Tous les utilisateurs enregistrés"
         icon={<Users className="h-4 w-4 text-white" />}
         color="bg-blue-500"
       />
       <StatCard
         title="Utilisateurs Actifs"
-        value={stats.activeUsers}
+        value={userStats.activeUsers}
         description="Utilisateurs avec comptes actifs"
         icon={<UserCheck className="h-4 w-4 text-white" />}
         color="bg-green-500"
       />
       <StatCard
         title="En Attente d'Activation"
-        value={stats.pendingUsers}
+        value={userStats.pendingUsers}
         description="En attente d'activation du compte"
         icon={<Clock className="h-4 w-4 text-white" />}
         color="bg-amber-500"
       />
       <StatCard
         title="Nouveaux ce Mois"
-        value={stats.newThisMonth}
+        value={userStats.newThisMonth}
         description="Utilisateurs enregistrés ces 30 derniers jours"
         icon={<UserPlus className="h-4 w-4 text-white" />}
         color="bg-purple-500"
