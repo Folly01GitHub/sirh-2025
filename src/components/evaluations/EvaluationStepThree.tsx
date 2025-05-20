@@ -5,7 +5,7 @@ import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star, CheckCircle, XCircle, Loader } from 'lucide-react';
+import { Star, CheckCircle, XCircle, Loader, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import apiClient from '@/utils/apiClient';
@@ -50,6 +50,8 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Initialiser l'accordéon à "ouvert" par défaut
   const [accordionValue, setAccordionValue] = useState<string>("details");
+  const [currentGroupId, setCurrentGroupId] = useState<number>(1);
+  const [criteriaGroups, setCriteriaGroups] = useState<Array<{id: number; name: string}>>([]);
 
   useEffect(() => {
     const fetchResponses = async () => {
@@ -85,7 +87,40 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
     };
 
     fetchResponses();
+    fetchCriteriaGroups();
   }, [evaluationId]);
+
+  // Fetch criteria groups
+  const fetchCriteriaGroups = async () => {
+    try {
+      const response = await apiClient.get('/groupe_items');
+      setCriteriaGroups(response.data);
+      if (response.data && response.data.length > 0) {
+        setCurrentGroupId(response.data[0].id);
+      }
+    } catch (error) {
+      console.error("Error fetching criteria groups:", error);
+      toast.error("Erreur lors de la récupération des groupes");
+    }
+  };
+
+  const handlePreviousGroup = () => {
+    if (criteriaGroups && criteriaGroups.length > 0) {
+      const currentIndex = criteriaGroups.findIndex(group => group.id === currentGroupId);
+      if (currentIndex > 0) {
+        setCurrentGroupId(criteriaGroups[currentIndex - 1].id);
+      }
+    }
+  };
+
+  const handleNextGroup = () => {
+    if (criteriaGroups && criteriaGroups.length > 0) {
+      const currentIndex = criteriaGroups.findIndex(group => group.id === currentGroupId);
+      if (currentIndex < criteriaGroups.length - 1) {
+        setCurrentGroupId(criteriaGroups[currentIndex + 1].id);
+      }
+    }
+  };
 
   // Effet pour s'assurer que l'accordéon est toujours ouvert quand le contenu change
   useEffect(() => {
@@ -302,6 +337,27 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
           </AccordionContent>
         </AccordionItem>
       </Accordion>
+      
+      {/* Boutons de navigation entre groupes */}
+      <div className="flex justify-between mt-4">
+        <button
+          onClick={handlePreviousGroup}
+          disabled={!criteriaGroups || criteriaGroups.findIndex(g => g.id === currentGroupId) === 0}
+          className="flex items-center px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <ChevronLeft className="h-5 w-5 mr-2" />
+          Précédent
+        </button>
+        
+        <button
+          onClick={handleNextGroup}
+          disabled={!criteriaGroups || criteriaGroups.findIndex(g => g.id === currentGroupId) === (criteriaGroups.length - 1)}
+          className="flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Suivant
+          <ChevronRight className="h-5 w-5 ml-2" />
+        </button>
+      </div>
       
       <div className="bg-gray-50 p-6 rounded-lg border mt-8">
         <h3 className="text-xl font-medium mb-4">Décision finale</h3>
