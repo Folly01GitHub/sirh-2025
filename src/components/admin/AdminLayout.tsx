@@ -24,7 +24,8 @@ import {
   Bell, 
   Search, 
   LogOut, 
-  User
+  User,
+  ArrowLeft
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -45,6 +46,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleReturnToHome = () => {
+    navigate('/home');
   };
 
   const menuItems = [
@@ -69,6 +74,21 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <SidebarGroupLabel>Navigation</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton 
+                      asChild 
+                      tooltip="Retour à l'accueil"
+                    >
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start gap-2 mb-2 border-[#171c8f]/20 hover:bg-[#171c8f]/5 hover:border-[#171c8f]/50 text-[#171c8f]" 
+                        onClick={handleReturnToHome}
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        <span>Retour à l'accueil</span>
+                      </Button>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                   {menuItems.map((item) => (
                     <SidebarMenuItem key={item.path}>
                       <SidebarMenuButton 
@@ -141,3 +161,4 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 };
 
 export default AdminLayout;
+
