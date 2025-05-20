@@ -49,7 +49,10 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Initialiser l'accordéon à "ouvert" par défaut
   const [accordionValue, setAccordionValue] = useState<string>("details");
-  const [currentGroupId, setCurrentGroupId] = useState<string>(criteriaItems[0].group_id);
+  // Fix: Convert the number to string when initializing currentGroupId
+  const [currentGroupId, setCurrentGroupId] = useState<string>(
+    criteriaItems.length > 0 ? String(criteriaItems[0].group_id) : ""
+  );
   const [criteriaGroups, setCriteriaGroups] = useState<any[]>([]);
 
   useEffect(() => {
@@ -196,7 +199,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
     if (criteriaGroups && criteriaGroups.length > 0) {
       const currentIndex = criteriaGroups.findIndex(group => group.id === currentGroupId);
       if (currentIndex > 0) {
-        setCurrentGroupId(criteriaGroups[currentIndex - 1].id);
+        setCurrentGroupId(String(criteriaGroups[currentIndex - 1].id));
       }
     }
   };
@@ -206,7 +209,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
     if (criteriaGroups && criteriaGroups.length > 0) {
       const currentIndex = criteriaGroups.findIndex(group => group.id === currentGroupId);
       if (currentIndex < criteriaGroups.length - 1) {
-        setCurrentGroupId(criteriaGroups[currentIndex + 1].id);
+        setCurrentGroupId(String(criteriaGroups[currentIndex + 1].id));
       }
     }
   };
