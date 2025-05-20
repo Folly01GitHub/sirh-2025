@@ -84,7 +84,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   
   const formRef = useRef<HTMLFormElement>(null);
   
-  // Add the scrollToTop function
   const scrollToTop = () => {
     if (formRef.current) {
       formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -174,14 +173,12 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     mode: "onSubmit"
   });
 
-  // Effect to update mission value when the prop changes
   useEffect(() => {
     if (selectedMissionId) {
       form.setValue("mission", selectedMissionId.toString());
     }
   }, [selectedMissionId, form]);
 
-  // New effects to update evaluator and approver values when the props change
   useEffect(() => {
     if (selectedEvaluatorId) {
       form.setValue("evaluator", selectedEvaluatorId.toString());
@@ -250,9 +247,13 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         console.log(`Observation validation: ${isObservationValid} (length: ${response.value.length})`);
         return isObservationValid;
       case 'commentaire':
-        // Pour les commentaires, toujours considérer comme valide (facultatif)
-        console.log('Commentaire validation: always valid');
-        return true;
+        if (typeof response.value !== 'string') {
+          console.log('Commentaire value is not a string');
+          return false;
+        }
+        const isCommentaireValid = response.value.trim().length > 0;
+        console.log(`Commentaire validation: ${isCommentaireValid} (length: ${response.value.length})`);
+        return isCommentaireValid;
       case 'boolean':
         if (typeof response.value !== 'string') {
           console.log('Boolean value is not a string');
@@ -295,23 +296,14 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     }
 
     allCriteriaItems.forEach(item => {
-      // Ignorer les items de type commentaire pour la validation obligatoire
       if (item.type === 'commentaire') {
-        console.log(`✅ SKIPPED (optional): ${item.label}`);
-        return;
-      }
-      
-      const response = responses.find(r => r.item_id === item.id);
-      console.log(`Checking item: ${item.label} (type: ${item.type}, group: ${item.group_name || item.group_id})`);
-      
-      if (!isValidResponse(response, item.type)) {
-        missing.push({
-          label: item.label,
-          group: item.group_name || `Group ${item.group_id}`
-        });
-        console.log(`❌ FAILED: ${item.label} in ${item.group_name || `Group ${item.group_id}`}`);
-      } else {
-        console.log(`✅ PASSED: ${item.label}`);
+        const response = responses.find(r => r.item_id === item.id);
+        if (!isValidResponse(response, item.type)) {
+          missing.push({
+            label: item.label,
+            group: item.group_name || `Group ${item.group_id}`
+          });
+        }
       }
     });
 
@@ -332,97 +324,55 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     return true;
   };
 
-  // Check selectors function
-  const checkSelectors = (): boolean => {
-    console.log("Checking selectors");
-    const formValues = form.getValues();
-    const hasEvaluator = !!formValues.evaluator;
-    const hasApprover = !!formValues.approver;
-    const hasMission = !!formValues.mission;
-    
-    console.log({
-      evaluator: formValues.evaluator,
-      approver: formValues.approver,
-      mission: formValues.mission,
-      hasEvaluator,
-      hasApprover,
-      hasMission
-    });
-    
-    return hasEvaluator && hasApprover && hasMission;
-  };
-
-  // Form submission handler
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Form submit handler triggered');
     
-    // Vérification préalable des sélecteurs avant la validation complète
-    if (!checkSelectors()) {
-      console.log('Selectors check failed, showing toast');
-      toast.error("Champs obligatoires manquants", {
-        description: "Assurez-vous d'avoir bien sélectionné l'évaluateur, l'approbateur et la mission en début de formulaire svp !",
-        duration: 5000
-      });
-      scrollToTop();
+    if (!validateAllFields()) {
+      console.error('Field validation failed');
       return;
     }
-    
-    // Si les sélecteurs sont présents, procéder à la validation complète
-    form.handleSubmit(async (data) => {
-      console.log('Form data passed validation:', data);
-      setSubmitting(true);
-      
-      if (!validateAllFields()) {
-        console.error('Field validation failed');
-        setSubmitting(false);
-        return;
-      }
 
-      console.log('All validations passed, proceeding with submission');
+    const missionId = Number(form.getValues("mission"));
+    const evaluatorId = Number(form.getValues("evaluator"));
+    const approverId = Number(form.getValues("approver"));
+    
+    const submissionData = {
+      mission_id: missionId,
+      evaluator_id: evaluatorId,
+      approver_id: approverId,
+      evaluation_id: evaluationId ? Number(evaluationId) : null,
+      responses: responses.map(r => ({
+        item_id: r.item_id,
+        value: r.value
+      }))
+    };
+    
+    try {
+      const response = await apiClient.post('/submit_auto_evaluation', submissionData);
+      console.log('Auto-evaluation submitted successfully:', response.data);
+      toast.success(evaluationId ? "Auto-évaluation mise à jour" : "Auto-évaluation soumise", {
+        description: "Votre évaluateur a été notifié"
+      });
       
-      const missionId = Number(form.getValues("mission"));
-      const evaluatorId = Number(form.getValues("evaluator"));
-      const approverId = Number(form.getValues("approver"));
+      if (onMissionChange) onMissionChange(submissionData.mission_id);
+      onSubmit();
       
-      const submissionData = {
-        mission_id: missionId,
-        evaluator_id: evaluatorId,
-        approver_id: approverId,
-        evaluation_id: evaluationId ? Number(evaluationId) : null,
-        responses: responses.map(r => ({
-          item_id: r.item_id,
-          value: r.value
-        }))
-      };
+      setTimeout(() => {
+        navigate('/evaluations');
+      }, 1000);
+    } catch (error) {
+      console.error("Erreur lors de la soumission de l'auto-évaluation:", error);
       
-      try {
-        const response = await apiClient.post('/submit_auto_evaluation', submissionData);
-        console.log('Auto-evaluation submitted successfully:', response.data);
-        toast.success(evaluationId ? "Auto-évaluation mise à jour" : "Auto-évaluation soumise", {
-          description: "Votre évaluateur a été notifié"
-        });
-        
-        if (onMissionChange) onMissionChange(submissionData.mission_id);
-        onSubmit();
-        
-        setTimeout(() => {
-          navigate('/evaluations');
-        }, 1000);
-      } catch (error) {
-        console.error("Erreur lors de la soumission de l'auto-évaluation:", error);
-        
-        let errorMessage = "Une erreur est survenue. Veuillez réessayer.";
-        if ((error as any).response?.data?.message) {
-          errorMessage = (error as any).response.data.message;
-        }
-        
-        toast.error("Échec de la soumission", {
-          description: errorMessage
-        });
-        setSubmitting(false);
+      let errorMessage = "Une erreur est survenue. Veuillez réessayer.";
+      if ((error as any).response?.data?.message) {
+        errorMessage = (error as any).response.data.message;
       }
-    })(e);  // Passer l'événement à handleSubmit
+      
+      toast.error("Échec de la soumission", {
+        description: errorMessage
+      });
+    }
   };
 
   const handleSaveAsDraft = async () => {
@@ -433,7 +383,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     const evaluatorId = formValues.evaluator ? Number(formValues.evaluator) : null;
     const approverId = formValues.approver ? Number(formValues.approver) : null;
     
-    // Collect all responses, even if not all fields are completed
     const draftData = {
       mission_id: missionId,
       evaluator_id: evaluatorId,
@@ -453,7 +402,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       });
       
       if (response.data.evaluation_id && !evaluationId) {
-        // If this is a new evaluation, redirect to the same page with the new ID
         navigate(`/evaluation?id=${response.data.evaluation_id}&step=1`);
       }
     } catch (error) {
@@ -597,7 +545,14 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
           
           {criteriaItems.map((item) => (
             <div key={item.id} className="p-4 border rounded-md shadow-sm">
-              <h3 className="text-lg font-medium mb-3">{item.label}</h3>
+              <h3 className="text-lg font-medium mb-3">
+                {item.label}
+                {item.type === 'commentaire' && (
+                  <span className="text-sm font-normal ml-2 text-gray-500">
+                    (obligatoire)
+                  </span>
+                )}
+              </h3>
               
               {item.type === 'numeric' ? (
                 <div className="space-y-2">
@@ -614,14 +569,14 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
               ) : (
                 <div className="space-y-2">
                   <p className="text-sm text-gray-500 mb-2">
-                    {item.type === 'observation' ? "Minimum 50 caractères" : "Commentaire facultatif"}
+                    {item.type === 'observation' ? "Minimum 50 caractères" : "Commentaire obligatoire"}
                   </p>
                   <Textarea 
                     value={getResponseValue(item.id) as string}
                     onChange={(e) => onResponseChange(item.id, e.target.value)}
                     placeholder={item.type === 'observation' 
                       ? "Entrez votre observation…" 
-                      : "Entrez un commentaire (facultatif)…"}
+                      : "Entrez votre commentaire…"}
                     className="min-h-[120px]"
                   />
                   {item.type === 'observation' && (
@@ -629,6 +584,15 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                       {typeof getResponseValue(item.id) === 'string' && (
                         <span className={`${(getResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
                           {(getResponseValue(item.id) as string).length} / 50 caractères minimum
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {item.type === 'commentaire' && (
+                    <div className="text-xs text-right">
+                      {typeof getResponseValue(item.id) === 'string' && (
+                        <span className={`${(getResponseValue(item.id) as string).length > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {(getResponseValue(item.id) as string).length} caractère(s)
                         </span>
                       )}
                     </div>

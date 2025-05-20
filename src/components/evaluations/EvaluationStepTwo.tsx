@@ -310,7 +310,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       case 'observation':
         return typeof response.value === 'string' && response.value.length >= 50;
       case 'commentaire':
-        return true;
+        return typeof response.value === 'string' && response.value.trim().length > 0;
       case 'boolean':
         return typeof response.value === 'string' && ['oui', 'non'].includes(response.value);
       default:
@@ -453,7 +453,14 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     <div className="space-y-8">
       {criteriaItems.map((item) => (
         <div key={item.id} className="p-4 border rounded-md shadow-sm">
-          <h3 className="text-lg font-medium mb-4">{item.label}</h3>
+          <h3 className="text-lg font-medium mb-4">
+            {item.label}
+            {item.type === 'commentaire' && (
+              <span className="text-sm font-normal ml-2 text-gray-500">
+                (obligatoire)
+              </span>
+            )}
+          </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2 bg-gray-50 p-4 rounded-md">
@@ -494,14 +501,14 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
                   <p className="text-sm text-gray-500 mb-2">
                     {item.type === 'observation' 
                       ? "Minimum 50 caractères" 
-                      : "Commentaire facultatif"}
+                      : "Commentaire obligatoire"}
                   </p>
                   <Textarea 
                     value={getEvaluatorResponseValue(item.id).toString()}
                     onChange={(e) => handleEvaluatorResponseChange(item.id, e.target.value)}
                     placeholder={item.type === 'observation' 
                       ? "Entrez votre observation…" 
-                      : "Entrez un commentaire (facultatif)…"}
+                      : "Entrez votre commentaire…"}
                     className="min-h-[120px] max-h-[120px] overflow-y-auto"
                   />
                   {item.type === 'observation' && (
@@ -509,6 +516,15 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
                       {typeof getEvaluatorResponseValue(item.id) === 'string' && (
                         <span className={`${(getEvaluatorResponseValue(item.id) as string).length >= 50 ? 'text-green-600' : 'text-red-600'}`}>
                           {(getEvaluatorResponseValue(item.id) as string).length} / 50 caractères minimum
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {item.type === 'commentaire' && (
+                    <div className="text-xs text-right">
+                      {typeof getEvaluatorResponseValue(item.id) === 'string' && (
+                        <span className={`${(getEvaluatorResponseValue(item.id) as string).length > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {(getEvaluatorResponseValue(item.id) as string).length} caractère(s)
                         </span>
                       )}
                     </div>

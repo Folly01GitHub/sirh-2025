@@ -138,8 +138,8 @@ const Evaluation = () => {
       case 'observation':
         return typeof response.value === 'string' && response.value.length >= 50;
       case 'commentaire':
-        // Pour les commentaires, n'importe quelle valeur (même vide) est valide
-        return true;
+        // Pour les commentaires, vérifier qu'ils ne sont pas vides
+        return typeof response.value === 'string' && response.value.trim().length > 0;
       case 'boolean':
         return typeof response.value === 'string' && ['oui', 'non'].includes(response.value);
       default:
@@ -152,8 +152,8 @@ const Evaluation = () => {
     if (currentStep === 1) {
       if (!allCriteriaItems || allCriteriaItems.length === 0) return 0;
       
-      // Filtrer les items qui ne sont pas des commentaires (facultatifs)
-      const requiredItems = allCriteriaItems.filter(item => item.type !== 'commentaire');
+      // Inclure tous les items, y compris les commentaires (désormais obligatoires)
+      const requiredItems = allCriteriaItems;
       
       // Check basic fields (evaluator, approver, mission)
       let completedFields = 0;
@@ -163,7 +163,7 @@ const Evaluation = () => {
       if (approverId) completedFields++;
       if (selectedMissionId) completedFields++;
       
-      // Check criteria items (ignoring 'commentaire' type)
+      // Check criteria items (including 'commentaire' type)
       requiredItems.forEach(item => {
         const response = employeeResponses.find(r => r.item_id === item.id);
         if (isValidResponse(response, item.type)) {
@@ -175,13 +175,13 @@ const Evaluation = () => {
     } else if (currentStep === 2) {
       if (!allCriteriaItems || allCriteriaItems.length === 0) return 0;
       
-      // Filtrer les items qui ne sont pas des commentaires (facultatifs)
-      const requiredItems = allCriteriaItems.filter(item => item.type !== 'commentaire');
+      // Inclure tous les items, y compris les commentaires (désormais obligatoires)
+      const requiredItems = allCriteriaItems;
       
       let completedFields = 0;
       const totalRequiredFields = requiredItems.length;
       
-      // Check criteria items (ignoring 'commentaire' type)
+      // Check criteria items (including 'commentaire' type)
       requiredItems.forEach(item => {
         const response = evaluatorResponses.find(r => r.item_id === item.id);
         if (isValidResponse(response, item.type)) {
@@ -224,17 +224,16 @@ const Evaluation = () => {
     });
 
     // Vérifier les champs obligatoires par groupe
-    allCriteriaItems
-      .filter(item => item.type !== 'commentaire') // Ignorer les commentaires (facultatifs)
-      .forEach(item => {
-        const responses = currentStep === 1 ? employeeResponses : evaluatorResponses;
-        const response = responses.find(r => r.item_id === item.id);
-        
-        // Si une réponse n'est pas valide, marquer ce groupe comme ayant des erreurs
-        if (!isValidResponse(response, item.type)) {
-          newGroupValidation[item.group_id] = false;
-        }
-      });
+    // Inclure tous les items, y compris les commentaires (désormais obligatoires)
+    allCriteriaItems.forEach(item => {
+      const responses = currentStep === 1 ? employeeResponses : evaluatorResponses;
+      const response = responses.find(r => r.item_id === item.id);
+      
+      // Si une réponse n'est pas valide, marquer ce groupe comme ayant des erreurs
+      if (!isValidResponse(response, item.type)) {
+        newGroupValidation[item.group_id] = false;
+      }
+    });
     
     // En étape 1, vérifier également si les champs de base (évaluateur, approbateur, mission) sont remplis
     if (currentStep === 1) {
