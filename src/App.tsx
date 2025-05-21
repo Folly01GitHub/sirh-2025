@@ -14,6 +14,7 @@ import Settings from "./pages/admin/Settings";
 import Activate from "./pages/Activate";
 import ForgotPassword from "./pages/ForgotPassword";
 import Permissions from "./pages/Permissions";
+import Leaves from "./pages/Leaves";
 import Evaluation from "./pages/Evaluation";
 import EvaluationDashboard from "./pages/EvaluationDashboard";
 import EvaluationView from "./pages/EvaluationView";
@@ -38,8 +39,7 @@ const App = () => (
               <Route path="/home" element={<Home />} />
               <Route path="/admin/dashboard" element={<Dashboard />} />
               <Route path="/admin/settings" element={<Settings />} />
-              <Route path="/leave" element={<Home />} />
-              <Route path="/assessments" element={<Home />} />
+              <Route path="/leave" element={<Leaves />} />
               <Route path="/permissions" element={<Permissions />} />
               <Route path="/evaluations" element={<EvaluationDashboard />} />
               <Route path="/evaluation" element={<Evaluation />} />
@@ -47,7 +47,7 @@ const App = () => (
               <Route path="/cashout" element={<Home />} />
               <Route path="/certificates" element={<Home />} />
               <Route path="/dashboard" element={<Home />} />
-              <Route path="/leave" element={<Home />} />
+              <Route path="/assessments" element={<Home />} />
               <Route path="/appraisals" element={<Home />} />
               <Route path="/profile" element={<Home />} />
               <Route path="/settings" element={<Home />} />
