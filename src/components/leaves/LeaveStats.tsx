@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Beach, Calendar, Trophy } from 'lucide-react';
+import { Umbrella, Calendar, Trophy } from 'lucide-react';
 import StatsCard from '@/components/hris/StatsCard';
 
 const LeaveStats: React.FC = () => {
@@ -15,7 +15,7 @@ const LeaveStats: React.FC = () => {
       <StatsCard
         title="Jours restants"
         value={`${remainingDays}/${totalDays}`}
-        icon={<Beach className="h-5 w-5 text-blue-500" />}
+        icon={<Umbrella className="h-5 w-5 text-blue-500" />}
         color="blue"
         description="Congés disponibles pour l'année en cours"
       />
