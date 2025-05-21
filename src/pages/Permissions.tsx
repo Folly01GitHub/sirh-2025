@@ -87,9 +87,7 @@ const Permissions = () => {
               <div className="bg-white rounded-lg shadow-md p-6">
                 {activeSection === "form" && (
                   <>
-                    <h2 className="text-2xl font-semibold text-[#172b4d] mb-4">
-                      Formulaire de demande
-                    </h2>
+                    {/* Removed the redundant heading "Formulaire de demande" */}
                     <PermissionRequestForm onSubmitSuccess={handleFormSubmitSuccess} />
                   </>
                 )}
