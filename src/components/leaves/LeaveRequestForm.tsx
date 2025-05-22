@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -159,8 +158,8 @@ const LeaveRequestForm: React.FC = () => {
                 <FormControl>
                   <Input 
                     type="number" 
-                    step="0.5"
-                    min="0.5"
+                    step="1"
+                    min="1"
                     max="100"
                     {...field} 
                   />
