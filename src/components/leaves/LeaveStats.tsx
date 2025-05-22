@@ -8,7 +8,7 @@ const LeaveStats: React.FC = () => {
   const remainingDays = 12;
   const totalDays = 30;
   const daysUsed = 8;
-  const seniority = "5 ans";
+  const seniority = "10 jours"; // Changed from "5 ans" to "10 jours"
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
