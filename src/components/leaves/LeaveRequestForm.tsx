@@ -41,7 +41,7 @@ const leaveFormSchema = z.object({
   }),
   days: z.coerce.number({
     required_error: "Le nombre de jours est requis",
-  }).min(0.5, "Le minimum est de 0.5 jour").max(100, "Le maximum est de 100 jours"),
+  }).min(1, "Le minimum est de 1 jour").max(100, "Le maximum est de 100 jours"),
   startDate: z.date({
     required_error: "La date de début est requise",
   }),
@@ -174,7 +174,7 @@ const LeaveRequestForm: React.FC = () => {
             control={form.control}
             name="startDate"
             render={({ field }) => (
-              <FormItem className="flex flex-col">
+              <FormItem>
                 <FormLabel>Date de début</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
