@@ -48,7 +48,9 @@ const leaveFormSchema = z.object({
   }),
   reason: z.string().min(3, "Veuillez fournir un motif d'au moins 3 caractères").max(500, "Le motif ne peut pas dépasser 500 caractères"),
   justification: z.instanceof(File).optional(),
-  managerId: z.string().min(1, "Veuillez sélectionner un responsable"),
+  managerId: z.string({
+    required_error: "Veuillez sélectionner un responsable hiérarchique",
+  }).min(1, "Veuillez sélectionner un responsable hiérarchique"),
 });
 
 type LeaveFormValues = z.infer<typeof leaveFormSchema>;
