@@ -17,7 +17,7 @@ const LeaveStats: React.FC = () => {
         value={`${remainingDays} jours`}
         icon={<CalendarIcon className="h-6 w-6 text-blue-600" />}
         color="blue"
-        description="Solde annuel disponible"
+        description="Solde disponible"
       />
       <StatsCard
         title="Jours pris"
@@ -31,7 +31,7 @@ const LeaveStats: React.FC = () => {
         value={seniority}
         icon={<Trophy className="h-5 w-5 text-amber-500" />}
         color="amber"
-        description="Votre temps de service dans l'entreprise"
+        description="Bonus annuel pour votre ancienneté"
       />
     </div>
   );
