@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { Umbrella, Calendar, Trophy } from 'lucide-react';
+import { Calendar as CalendarIcon, Calendar, Trophy } from 'lucide-react';
 import StatsCard from '@/components/hris/StatsCard';
 
 const LeaveStats: React.FC = () => {
   // Ces données seraient normalement récupérées depuis une API
-  const remainingDays = 22;
+  const remainingDays = 12;
   const totalDays = 30;
   const daysUsed = 8;
   const seniority = "5 ans";
@@ -13,11 +13,11 @@ const LeaveStats: React.FC = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <StatsCard
-        title="Jours restants"
-        value={`${remainingDays}/${totalDays}`}
-        icon={<Umbrella className="h-5 w-5 text-blue-500" />}
+        title="Congés restants"
+        value={`${remainingDays} jours`}
+        icon={<CalendarIcon className="h-6 w-6 text-blue-600" />}
         color="blue"
-        description="Congés disponibles pour l'année en cours"
+        description="Solde annuel disponible"
       />
       <StatsCard
         title="Jours pris"
