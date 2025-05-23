@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -9,7 +8,15 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import LeaveStatsSection from '@/components/leaves/LeaveStatsSection';
 import LeaveTable from '@/components/leaves/LeaveTable';
+import LeaveRequestForm from '@/components/leaves/LeaveRequestForm';
 import { TabsContent, Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+} from '@/components/ui/drawer';
 
 interface LeaveStats {
   total: number;
@@ -106,6 +113,7 @@ const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
 const Leaves = () => {
   const [activeFilter, setActiveFilter] = useState<string>('self');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { user } = useAuth();
   
   // Determine if the user is a manager to show the validations section
@@ -138,12 +146,16 @@ const Leaves = () => {
   };
   
   const handleNewLeaveRequest = () => {
-    // Navigate to new leave request form or show modal
-    console.log('New leave request');
+    setIsDrawerOpen(true);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+  };
+
+  const handleFormSubmitSuccess = () => {
+    setIsDrawerOpen(false);
+    // Optionally refetch the leaves data here
   };
 
   const filteredLeaves = React.useMemo(() => {
@@ -220,6 +232,20 @@ const Leaves = () => {
           onActionClick={handleActionClick}
         />
       </div>
+
+      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+        <DrawerContent className="max-h-[90vh] overflow-y-auto">
+          <DrawerHeader>
+            <DrawerTitle>Nouvelle demande de congé</DrawerTitle>
+            <DrawerDescription>
+              Remplissez le formulaire ci-dessous pour soumettre votre demande de congé.
+            </DrawerDescription>
+          </DrawerHeader>
+          <div className="p-6">
+            <LeaveRequestForm />
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 };

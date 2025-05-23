@@ -69,7 +69,11 @@ const managers = [
   { id: "3", name: "Marie Dubois" },
 ];
 
-const LeaveRequestForm: React.FC = () => {
+interface LeaveRequestFormProps {
+  onSubmitSuccess?: () => void;
+}
+
+const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) => {
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -100,6 +104,11 @@ const LeaveRequestForm: React.FC = () => {
       toast.success("Demande de congé soumise avec succès");
       form.reset();
       setFile(null);
+      
+      // Call the callback if provided
+      if (onSubmitSuccess) {
+        onSubmitSuccess();
+      }
     } catch (error) {
       console.error("Error submitting leave request:", error);
       toast.error("Erreur lors de la soumission de la demande");
