@@ -13,8 +13,8 @@ import { TabsContent, Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface LeaveStats {
   total: number;
-  approved: number;
-  pending: number;
+  approved?: number;
+  pending?: number;
   remaining?: number;
   used?: number;
   seniority?: number;
@@ -37,6 +37,8 @@ const fetchLeaveStats = async (filter: string): Promise<LeaveStats> => {
   if (filter === 'self') {
     return {
       total: 30,
+      approved: 0,
+      pending: 0,
       remaining: 12,
       used: 8,
       seniority: 10
