@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -234,15 +235,17 @@ const Leaves = () => {
       </div>
 
       <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-        <DrawerContent className="max-h-[90vh] overflow-y-auto">
-          <DrawerHeader>
-            <DrawerTitle>Nouvelle demande de congé</DrawerTitle>
-            <DrawerDescription>
-              Remplissez le formulaire ci-dessous pour soumettre votre demande de congé.
-            </DrawerDescription>
-          </DrawerHeader>
-          <div className="p-6">
-            <LeaveRequestForm />
+        <DrawerContent className="max-h-[90vh]">
+          <div className="flex flex-col h-full">
+            <DrawerHeader className="flex-shrink-0">
+              <DrawerTitle>Nouvelle demande de congé</DrawerTitle>
+              <DrawerDescription>
+                Remplissez le formulaire ci-dessous pour soumettre votre demande de congé.
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="flex-1 overflow-y-auto px-6 pb-6">
+              <LeaveRequestForm onSubmitSuccess={handleFormSubmitSuccess} />
+            </div>
           </div>
         </DrawerContent>
       </Drawer>
