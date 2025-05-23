@@ -1,124 +1,224 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '@/utils/apiClient';
 import HRISNavbar from '@/components/hris/HRISNavbar';
-import { 
-  SidebarProvider, 
-  Sidebar, 
-  SidebarContent, 
-  SidebarHeader, 
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarInset
-} from '@/components/ui/sidebar';
-import LeaveStats from '@/components/leaves/LeaveStats';
-import LeaveRequestForm from '@/components/leaves/LeaveRequestForm';
-import LeaveRequests from '@/components/leaves/LeaveRequests';
-import LeaveValidations from '@/components/leaves/LeaveValidations';
-import { CalendarDays, PanelBottom, ClipboardCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input'; 
+import { Search } from 'lucide-react';
+import LeaveStatsSection from '@/components/leaves/LeaveStatsSection';
+import LeaveTable from '@/components/leaves/LeaveTable';
+import { TabsContent, Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+interface LeaveStats {
+  total: number;
+  approved: number;
+  pending: number;
+  remaining?: number;
+  used?: number;
+  seniority?: number;
+}
+
+interface LeaveItem {
+  id: string;
+  type: string;
+  startDate: string;
+  endDate: string;
+  days: number;
+  status: 'approved' | 'pending' | 'rejected';
+  hasAttachment: boolean;
+  requester?: string;
+  reason?: string;
+}
+
+const fetchLeaveStats = async (filter: string): Promise<LeaveStats> => {
+  // Mock data for now - would be replaced with actual API calls
+  if (filter === 'self') {
+    return {
+      total: 30,
+      remaining: 12,
+      used: 8,
+      seniority: 10
+    };
+  } else {
+    return {
+      total: 15,
+      approved: 8,
+      pending: 7
+    };
+  }
+};
+
+const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
+  // Mock data for now - would be replaced with actual API calls
+  if (filter === 'self') {
+    return [
+      { 
+        id: '001', 
+        type: 'Congés légaux', 
+        startDate: '01/05/2024', 
+        endDate: '10/05/2024', 
+        days: 7,
+        status: 'approved', 
+        hasAttachment: false 
+      },
+      { 
+        id: '002', 
+        type: 'Congés sans solde', 
+        startDate: '15/05/2024', 
+        endDate: '18/05/2024', 
+        days: 3,
+        status: 'pending', 
+        hasAttachment: true 
+      }
+    ];
+  } else {
+    return [
+      { 
+        id: '003', 
+        requester: 'Jean Dupont',
+        type: 'Congés légaux', 
+        startDate: '20/05/2024', 
+        endDate: '22/05/2024', 
+        days: 3,
+        status: 'pending', 
+        hasAttachment: true,
+        reason: 'Vacances familiales'
+      },
+      { 
+        id: '007', 
+        requester: 'Sophie Martin',
+        type: 'Congés sans solde', 
+        startDate: '01/06/2024', 
+        endDate: '15/06/2024', 
+        days: 10,
+        status: 'pending', 
+        hasAttachment: false,
+        reason: 'Voyage personnel important'
+      }
+    ];
+  }
+};
 
 const Leaves = () => {
+  const [activeFilter, setActiveFilter] = useState<string>('self');
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const { user } = useAuth();
-  const [activeSection, setActiveSection] = useState("dashboard");
-
+  
   // Determine if the user is a manager to show the validations section
   const isManager = user?.role === 'admin' || user?.isManager;
-
-  const handleSectionChange = (section: string) => {
-    console.log(`Changing active section to: ${section}`);
-    setActiveSection(section);
+  
+  const { 
+    data: stats,
+    isLoading: statsLoading 
+  } = useQuery({
+    queryKey: ['leaveStats', activeFilter],
+    queryFn: () => fetchLeaveStats(activeFilter)
+  });
+  
+  const {
+    data: leaves,
+    isLoading: leavesLoading
+  } = useQuery({
+    queryKey: ['leaves', activeFilter],
+    queryFn: () => fetchLeaves(activeFilter)
+  });
+  
+  const handleFilterChange = (value: string) => {
+    setActiveFilter(value);
+    setSearchTerm('');
+  };
+  
+  const handleActionClick = (id: string, action: string) => {
+    console.log(`Action ${action} on leave ${id}`);
+    // Handle different actions based on the action type
+  };
+  
+  const handleNewLeaveRequest = () => {
+    // Navigate to new leave request form or show modal
+    console.log('New leave request');
   };
 
-  const menuItems = [
-    { id: "dashboard", label: "Tableau de bord", icon: CalendarDays, shortLabel: "Dashboard" },
-    { id: "requests", label: "Mes demandes", icon: PanelBottom, shortLabel: "Demandes" },
-    // Only show validation section to managers
-    ...(isManager ? [{ id: "validations", label: "Demandes à valider", icon: ClipboardCheck, shortLabel: "Validations" }] : [])
-  ];
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const filteredLeaves = React.useMemo(() => {
+    if (!leaves || !searchTerm.trim()) {
+      return leaves;
+    }
+    
+    const term = searchTerm.toLowerCase();
+    return leaves.filter(leave => {
+      return (
+        leave.type?.toLowerCase().includes(term) ||
+        leave.startDate?.toLowerCase().includes(term) ||
+        leave.endDate?.toLowerCase().includes(term) ||
+        leave.requester?.toLowerCase().includes(term) ||
+        leave.status?.toLowerCase().includes(term)
+      );
+    });
+  }, [leaves, searchTerm]);
 
   return (
-    <SidebarProvider>
-      <div className="flex flex-col min-h-screen w-full bg-[#f8f9fc]">
-        <HRISNavbar />
-        
-        <div className="flex flex-1 h-full overflow-hidden">
-          <Sidebar>
-            <SidebarHeader className="p-4 pb-0">
-              <h3 className="text-lg font-medium mb-4">Gestion des Congés</h3>
-            </SidebarHeader>
-            <SidebarContent>
-              <SidebarMenu>
-                {menuItems.map((item) => (
-                  <SidebarMenuItem key={item.id}>
-                    <SidebarMenuButton 
-                      isActive={activeSection === item.id}
-                      onClick={() => handleSectionChange(item.id)}
-                      tooltip={item.label}
-                      className={`
-                        ${activeSection === item.id 
-                          ? 'bg-primary/10 text-primary font-semibold border-l-4 border-primary' 
-                          : 'hover:bg-gray-100'}
-                        transition-all duration-200 ease-in-out
-                      `}
-                    >
-                      <item.icon className="h-5 w-5" />
-                      <span className="hidden md:inline">{item.label}</span>
-                      <span className="md:hidden">{item.shortLabel}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarContent>
-          </Sidebar>
-
-          <SidebarInset className="flex flex-col h-full overflow-auto">
-            <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-fade-in">
-              <div className="text-center mb-6">
-                <h1 className="text-3xl md:text-4xl font-bold text-[#172b4d] mb-2 animate-fade-in">
-                  Gestion des Congés
-                </h1>
-                <p className="text-lg text-[#5e6c84] max-w-2xl mx-auto animate-fade-in">
-                  Suivez vos congés, soumettez des demandes et gérez les approbations
-                </p>
-              </div>
-              
-              <div className="bg-white rounded-lg shadow-md p-6">
-                {activeSection === "dashboard" && (
-                  <>
-                    <LeaveStats />
-                    <div className="mt-8">
-                      <h2 className="text-2xl font-semibold text-[#172b4d] mb-4">
-                        Nouvelle demande de congé
-                      </h2>
-                      <LeaveRequestForm />
-                    </div>
-                  </>
-                )}
-                
-                {activeSection === "requests" && (
-                  <>
-                    <h2 className="text-2xl font-semibold text-[#172b4d] mb-4">
-                      Mes demandes de congés
-                    </h2>
-                    <LeaveRequests />
-                  </>
-                )}
-                
-                {activeSection === "validations" && isManager && (
-                  <>
-                    <h2 className="text-2xl font-semibold text-[#172b4d] mb-4">
-                      Demandes à valider
-                    </h2>
-                    <LeaveValidations />
-                  </>
-                )}
-              </div>
-            </div>
-          </SidebarInset>
+    <div className="flex flex-col min-h-screen bg-[#f8f9fc]">
+      <HRISNavbar />
+      
+      <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-fade-in">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">Gestion des Congés</h1>
+            <p className="text-gray-500">Gérez vos congés et validez les demandes de vos collaborateurs</p>
+          </div>
+          <Button 
+            className="mt-4 md:mt-0" 
+            onClick={handleNewLeaveRequest}
+          >
+            Nouvelle demande
+          </Button>
         </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-4 mb-6 flex justify-center">
+          <Tabs
+            defaultValue="self"
+            value={activeFilter}
+            onValueChange={handleFilterChange}
+            className="w-full md:w-auto"
+          >
+            <TabsList className="grid w-full md:w-[400px] grid-cols-2">
+              <TabsTrigger value="self">Mes congés</TabsTrigger>
+              {isManager && <TabsTrigger value="team">Congés à valider</TabsTrigger>}
+            </TabsList>
+          </Tabs>
+        </div>
+        
+        <LeaveStatsSection 
+          stats={stats}
+          isLoading={statsLoading}
+          activeFilter={activeFilter}
+        />
+        
+        <div className="mb-4 relative">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+            <Input 
+              placeholder="Rechercher une demande de congé..." 
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="pl-9"
+            />
+          </div>
+        </div>
+        
+        <LeaveTable 
+          leaves={filteredLeaves || []}
+          isLoading={leavesLoading}
+          activeFilter={activeFilter}
+          onActionClick={handleActionClick}
+        />
       </div>
-    </SidebarProvider>
+    </div>
   );
 };
 
