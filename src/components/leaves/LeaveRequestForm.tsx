@@ -59,6 +59,7 @@ const leaveTypes = [
   { id: "special", label: "Congés exceptionnels" },
   { id: "unpaid", label: "Congés sans solde" },
   { id: "medical", label: "Congés maladie" },
+  { id: "exam", label: "Congés examen" },
   { id: "other", label: "Autres congés rémunérés" },
 ];
 
