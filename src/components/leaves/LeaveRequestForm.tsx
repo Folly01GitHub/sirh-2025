@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -86,6 +87,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) 
   
   const form = useForm<LeaveFormValues>({
     resolver: zodResolver(createLeaveFormSchema()),
+    mode: 'onTouched', // Ne valide qu'après interaction
     defaultValues: {
       days: 1,
       reason: "",
@@ -98,12 +100,10 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) 
   // Mise à jour du schéma de validation quand le type change
   React.useEffect(() => {
     if (selectedType) {
-      const newSchema = createLeaveFormSchema(selectedType);
-      form.clearErrors();
-      // Re-validate the form with the new schema
-      setTimeout(() => {
-        form.trigger();
-      }, 0);
+      // Seulement effacer les erreurs du justificatif, pas re-valider tout
+      if (form.formState.errors.justification) {
+        form.clearErrors("justification");
+      }
     }
   }, [selectedType, form]);
   
