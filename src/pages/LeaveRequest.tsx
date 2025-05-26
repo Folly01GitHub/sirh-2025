@@ -38,8 +38,10 @@ const LeaveRequest = () => {
           </div>
         </div>
         
-        <div className="max-w-4xl">
-          <LeaveRequestForm onSubmitSuccess={handleFormSubmitSuccess} />
+        <div className="flex justify-center">
+          <div className="w-full max-w-4xl">
+            <LeaveRequestForm onSubmitSuccess={handleFormSubmitSuccess} />
+          </div>
         </div>
       </div>
     </div>
