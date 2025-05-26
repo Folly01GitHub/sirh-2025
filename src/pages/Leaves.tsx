@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import apiClient from '@/utils/apiClient';
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import { Button } from '@/components/ui/button';
@@ -9,15 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import LeaveStatsSection from '@/components/leaves/LeaveStatsSection';
 import LeaveTable from '@/components/leaves/LeaveTable';
-import LeaveRequestForm from '@/components/leaves/LeaveRequestForm';
 import { TabsContent, Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from '@/components/ui/drawer';
 
 interface LeaveStats {
   total: number;
@@ -45,8 +38,6 @@ const fetchLeaveStats = async (filter: string): Promise<LeaveStats> => {
   if (filter === 'self') {
     return {
       total: 30,
-      approved: 0,
-      pending: 0,
       remaining: 12,
       used: 8,
       seniority: 10
@@ -114,8 +105,8 @@ const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
 const Leaves = () => {
   const [activeFilter, setActiveFilter] = useState<string>('self');
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   // Determine if the user is a manager to show the validations section
   const isManager = user?.role === 'admin' || user?.isManager;
@@ -147,16 +138,11 @@ const Leaves = () => {
   };
   
   const handleNewLeaveRequest = () => {
-    setIsDrawerOpen(true);
+    navigate('/leave/request');
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-  };
-
-  const handleFormSubmitSuccess = () => {
-    setIsDrawerOpen(false);
-    // Optionally refetch the leaves data here
   };
 
   const filteredLeaves = React.useMemo(() => {
@@ -233,22 +219,6 @@ const Leaves = () => {
           onActionClick={handleActionClick}
         />
       </div>
-
-      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-        <DrawerContent className="max-h-[90vh]">
-          <div className="flex flex-col h-full">
-            <DrawerHeader className="flex-shrink-0">
-              <DrawerTitle>Nouvelle demande de congé</DrawerTitle>
-              <DrawerDescription>
-                Remplissez le formulaire ci-dessous pour soumettre votre demande de congé.
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="flex-1 overflow-y-auto px-6 pb-6">
-              <LeaveRequestForm onSubmitSuccess={handleFormSubmitSuccess} />
-            </div>
-          </div>
-        </DrawerContent>
-      </Drawer>
     </div>
   );
 };
