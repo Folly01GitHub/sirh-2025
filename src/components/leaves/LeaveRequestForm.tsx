@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -34,25 +34,31 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import apiClient from '@/utils/apiClient';
 
-// Définition du schéma de validation avec Zod
-const leaveFormSchema = z.object({
-  type: z.string({
-    required_error: "Veuillez sélectionner un type de congé",
-  }),
-  days: z.coerce.number({
-    required_error: "Le nombre de jours est requis",
-  }).min(1, "Le minimum est de 1 jour").max(100, "Le maximum est de 100 jours"),
-  startDate: z.date({
-    required_error: "La date de début est requise",
-  }),
-  reason: z.string().min(3, "Veuillez fournir un motif d'au moins 3 caractères").max(500, "Le motif ne peut pas dépasser 500 caractères"),
-  justification: z.instanceof(File).optional(),
-  managerId: z.string({
-    required_error: "Veuillez sélectionner un responsable hiérarchique",
-  }).min(1, "Veuillez sélectionner un responsable hiérarchique"),
-});
+// Définition du schéma de validation avec Zod - schéma conditionnel
+const createLeaveFormSchema = (leaveType?: string) => {
+  const needsJustification = leaveType && leaveType !== "legal";
+  
+  return z.object({
+    type: z.string({
+      required_error: "Veuillez sélectionner un type de congé",
+    }),
+    days: z.coerce.number({
+      required_error: "Le nombre de jours est requis",
+    }).min(1, "Le minimum est de 1 jour").max(100, "Le maximum est de 100 jours"),
+    startDate: z.date({
+      required_error: "La date de début est requise",
+    }),
+    reason: z.string().min(3, "Veuillez fournir un motif d'au moins 3 caractères").max(500, "Le motif ne peut pas dépasser 500 caractères"),
+    justification: needsJustification 
+      ? z.instanceof(File, { message: "Le justificatif est requis pour ce type de congé" })
+      : z.instanceof(File).optional(),
+    managerId: z.string({
+      required_error: "Veuillez sélectionner un responsable hiérarchique",
+    }).min(1, "Veuillez sélectionner un responsable hiérarchique"),
+  });
+};
 
-type LeaveFormValues = z.infer<typeof leaveFormSchema>;
+type LeaveFormValues = z.infer<ReturnType<typeof createLeaveFormSchema>>;
 
 const leaveTypes = [
   { id: "legal", label: "Congés légaux" },
@@ -79,7 +85,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) 
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<LeaveFormValues>({
-    resolver: zodResolver(leaveFormSchema),
+    resolver: zodResolver(createLeaveFormSchema()),
     defaultValues: {
       days: 1,
       reason: "",
@@ -89,7 +95,28 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) 
   const selectedType = form.watch("type");
   const needsJustification = selectedType && selectedType !== "legal";
   
+  // Mise à jour du schéma de validation quand le type change
+  React.useEffect(() => {
+    if (selectedType) {
+      const newSchema = createLeaveFormSchema(selectedType);
+      form.clearErrors();
+      // Re-validate the form with the new schema
+      setTimeout(() => {
+        form.trigger();
+      }, 0);
+    }
+  }, [selectedType, form]);
+  
   const onSubmit = async (data: LeaveFormValues) => {
+    // Validation manuelle supplémentaire pour le justificatif
+    if (needsJustification && !file) {
+      form.setError("justification", {
+        type: "manual",
+        message: "Le justificatif est requis pour ce type de congé"
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
@@ -122,6 +149,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) 
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
       form.setValue("justification", e.target.files[0]);
+      form.clearErrors("justification");
     }
   };
 
@@ -270,14 +298,16 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) 
           )}
         />
         
-        {/* Justificatif (conditionnel) */}
+        {/* Justificatif (conditionnel et obligatoire) */}
         {needsJustification && (
           <FormField
             control={form.control}
             name="justification"
             render={({ field: { value, onChange, ...fieldProps } }) => (
               <FormItem>
-                <FormLabel>Justificatif</FormLabel>
+                <FormLabel>
+                  Justificatif <span className="text-red-500">*</span>
+                </FormLabel>
                 <FormControl>
                   <div className="flex items-center gap-2">
                     <Input
