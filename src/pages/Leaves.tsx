@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -68,7 +69,7 @@ const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
       isLegal: item.isLegal || false
     }));
   } else {
-    // Utiliser l'API pour récupérer les demandes de congés à valider
+    // Utiliser l'API pour récupérer uniquement les demandes de congés à valider
     const response = await apiClient.get('/demandes-a-valider');
     
     // Mapper les données de l'API vers le format attendu par l'interface
