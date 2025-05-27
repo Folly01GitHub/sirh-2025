@@ -189,7 +189,7 @@ const Leaves = () => {
           >
             <TabsList className="grid w-full md:w-[400px] grid-cols-2">
               <TabsTrigger value="self">Mes congés</TabsTrigger>
-              {isManager && <TabsTrigger value="team">Congés à valider</TabsTrigger>}
+              <TabsTrigger value="team">Congés à valider</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
