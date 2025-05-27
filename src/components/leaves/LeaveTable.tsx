@@ -138,6 +138,16 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                     </>
                   ) : (
                     <>
+                      {leave.hasAttachment && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDownload(leave.id)}
+                          title="Télécharger justificatif"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"
@@ -156,16 +166,6 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                       >
                         <XCircle className="h-4 w-4" />
                       </Button>
-                      {leave.hasAttachment && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDownload(leave.id)}
-                          title="Télécharger justificatif"
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      )}
                       <Button
                         variant="ghost"
                         size="icon"
