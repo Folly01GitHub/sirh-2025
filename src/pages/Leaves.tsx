@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -36,6 +35,16 @@ interface LeaveItem {
 
 interface ApiLeaveItem {
   id: string;
+  date_debut: string;
+  date_fin: string;
+  jours_pris: number;
+  statut: string;
+  isLegal: boolean;
+}
+
+interface ApiTeamLeaveItem {
+  id: string;
+  demandeur: string;
   date_debut: string;
   date_fin: string;
   jours_pris: number;
@@ -84,31 +93,26 @@ const fetchMyLeaves = async (): Promise<LeaveItem[]> => {
 };
 
 const fetchTeamLeaves = async (): Promise<LeaveItem[]> => {
-  // Mock data for team leaves - would be replaced with actual API calls
-  return [
-    { 
-      id: '003', 
-      requester: 'Jean Dupont',
-      type: 'Congés légaux', 
-      startDate: '20/05/2024', 
-      endDate: '22/05/2024', 
-      days: 3,
-      status: 'pending', 
-      hasAttachment: true,
-      reason: 'Vacances familiales'
-    },
-    { 
-      id: '007', 
-      requester: 'Sophie Martin',
-      type: 'Congés sans solde', 
-      startDate: '01/06/2024', 
-      endDate: '15/06/2024', 
-      days: 10,
-      status: 'pending', 
-      hasAttachment: false,
-      reason: 'Voyage personnel important'
-    }
-  ];
+  try {
+    const response = await apiClient.get('/demandes-a-valider');
+    console.log('API Response for team leaves:', response.data);
+    
+    // Transform API data to match LeaveItem interface
+    return response.data.map((item: ApiTeamLeaveItem) => ({
+      id: item.id,
+      requester: item.demandeur,
+      type: item.isLegal ? 'Congés légaux' : 'Congés sans solde',
+      startDate: item.date_debut,
+      endDate: item.date_fin,
+      days: item.jours_pris,
+      status: item.statut as LeaveItem['status'],
+      hasAttachment: !item.isLegal, // Show attachment for non-legal leaves
+      isLegal: item.isLegal
+    }));
+  } catch (error) {
+    console.error('Error fetching team leaves:', error);
+    return [];
+  }
 };
 
 const Leaves = () => {
