@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -53,23 +52,42 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
   };
 
   const renderStatusBadge = (status: string) => {
-    switch (status) {
-      case 'approved':
-      case 'Acceptée':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Acceptée</Badge>;
-      case 'pending':
-        return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">En attente</Badge>;
-      case 'rejected':
-      case 'Refusée':
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Refusée</Badge>;
-      case 'Niveau responsable':
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Niveau responsable</Badge>;
-      case 'Niveau RH':
-        return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">Niveau RH</Badge>;
-      case 'Annulée':
-        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">Annulée</Badge>;
-      default:
-        return <Badge variant="outline">Inconnu</Badge>;
+    if (activeFilter === 'self') {
+      // For "Mes congés" section, display raw status with color coding
+      switch (status) {
+        case 'Niveau responsable':
+          return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Niveau responsable</Badge>;
+        case 'Niveau RH':
+          return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">Niveau RH</Badge>;
+        case 'Annulée':
+          return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">Annulée</Badge>;
+        case 'Acceptée':
+          return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Acceptée</Badge>;
+        case 'Refusée':
+          return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Refusée</Badge>;
+        default:
+          return <Badge variant="outline">{status}</Badge>;
+      }
+    } else {
+      // For "Congés à valider" section, keep existing logic
+      switch (status) {
+        case 'approved':
+        case 'Acceptée':
+          return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Acceptée</Badge>;
+        case 'pending':
+          return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">En attente</Badge>;
+        case 'rejected':
+        case 'Refusée':
+          return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Refusée</Badge>;
+        case 'Niveau responsable':
+          return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Niveau responsable</Badge>;
+        case 'Niveau RH':
+          return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">Niveau RH</Badge>;
+        case 'Annulée':
+          return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">Annulée</Badge>;
+        default:
+          return <Badge variant="outline">Inconnu</Badge>;
+      }
     }
   };
 
