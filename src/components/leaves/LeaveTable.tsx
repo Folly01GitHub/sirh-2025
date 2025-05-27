@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +12,7 @@ interface LeaveItem {
   startDate: string;
   endDate: string;
   days: number;
-  status: 'approved' | 'pending' | 'rejected';
+  status: string; // Changé pour accepter n'importe quelle valeur de statut
   hasAttachment: boolean;
   requester?: string;
   reason?: string;
@@ -52,15 +51,17 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
   };
 
   const renderStatusBadge = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Validé</Badge>;
-      case 'pending':
-        return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">En attente</Badge>;
-      case 'rejected':
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Rejeté</Badge>;
-      default:
-        return <Badge variant="outline">Inconnu</Badge>;
+    // Afficher le statut tel qu'il est renvoyé par l'API
+    const statusLower = status?.toLowerCase();
+    
+    if (statusLower === 'approved' || statusLower === 'validé' || statusLower === 'approuvé') {
+      return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">{status}</Badge>;
+    } else if (statusLower === 'pending' || statusLower === 'en attente') {
+      return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">{status}</Badge>;
+    } else if (statusLower === 'rejected' || statusLower === 'rejeté' || statusLower === 'refusé') {
+      return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">{status}</Badge>;
+    } else {
+      return <Badge variant="outline">{status}</Badge>;
     }
   };
 
@@ -106,7 +107,7 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                 <TableCell className="text-right space-x-2">
                   {activeFilter === 'self' ? (
                     <>
-                      {leave.status === 'pending' && (
+                      {(leave.status?.toLowerCase() === 'pending' || leave.status?.toLowerCase() === 'en attente') && (
                         <Button
                           variant="ghost"
                           size="icon"
