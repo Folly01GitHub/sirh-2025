@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -144,7 +145,7 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       )}
-                      {leave.hasAttachment && (
+                      {leave.isLegal === false && (
                         <Button
                           variant="ghost"
                           size="icon"
