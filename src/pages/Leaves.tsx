@@ -51,7 +51,7 @@ const fetchLeaveStats = async (filter: string): Promise<LeaveStats> => {
   }
 };
 
-const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
+const fetchLeaves = async (filter: string, userId?: string): Promise<LeaveItem[]> => {
   if (filter === 'self') {
     // Utiliser l'API pour récupérer les demandes de congés de l'utilisateur
     const response = await apiClient.get('/demandes-conges');
@@ -71,8 +71,13 @@ const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
     // Récupérer uniquement les demandes à valider via l'API dédiée
     const response = await apiClient.get('/demandes-a-valider');
     
+    // Filtrer pour exclure les demandes de l'utilisateur connecté
+    const filteredData = response.data.filter((item: any) => 
+      item.user_id?.toString() !== userId?.toString()
+    );
+    
     // Mapper les données de l'API vers le format attendu par l'interface
-    return response.data.map((item: any) => ({
+    return filteredData.map((item: any) => ({
       id: item.id?.toString() || '',
       requester: item.demandeur || '',
       type: item.isLegal ? 'Congés légaux' : 'Autres congés',
@@ -108,8 +113,8 @@ const Leaves = () => {
     data: leaves,
     isLoading: leavesLoading
   } = useQuery({
-    queryKey: ['leaves', activeFilter],
-    queryFn: () => fetchLeaves(activeFilter)
+    queryKey: ['leaves', activeFilter, user?.id],
+    queryFn: () => fetchLeaves(activeFilter, user?.id)
   });
   
   const handleFilterChange = (value: string) => {
