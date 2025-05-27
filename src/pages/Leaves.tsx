@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -52,12 +53,16 @@ const fetchLeaveStats = async (filter: string): Promise<LeaveStats> => {
 };
 
 const fetchLeaves = async (filter: string, userId?: string): Promise<LeaveItem[]> => {
+  console.log('🔍 fetchLeaves called with:', { filter, userId });
+  
   if (filter === 'self') {
+    console.log('📋 Fetching "Mes congés" from /demandes-conges');
     // Utiliser l'API pour récupérer les demandes de congés de l'utilisateur
     const response = await apiClient.get('/demandes-conges');
+    console.log('✅ API response for /demandes-conges:', response.data);
     
     // Mapper les données de l'API vers le format attendu par l'interface
-    return response.data.map((item: any) => ({
+    const mappedData = response.data.map((item: any) => ({
       id: item.id?.toString() || '',
       type: item.isLegal ? 'Congés légaux' : 'Autres congés',
       startDate: item.date_debut || '',
@@ -67,17 +72,37 @@ const fetchLeaves = async (filter: string, userId?: string): Promise<LeaveItem[]
       hasAttachment: false,
       isLegal: item.isLegal || false
     }));
-  } else {
-    // Récupérer uniquement les demandes à valider via l'API dédiée
-    const response = await apiClient.get('/demandes-a-valider');
     
-    // Filtrer pour exclure les demandes de l'utilisateur connecté
-    const filteredData = response.data.filter((item: any) => 
-      item.user_id?.toString() !== userId?.toString()
+    console.log('📊 Mapped data for "Mes congés":', mappedData);
+    return mappedData;
+  } else {
+    console.log('🔎 Fetching "Congés à valider" from /demandes-a-valider');
+    // Récupérer UNIQUEMENT les demandes à valider via l'API dédiée
+    const response = await apiClient.get('/demandes-a-valider');
+    console.log('✅ API response for /demandes-a-valider:', response.data);
+    
+    // Vérifier si les données contiennent des demandes de l'utilisateur connecté
+    const userRequests = response.data.filter((item: any) => 
+      item.user_id?.toString() === userId?.toString()
     );
     
+    if (userRequests.length > 0) {
+      console.warn('⚠️ ATTENTION: Des demandes de l\'utilisateur connecté sont présentes dans /demandes-a-valider:', userRequests);
+    }
+    
+    // Filtrer pour exclure les demandes de l'utilisateur connecté (sécurité côté client)
+    const filteredData = response.data.filter((item: any) => {
+      const isOwnRequest = item.user_id?.toString() === userId?.toString();
+      if (isOwnRequest) {
+        console.log('🚫 Filtering out own request:', item);
+      }
+      return !isOwnRequest;
+    });
+    
+    console.log(`🔽 Filtered ${response.data.length} requests to ${filteredData.length} (excluded ${response.data.length - filteredData.length} own requests)`);
+    
     // Mapper les données de l'API vers le format attendu par l'interface
-    return filteredData.map((item: any) => ({
+    const mappedData = filteredData.map((item: any) => ({
       id: item.id?.toString() || '',
       requester: item.demandeur || '',
       type: item.isLegal ? 'Congés légaux' : 'Autres congés',
@@ -89,6 +114,9 @@ const fetchLeaves = async (filter: string, userId?: string): Promise<LeaveItem[]
       isLegal: item.isLegal || false,
       reason: ''
     }));
+    
+    console.log('📊 Final mapped data for "Congés à valider":', mappedData);
+    return mappedData;
   }
 };
 
@@ -98,8 +126,11 @@ const Leaves = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
+  console.log('👤 Current user:', user);
+  
   // Determine if the user is a manager to show the validations section
   const isManager = user?.role === 'admin' || user?.isManager;
+  console.log('🔐 Is manager:', isManager);
   
   const { 
     data: stats,
@@ -111,13 +142,22 @@ const Leaves = () => {
   
   const {
     data: leaves,
-    isLoading: leavesLoading
+    isLoading: leavesLoading,
+    error: leavesError
   } = useQuery({
     queryKey: ['leaves', activeFilter, user?.id],
     queryFn: () => fetchLeaves(activeFilter, user?.id)
   });
   
+  console.log('📋 Query result:', { 
+    activeFilter, 
+    leavesCount: leaves?.length, 
+    isLoading: leavesLoading, 
+    error: leavesError 
+  });
+  
   const handleFilterChange = (value: string) => {
+    console.log('🔄 Filter changed from', activeFilter, 'to', value);
     setActiveFilter(value);
     setSearchTerm('');
   };
