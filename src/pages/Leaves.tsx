@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -53,71 +52,43 @@ const fetchLeaveStats = async (filter: string): Promise<LeaveStats> => {
 };
 
 const fetchLeaves = async (filter: string, userId?: string): Promise<LeaveItem[]> => {
-  console.log('fetchLeaves called with:', { filter, userId });
-  
   if (filter === 'self') {
-    try {
-      // Utiliser l'API pour récupérer les demandes de congés de l'utilisateur
-      const response = await apiClient.get('/demandes-conges');
-      console.log('API /demandes-conges response:', response.data);
-      
-      // Mapper les données de l'API vers le format attendu par l'interface
-      const mappedData = response.data.map((item: any) => ({
-        id: item.id?.toString() || '',
-        type: item.isLegal ? 'Congés légaux' : 'Autres congés',
-        startDate: item.date_debut || '',
-        endDate: item.date_fin || '',
-        days: item.jours_pris || 0,
-        status: item.statut,
-        hasAttachment: false,
-        isLegal: item.isLegal || false
-      }));
-      
-      console.log('Mapped data for "Mes congés":', mappedData);
-      return mappedData;
-    } catch (error) {
-      console.error('Error fetching user leaves:', error);
-      // Return empty array on error to prevent UI crash
-      return [];
-    }
+    // Utiliser l'API pour récupérer les demandes de congés de l'utilisateur
+    const response = await apiClient.get('/demandes-conges');
+    
+    // Mapper les données de l'API vers le format attendu par l'interface
+    return response.data.map((item: any) => ({
+      id: item.id?.toString() || '',
+      type: item.isLegal ? 'Congés légaux' : 'Autres congés',
+      startDate: item.date_debut || '',
+      endDate: item.date_fin || '',
+      days: item.jours_pris || 0,
+      status: item.statut,
+      hasAttachment: false,
+      isLegal: item.isLegal || false
+    }));
   } else {
-    try {
-      // Récupérer uniquement les demandes à valider via l'API dédiée
-      const response = await apiClient.get('/demandes-a-valider');
-      console.log('API /demandes-a-valider response:', response.data);
-      console.log('Current user ID for filtering:', userId);
-      
-      // Filtrer pour exclure les demandes de l'utilisateur connecté
-      const filteredData = response.data.filter((item: any) => {
-        const itemUserId = item.user_id?.toString();
-        const currentUserId = userId?.toString();
-        console.log('Comparing user IDs:', { itemUserId, currentUserId, shouldExclude: itemUserId === currentUserId });
-        return itemUserId !== currentUserId;
-      });
-      
-      console.log('Filtered data for "Congés à valider":', filteredData);
-      
-      // Mapper les données de l'API vers le format attendu par l'interface
-      const mappedData = filteredData.map((item: any) => ({
-        id: item.id?.toString() || '',
-        requester: item.demandeur || '',
-        type: item.isLegal ? 'Congés légaux' : 'Autres congés',
-        startDate: item.date_debut || '',
-        endDate: item.date_fin || '',
-        days: item.jours_pris || 0,
-        status: item.statut || 'pending',
-        hasAttachment: false,
-        isLegal: item.isLegal || false,
-        reason: ''
-      }));
-      
-      console.log('Final mapped data for "Congés à valider":', mappedData);
-      return mappedData;
-    } catch (error) {
-      console.error('Error fetching team leaves:', error);
-      // Return empty array on error to prevent UI crash
-      return [];
-    }
+    // Récupérer uniquement les demandes à valider via l'API dédiée
+    const response = await apiClient.get('/demandes-a-valider');
+    
+    // Filtrer pour exclure les demandes de l'utilisateur connecté
+    const filteredData = response.data.filter((item: any) => 
+      item.user_id?.toString() !== userId?.toString()
+    );
+    
+    // Mapper les données de l'API vers le format attendu par l'interface
+    return filteredData.map((item: any) => ({
+      id: item.id?.toString() || '',
+      requester: item.demandeur || '',
+      type: item.isLegal ? 'Congés légaux' : 'Autres congés',
+      startDate: item.date_debut || '',
+      endDate: item.date_fin || '',
+      days: item.jours_pris || 0,
+      status: item.statut || 'pending',
+      hasAttachment: false,
+      isLegal: item.isLegal || false,
+      reason: ''
+    }));
   }
 };
 
@@ -126,8 +97,6 @@ const Leaves = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const { user } = useAuth();
   const navigate = useNavigate();
-  
-  console.log('Current user in Leaves component:', user);
   
   // Determine if the user is a manager to show the validations section
   const isManager = user?.role === 'admin' || user?.isManager;
@@ -142,18 +111,13 @@ const Leaves = () => {
   
   const {
     data: leaves,
-    isLoading: leavesLoading,
-    error: leavesError
+    isLoading: leavesLoading
   } = useQuery({
     queryKey: ['leaves', activeFilter, user?.id],
-    queryFn: () => fetchLeaves(activeFilter, user?.id),
-    retry: 1 // Reduce retry attempts for faster feedback
+    queryFn: () => fetchLeaves(activeFilter, user?.id)
   });
   
-  console.log('Query results:', { leaves, leavesLoading, leavesError });
-  
   const handleFilterChange = (value: string) => {
-    console.log('Filter changed from', activeFilter, 'to', value);
     setActiveFilter(value);
     setSearchTerm('');
   };
@@ -237,14 +201,6 @@ const Leaves = () => {
             />
           </div>
         </div>
-        
-        {leavesError && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-            <p className="text-red-600">
-              Erreur lors du chargement des données. Veuillez vous reconnecter.
-            </p>
-          </div>
-        )}
         
         <LeaveTable 
           leaves={filteredLeaves || []}
