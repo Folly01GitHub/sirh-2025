@@ -12,7 +12,7 @@ interface LeaveItem {
   startDate: string;
   endDate: string;
   days: number;
-  status: string; // Changé pour accepter n'importe quelle valeur de statut
+  status: string;
   hasAttachment: boolean;
   requester?: string;
   reason?: string;
@@ -51,15 +51,18 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
   };
 
   const renderStatusBadge = (status: string) => {
-    // Afficher le statut tel qu'il est renvoyé par l'API
     const statusLower = status?.toLowerCase();
     
-    if (statusLower === 'approved' || statusLower === 'validé' || statusLower === 'approuvé') {
+    if (statusLower === 'acceptée') {
       return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">{status}</Badge>;
-    } else if (statusLower === 'pending' || statusLower === 'en attente') {
-      return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">{status}</Badge>;
-    } else if (statusLower === 'rejected' || statusLower === 'rejeté' || statusLower === 'refusé') {
+    } else if (statusLower === 'niveau responsable') {
+      return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">{status}</Badge>;
+    } else if (statusLower === 'niveau rh') {
+      return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">{status}</Badge>;
+    } else if (statusLower === 'refusée') {
       return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">{status}</Badge>;
+    } else if (statusLower === 'annulée') {
+      return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">{status}</Badge>;
     } else {
       return <Badge variant="outline">{status}</Badge>;
     }
@@ -107,7 +110,7 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                 <TableCell className="text-right space-x-2">
                   {activeFilter === 'self' ? (
                     <>
-                      {(leave.status?.toLowerCase() === 'pending' || leave.status?.toLowerCase() === 'en attente') && (
+                      {(leave.status?.toLowerCase() === 'niveau responsable' || leave.status?.toLowerCase() === 'niveau rh') && (
                         <Button
                           variant="ghost"
                           size="icon"
