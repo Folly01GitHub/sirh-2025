@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -134,17 +133,6 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                 <TableCell className="text-right space-x-2">
                   {activeFilter === 'self' ? (
                     <>
-                      {(leave.status === 'pending' || leave.status === 'Niveau responsable' || leave.status === 'Niveau RH') && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(leave.id)}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                          title="Supprimer"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
                       {leave.isLegal === false && (
                         <Button
                           variant="ghost"
