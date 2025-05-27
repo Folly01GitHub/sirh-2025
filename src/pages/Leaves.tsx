@@ -52,16 +52,39 @@ interface ApiTeamLeaveItem {
   isLegal: boolean;
 }
 
+interface ApiLeaveStatsResponse {
+  restant: number;
+  pris: number;
+  anciennete: number;
+}
+
 const fetchLeaveStats = async (filter: string): Promise<LeaveStats> => {
-  // Mock data for now - would be replaced with actual API calls
   if (filter === 'self') {
-    return {
-      total: 30,
-      remaining: 12,
-      used: 8,
-      seniority: 10
-    };
+    try {
+      const response = await apiClient.get('/conge-stats');
+      console.log('API Response for leave stats:', response.data);
+      
+      const apiStats: ApiLeaveStatsResponse = response.data;
+      
+      // Transform API data to match LeaveStats interface
+      return {
+        total: 30, // This could be calculated as restant + pris or provided by API
+        remaining: apiStats.restant,
+        used: apiStats.pris,
+        seniority: apiStats.anciennete
+      };
+    } catch (error) {
+      console.error('Error fetching leave stats:', error);
+      // Return default values on error
+      return {
+        total: 30,
+        remaining: 0,
+        used: 0,
+        seniority: 0
+      };
+    }
   } else {
+    // Mock data for team stats - would be replaced with actual API calls
     return {
       total: 15,
       approved: 8,
