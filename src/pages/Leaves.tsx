@@ -58,6 +58,12 @@ interface ApiLeaveStatsResponse {
   anciennete: number;
 }
 
+interface ApiTeamLeaveStatsResponse {
+  total: number;
+  valide: number;
+  enAttente: number;
+}
+
 const fetchLeaveStats = async (filter: string): Promise<LeaveStats> => {
   if (filter === 'self') {
     try {
@@ -84,12 +90,27 @@ const fetchLeaveStats = async (filter: string): Promise<LeaveStats> => {
       };
     }
   } else {
-    // Mock data for team stats - would be replaced with actual API calls
-    return {
-      total: 15,
-      approved: 8,
-      pending: 7
-    };
+    try {
+      const response = await apiClient.get('/conge-team-stats');
+      console.log('API Response for team leave stats:', response.data);
+      
+      const apiTeamStats: ApiTeamLeaveStatsResponse = response.data;
+      
+      // Transform API data to match LeaveStats interface
+      return {
+        total: apiTeamStats.total,
+        approved: apiTeamStats.valide,
+        pending: apiTeamStats.enAttente
+      };
+    } catch (error) {
+      console.error('Error fetching team leave stats:', error);
+      // Return default values on error
+      return {
+        total: 0,
+        approved: 0,
+        pending: 0
+      };
+    }
   }
 };
 
