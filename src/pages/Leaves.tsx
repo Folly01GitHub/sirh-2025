@@ -77,29 +77,32 @@ const fetchLeaves = async (filter: string, userId?: string): Promise<LeaveItem[]
     return mappedData;
   } else {
     console.log('🔎 Fetching "Congés à valider" from /demandes-a-valider');
+    
+    // D'abord, récupérer toutes les demandes de "/demandes-conges" pour les exclure
+    let demandesCongesIds: string[] = [];
+    try {
+      const demandesCongesResponse = await apiClient.get('/demandes-conges');
+      demandesCongesIds = demandesCongesResponse.data.map((item: any) => item.id?.toString());
+      console.log('📋 IDs from /demandes-conges to exclude:', demandesCongesIds);
+    } catch (error) {
+      console.warn('⚠️ Erreur lors de la récupération de /demandes-conges:', error);
+    }
+    
     // Récupérer UNIQUEMENT les demandes à valider via l'API dédiée
     const response = await apiClient.get('/demandes-a-valider');
     console.log('✅ API response for /demandes-a-valider:', response.data);
     
-    // Vérifier si les données contiennent des demandes de l'utilisateur connecté
-    const userRequests = response.data.filter((item: any) => 
-      item.user_id?.toString() === userId?.toString()
-    );
-    
-    if (userRequests.length > 0) {
-      console.warn('⚠️ ATTENTION: Des demandes de l\'utilisateur connecté sont présentes dans /demandes-a-valider:', userRequests);
-    }
-    
-    // Filtrer pour exclure les demandes de l'utilisateur connecté (sécurité côté client)
+    // Filtrer pour exclure TOUTES les demandes qui sont dans "/demandes-conges"
     const filteredData = response.data.filter((item: any) => {
-      const isOwnRequest = item.user_id?.toString() === userId?.toString();
-      if (isOwnRequest) {
-        console.log('🚫 Filtering out own request:', item);
+      const itemId = item.id?.toString();
+      const isInDemandesConges = demandesCongesIds.includes(itemId);
+      if (isInDemandesConges) {
+        console.log('🚫 Filtering out request from /demandes-conges:', item);
       }
-      return !isOwnRequest;
+      return !isInDemandesConges;
     });
     
-    console.log(`🔽 Filtered ${response.data.length} requests to ${filteredData.length} (excluded ${response.data.length - filteredData.length} own requests)`);
+    console.log(`🔽 Filtered ${response.data.length} requests to ${filteredData.length} (excluded ${response.data.length - filteredData.length} requests from /demandes-conges)`);
     
     // Mapper les données de l'API vers le format attendu par l'interface
     const mappedData = filteredData.map((item: any) => ({
