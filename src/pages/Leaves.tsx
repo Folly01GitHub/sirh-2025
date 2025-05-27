@@ -55,7 +55,17 @@ const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
   if (filter === 'self') {
     // Utiliser l'API pour récupérer les demandes de congés de l'utilisateur
     const response = await apiClient.get('/demandes-conges');
-    return response.data;
+    
+    // Mapper les données de l'API vers le format attendu par l'interface
+    return response.data.map((item: any) => ({
+      id: item.id?.toString() || '',
+      type: item.isLegal ? 'Congés légaux' : 'Autres congés',
+      startDate: item.date_debut || '',
+      endDate: item.date_fin || '',
+      days: item.jours_pris || 0,
+      status: item.statut || 'pending',
+      hasAttachment: false // À adapter selon vos besoins
+    }));
   } else {
     // Mock data for team view - would be replaced with actual API calls
     return [
