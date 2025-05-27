@@ -63,7 +63,7 @@ const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
       startDate: item.date_debut || '',
       endDate: item.date_fin || '',
       days: item.jours_pris || 0,
-      status: item.statut || 'pending',
+      status: item.statut, // Utiliser directement le statut de l'API
       hasAttachment: false // À adapter selon vos besoins
     }));
   } else {
