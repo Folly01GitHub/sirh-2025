@@ -27,10 +27,20 @@ interface LeaveItem {
   startDate: string;
   endDate: string;
   days: number;
-  status: 'approved' | 'pending' | 'rejected';
+  status: 'approved' | 'pending' | 'rejected' | 'Niveau responsable' | 'Niveau RH' | 'Annulée' | 'Acceptée' | 'Refusée';
   hasAttachment: boolean;
   requester?: string;
   reason?: string;
+  isLegal?: boolean;
+}
+
+interface ApiLeaveItem {
+  id: string;
+  date_debut: string;
+  date_fin: string;
+  jours_pris: number;
+  statut: string;
+  isLegal: boolean;
 }
 
 const fetchLeaveStats = async (filter: string): Promise<LeaveStats> => {
@@ -51,55 +61,54 @@ const fetchLeaveStats = async (filter: string): Promise<LeaveStats> => {
   }
 };
 
-const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
-  // Mock data for now - would be replaced with actual API calls
-  if (filter === 'self') {
-    return [
-      { 
-        id: '001', 
-        type: 'Congés légaux', 
-        startDate: '01/05/2024', 
-        endDate: '10/05/2024', 
-        days: 7,
-        status: 'approved', 
-        hasAttachment: false 
-      },
-      { 
-        id: '002', 
-        type: 'Congés sans solde', 
-        startDate: '15/05/2024', 
-        endDate: '18/05/2024', 
-        days: 3,
-        status: 'pending', 
-        hasAttachment: true 
-      }
-    ];
-  } else {
-    return [
-      { 
-        id: '003', 
-        requester: 'Jean Dupont',
-        type: 'Congés légaux', 
-        startDate: '20/05/2024', 
-        endDate: '22/05/2024', 
-        days: 3,
-        status: 'pending', 
-        hasAttachment: true,
-        reason: 'Vacances familiales'
-      },
-      { 
-        id: '007', 
-        requester: 'Sophie Martin',
-        type: 'Congés sans solde', 
-        startDate: '01/06/2024', 
-        endDate: '15/06/2024', 
-        days: 10,
-        status: 'pending', 
-        hasAttachment: false,
-        reason: 'Voyage personnel important'
-      }
-    ];
+const fetchMyLeaves = async (): Promise<LeaveItem[]> => {
+  try {
+    const response = await apiClient.get('/demandes-conges');
+    console.log('API Response for my leaves:', response.data);
+    
+    // Transform API data to match LeaveItem interface
+    return response.data.map((item: ApiLeaveItem) => ({
+      id: item.id,
+      type: item.isLegal ? 'Congés légaux' : 'Congés sans solde',
+      startDate: item.date_debut,
+      endDate: item.date_fin,
+      days: item.jours_pris,
+      status: item.statut as LeaveItem['status'],
+      hasAttachment: false, // Not provided by API
+      isLegal: item.isLegal
+    }));
+  } catch (error) {
+    console.error('Error fetching my leaves:', error);
+    return [];
   }
+};
+
+const fetchTeamLeaves = async (): Promise<LeaveItem[]> => {
+  // Mock data for team leaves - would be replaced with actual API calls
+  return [
+    { 
+      id: '003', 
+      requester: 'Jean Dupont',
+      type: 'Congés légaux', 
+      startDate: '20/05/2024', 
+      endDate: '22/05/2024', 
+      days: 3,
+      status: 'pending', 
+      hasAttachment: true,
+      reason: 'Vacances familiales'
+    },
+    { 
+      id: '007', 
+      requester: 'Sophie Martin',
+      type: 'Congés sans solde', 
+      startDate: '01/06/2024', 
+      endDate: '15/06/2024', 
+      days: 10,
+      status: 'pending', 
+      hasAttachment: false,
+      reason: 'Voyage personnel important'
+    }
+  ];
 };
 
 const Leaves = () => {
@@ -107,9 +116,6 @@ const Leaves = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const { user } = useAuth();
   const navigate = useNavigate();
-  
-  // Determine if the user is a manager to show the validations section
-  const isManager = user?.role === 'admin' || user?.isManager;
   
   const { 
     data: stats,
@@ -124,7 +130,7 @@ const Leaves = () => {
     isLoading: leavesLoading
   } = useQuery({
     queryKey: ['leaves', activeFilter],
-    queryFn: () => fetchLeaves(activeFilter)
+    queryFn: () => activeFilter === 'self' ? fetchMyLeaves() : fetchTeamLeaves()
   });
   
   const handleFilterChange = (value: string) => {

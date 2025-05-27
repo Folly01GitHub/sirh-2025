@@ -13,10 +13,11 @@ interface LeaveItem {
   startDate: string;
   endDate: string;
   days: number;
-  status: 'approved' | 'pending' | 'rejected';
+  status: 'approved' | 'pending' | 'rejected' | 'Niveau responsable' | 'Niveau RH' | 'Annulée' | 'Acceptée' | 'Refusée';
   hasAttachment: boolean;
   requester?: string;
   reason?: string;
+  isLegal?: boolean;
 }
 
 interface LeaveTableProps {
@@ -54,11 +55,19 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
   const renderStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Validé</Badge>;
+      case 'Acceptée':
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Acceptée</Badge>;
       case 'pending':
         return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">En attente</Badge>;
       case 'rejected':
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Rejeté</Badge>;
+      case 'Refusée':
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Refusée</Badge>;
+      case 'Niveau responsable':
+        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Niveau responsable</Badge>;
+      case 'Niveau RH':
+        return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">Niveau RH</Badge>;
+      case 'Annulée':
+        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">Annulée</Badge>;
       default:
         return <Badge variant="outline">Inconnu</Badge>;
     }
@@ -106,7 +115,7 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                 <TableCell className="text-right space-x-2">
                   {activeFilter === 'self' ? (
                     <>
-                      {leave.status === 'pending' && (
+                      {(leave.status === 'pending' || leave.status === 'Niveau responsable' || leave.status === 'Niveau RH') && (
                         <Button
                           variant="ghost"
                           size="icon"
