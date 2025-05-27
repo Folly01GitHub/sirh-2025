@@ -29,7 +29,6 @@ interface LeaveItem {
   days: number;
   status: 'approved' | 'pending' | 'rejected';
   hasAttachment: boolean;
-  isLegal: boolean;
   requester?: string;
   reason?: string;
 }
@@ -52,74 +51,54 @@ const fetchLeaveStats = async (filter: string): Promise<LeaveStats> => {
   }
 };
 
-const fetchLeaves = async (filter: string, userId?: string): Promise<LeaveItem[]> => {
-  console.log('🔍 fetchLeaves called with:', { filter, userId });
-  
+const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
+  // Mock data for now - would be replaced with actual API calls
   if (filter === 'self') {
-    console.log('📋 Fetching "Mes congés" from /demandes-conges');
-    // Utiliser l'API pour récupérer les demandes de congés de l'utilisateur
-    const response = await apiClient.get('/demandes-conges');
-    console.log('✅ API response for /demandes-conges:', response.data);
-    
-    // Mapper les données de l'API vers le format attendu par l'interface
-    const mappedData = response.data.map((item: any) => ({
-      id: item.id?.toString() || '',
-      type: item.isLegal ? 'Congés légaux' : 'Autres congés',
-      startDate: item.date_debut || '',
-      endDate: item.date_fin || '',
-      days: item.jours_pris || 0,
-      status: item.statut,
-      hasAttachment: false,
-      isLegal: item.isLegal || false
-    }));
-    
-    console.log('📊 Mapped data for "Mes congés":', mappedData);
-    return mappedData;
-  } else {
-    console.log('🔎 Fetching "Congés à valider" from /demandes-a-valider');
-    
-    // D'abord, récupérer toutes les demandes de "/demandes-conges" pour les exclure
-    let demandesCongesIds: string[] = [];
-    try {
-      const demandesCongesResponse = await apiClient.get('/demandes-conges');
-      demandesCongesIds = demandesCongesResponse.data.map((item: any) => item.id?.toString());
-      console.log('📋 IDs from /demandes-conges to exclude:', demandesCongesIds);
-    } catch (error) {
-      console.warn('⚠️ Erreur lors de la récupération de /demandes-conges:', error);
-    }
-    
-    // Récupérer UNIQUEMENT les demandes à valider via l'API dédiée
-    const response = await apiClient.get('/demandes-a-valider');
-    console.log('✅ API response for /demandes-a-valider:', response.data);
-    
-    // Filtrer pour exclure TOUTES les demandes qui sont dans "/demandes-conges"
-    const filteredData = response.data.filter((item: any) => {
-      const itemId = item.id?.toString();
-      const isInDemandesConges = demandesCongesIds.includes(itemId);
-      if (isInDemandesConges) {
-        console.log('🚫 Filtering out request from /demandes-conges:', item);
+    return [
+      { 
+        id: '001', 
+        type: 'Congés légaux', 
+        startDate: '01/05/2024', 
+        endDate: '10/05/2024', 
+        days: 7,
+        status: 'approved', 
+        hasAttachment: false 
+      },
+      { 
+        id: '002', 
+        type: 'Congés sans solde', 
+        startDate: '15/05/2024', 
+        endDate: '18/05/2024', 
+        days: 3,
+        status: 'pending', 
+        hasAttachment: true 
       }
-      return !isInDemandesConges;
-    });
-    
-    console.log(`🔽 Filtered ${response.data.length} requests to ${filteredData.length} (excluded ${response.data.length - filteredData.length} requests from /demandes-conges)`);
-    
-    // Mapper les données de l'API vers le format attendu par l'interface
-    const mappedData = filteredData.map((item: any) => ({
-      id: item.id?.toString() || '',
-      requester: item.demandeur || '',
-      type: item.isLegal ? 'Congés légaux' : 'Autres congés',
-      startDate: item.date_debut || '',
-      endDate: item.date_fin || '',
-      days: item.jours_pris || 0,
-      status: item.statut || 'pending',
-      hasAttachment: false,
-      isLegal: item.isLegal || false,
-      reason: ''
-    }));
-    
-    console.log('📊 Final mapped data for "Congés à valider":', mappedData);
-    return mappedData;
+    ];
+  } else {
+    return [
+      { 
+        id: '003', 
+        requester: 'Jean Dupont',
+        type: 'Congés légaux', 
+        startDate: '20/05/2024', 
+        endDate: '22/05/2024', 
+        days: 3,
+        status: 'pending', 
+        hasAttachment: true,
+        reason: 'Vacances familiales'
+      },
+      { 
+        id: '007', 
+        requester: 'Sophie Martin',
+        type: 'Congés sans solde', 
+        startDate: '01/06/2024', 
+        endDate: '15/06/2024', 
+        days: 10,
+        status: 'pending', 
+        hasAttachment: false,
+        reason: 'Voyage personnel important'
+      }
+    ];
   }
 };
 
@@ -129,11 +108,8 @@ const Leaves = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  console.log('👤 Current user:', user);
-  
   // Determine if the user is a manager to show the validations section
   const isManager = user?.role === 'admin' || user?.isManager;
-  console.log('🔐 Is manager:', isManager);
   
   const { 
     data: stats,
@@ -145,22 +121,13 @@ const Leaves = () => {
   
   const {
     data: leaves,
-    isLoading: leavesLoading,
-    error: leavesError
+    isLoading: leavesLoading
   } = useQuery({
-    queryKey: ['leaves', activeFilter, user?.id],
-    queryFn: () => fetchLeaves(activeFilter, user?.id)
-  });
-  
-  console.log('📋 Query result:', { 
-    activeFilter, 
-    leavesCount: leaves?.length, 
-    isLoading: leavesLoading, 
-    error: leavesError 
+    queryKey: ['leaves', activeFilter],
+    queryFn: () => fetchLeaves(activeFilter)
   });
   
   const handleFilterChange = (value: string) => {
-    console.log('🔄 Filter changed from', activeFilter, 'to', value);
     setActiveFilter(value);
     setSearchTerm('');
   };

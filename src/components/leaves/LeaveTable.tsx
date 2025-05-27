@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -12,9 +13,8 @@ interface LeaveItem {
   startDate: string;
   endDate: string;
   days: number;
-  status: string;
+  status: 'approved' | 'pending' | 'rejected';
   hasAttachment: boolean;
-  isLegal: boolean;
   requester?: string;
   reason?: string;
 }
@@ -52,20 +52,15 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
   };
 
   const renderStatusBadge = (status: string) => {
-    const statusLower = status?.toLowerCase();
-    
-    if (statusLower === 'acceptée') {
-      return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">{status}</Badge>;
-    } else if (statusLower === 'niveau responsable') {
-      return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">{status}</Badge>;
-    } else if (statusLower === 'niveau rh') {
-      return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">{status}</Badge>;
-    } else if (statusLower === 'refusée') {
-      return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">{status}</Badge>;
-    } else if (statusLower === 'annulée') {
-      return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">{status}</Badge>;
-    } else {
-      return <Badge variant="outline">{status}</Badge>;
+    switch (status) {
+      case 'approved':
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Validé</Badge>;
+      case 'pending':
+        return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">En attente</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Rejeté</Badge>;
+      default:
+        return <Badge variant="outline">Inconnu</Badge>;
     }
   };
 
@@ -111,7 +106,18 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                 <TableCell className="text-right space-x-2">
                   {activeFilter === 'self' ? (
                     <>
-                      {!leave.isLegal && (
+                      {leave.status === 'pending' && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(leave.id)}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {leave.hasAttachment && (
                         <Button
                           variant="ghost"
                           size="icon"
