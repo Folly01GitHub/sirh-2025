@@ -51,7 +51,7 @@ const fetchLeaveStats = async (filter: string): Promise<LeaveStats> => {
   }
 };
 
-const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
+const fetchLeaves = async (filter: string, currentUserId?: number): Promise<LeaveItem[]> => {
   if (filter === 'self') {
     // Utiliser l'API pour récupérer les demandes de congés de l'utilisateur
     const response = await apiClient.get('/demandes-conges');
@@ -71,18 +71,20 @@ const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
     // Utiliser l'API pour récupérer les demandes de congés à valider
     const response = await apiClient.get('/demandes-a-valider');
     
-    // Mapper les données de l'API vers le format attendu par l'interface
-    return response.data.map((item: any) => ({
-      id: item.id?.toString() || '',
-      requester: item.demandeur || '',
-      type: item.isLegal ? 'Congés légaux' : 'Autres congés',
-      startDate: item.date_debut || '',
-      endDate: item.date_fin || '',
-      days: item.jours_pris || 0,
-      status: item.statut,
-      hasAttachment: false,
-      isLegal: item.isLegal || false
-    }));
+    // Filtrer pour exclure les demandes de l'utilisateur connecté et mapper les données
+    return response.data
+      .filter((item: any) => item.user_id !== currentUserId) // Exclure les demandes de l'utilisateur connecté
+      .map((item: any) => ({
+        id: item.id?.toString() || '',
+        requester: item.demandeur || '',
+        type: item.isLegal ? 'Congés légaux' : 'Autres congés',
+        startDate: item.date_debut || '',
+        endDate: item.date_fin || '',
+        days: item.jours_pris || 0,
+        status: item.statut,
+        hasAttachment: false,
+        isLegal: item.isLegal || false
+      }));
   }
 };
 
@@ -107,8 +109,8 @@ const Leaves = () => {
     data: leaves,
     isLoading: leavesLoading
   } = useQuery({
-    queryKey: ['leaves', activeFilter],
-    queryFn: () => fetchLeaves(activeFilter)
+    queryKey: ['leaves', activeFilter, user?.id],
+    queryFn: () => fetchLeaves(activeFilter, user?.id)
   });
   
   const handleFilterChange = (value: string) => {
