@@ -52,29 +52,12 @@ const fetchLeaveStats = async (filter: string): Promise<LeaveStats> => {
 };
 
 const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
-  // Mock data for now - would be replaced with actual API calls
   if (filter === 'self') {
-    return [
-      { 
-        id: '001', 
-        type: 'Congés légaux', 
-        startDate: '01/05/2024', 
-        endDate: '10/05/2024', 
-        days: 7,
-        status: 'approved', 
-        hasAttachment: false 
-      },
-      { 
-        id: '002', 
-        type: 'Congés sans solde', 
-        startDate: '15/05/2024', 
-        endDate: '18/05/2024', 
-        days: 3,
-        status: 'pending', 
-        hasAttachment: true 
-      }
-    ];
+    // Utiliser l'API pour récupérer les demandes de congés de l'utilisateur
+    const response = await apiClient.get('/demandes-conges');
+    return response.data;
   } else {
+    // Mock data for team view - would be replaced with actual API calls
     return [
       { 
         id: '003', 
