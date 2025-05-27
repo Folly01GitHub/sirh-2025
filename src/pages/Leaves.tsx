@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -69,33 +68,22 @@ const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
       isLegal: item.isLegal || false
     }));
   } else {
-    // Mock data for team view - would be replaced with actual API calls
-    return [
-      { 
-        id: '003', 
-        requester: 'Jean Dupont',
-        type: 'Congés légaux', 
-        startDate: '20/05/2024', 
-        endDate: '22/05/2024', 
-        days: 3,
-        status: 'pending', 
-        hasAttachment: true,
-        isLegal: true,
-        reason: 'Vacances familiales'
-      },
-      { 
-        id: '007', 
-        requester: 'Sophie Martin',
-        type: 'Congés sans solde', 
-        startDate: '01/06/2024', 
-        endDate: '15/06/2024', 
-        days: 10,
-        status: 'pending', 
-        hasAttachment: false,
-        isLegal: false,
-        reason: 'Voyage personnel important'
-      }
-    ];
+    // Récupérer uniquement les demandes à valider via l'API dédiée
+    const response = await apiClient.get('/demandes-a-valider');
+    
+    // Mapper les données de l'API vers le format attendu par l'interface
+    return response.data.map((item: any) => ({
+      id: item.id?.toString() || '',
+      requester: item.demandeur || '',
+      type: item.isLegal ? 'Congés légaux' : 'Autres congés',
+      startDate: item.date_debut || '',
+      endDate: item.date_fin || '',
+      days: item.jours_pris || 0,
+      status: item.statut || 'pending',
+      hasAttachment: false,
+      isLegal: item.isLegal || false,
+      reason: ''
+    }));
   }
 };
 
