@@ -29,6 +29,7 @@ interface LeaveItem {
   days: number;
   status: 'approved' | 'pending' | 'rejected';
   hasAttachment: boolean;
+  isLegal: boolean;
   requester?: string;
   reason?: string;
 }
@@ -63,8 +64,9 @@ const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
       startDate: item.date_debut || '',
       endDate: item.date_fin || '',
       days: item.jours_pris || 0,
-      status: item.statut, // Utiliser directement le statut de l'API
-      hasAttachment: false // À adapter selon vos besoins
+      status: item.statut,
+      hasAttachment: false,
+      isLegal: item.isLegal || false
     }));
   } else {
     // Mock data for team view - would be replaced with actual API calls
@@ -78,6 +80,7 @@ const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
         days: 3,
         status: 'pending', 
         hasAttachment: true,
+        isLegal: true,
         reason: 'Vacances familiales'
       },
       { 
@@ -89,6 +92,7 @@ const fetchLeaves = async (filter: string): Promise<LeaveItem[]> => {
         days: 10,
         status: 'pending', 
         hasAttachment: false,
+        isLegal: false,
         reason: 'Voyage personnel important'
       }
     ];
