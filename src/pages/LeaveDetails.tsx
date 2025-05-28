@@ -53,16 +53,45 @@ const LeaveDetails = () => {
   const leaveId = searchParams.get('id');
   const queryClient = useQueryClient();
 
+  console.log('🔍 CACHE DEBUG - LeaveDetails component loaded');
+  console.log('🔍 CACHE DEBUG - Leave ID from URL:', leaveId);
+
   // Get cached data from both queries
   const myLeaves = queryClient.getQueryData(['leaves', 'self']) as LeaveItem[] || [];
   const teamLeaves = queryClient.getQueryData(['leaves', 'team']) as LeaveItem[] || [];
   
+  console.log('🏪 CACHE DEBUG - My leaves from cache:', myLeaves);
+  console.log('🏪 CACHE DEBUG - My leaves count:', myLeaves.length);
+  console.log('🏪 CACHE DEBUG - My leaves IDs:', myLeaves.map(item => item.id));
+  
+  console.log('🏪 CACHE DEBUG - Team leaves from cache:', teamLeaves);
+  console.log('🏪 CACHE DEBUG - Team leaves count:', teamLeaves.length);
+  console.log('🏪 CACHE DEBUG - Team leaves IDs:', teamLeaves.map(item => item.id));
+  
   // Find the leave in either cache
   const leaveDetails = React.useMemo(() => {
-    if (!leaveId) return null;
+    if (!leaveId) {
+      console.log('❌ CACHE DEBUG - No leave ID provided');
+      return null;
+    }
     
     const allLeaves = [...myLeaves, ...teamLeaves];
-    return allLeaves.find(leave => leave.id === leaveId) || null;
+    console.log('🔄 CACHE DEBUG - Combined leaves:', allLeaves);
+    console.log('🔄 CACHE DEBUG - Combined leaves count:', allLeaves.length);
+    console.log('🔄 CACHE DEBUG - All combined IDs:', allLeaves.map(item => item.id));
+    console.log('🔍 CACHE DEBUG - Looking for ID:', leaveId);
+    
+    const foundLeave = allLeaves.find(leave => leave.id === leaveId);
+    console.log('🎯 CACHE DEBUG - Found leave:', foundLeave);
+    
+    if (!foundLeave) {
+      console.log('❌ CACHE DEBUG - No matching leave found for ID:', leaveId);
+      console.log('❌ CACHE DEBUG - Available IDs:', allLeaves.map(item => `"${item.id}"`));
+      console.log('❌ CACHE DEBUG - ID types:', allLeaves.map(item => `${item.id} (${typeof item.id})`));
+      console.log('❌ CACHE DEBUG - Search ID type:', `${leaveId} (${typeof leaveId})`);
+    }
+    
+    return foundLeave || null;
   }, [leaveId, myLeaves, teamLeaves]);
 
   const handleBack = () => {
@@ -109,6 +138,7 @@ const LeaveDetails = () => {
   };
 
   if (!leaveId) {
+    console.log('❌ CACHE DEBUG - Rendering "no ID" page');
     return (
       <div className="flex flex-col min-h-screen bg-[#f8f9fc]">
         <HRISNavbar />
@@ -124,6 +154,7 @@ const LeaveDetails = () => {
   }
 
   if (!leaveDetails) {
+    console.log('❌ CACHE DEBUG - Rendering "not found" page');
     return (
       <div className="flex flex-col min-h-screen bg-[#f8f9fc]">
         <HRISNavbar />
@@ -137,6 +168,8 @@ const LeaveDetails = () => {
       </div>
     );
   }
+
+  console.log('✅ CACHE DEBUG - Rendering details for leave:', leaveDetails);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8f9fc]">
