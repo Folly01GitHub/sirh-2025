@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -120,14 +119,36 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) 
     setIsSubmitting(true);
     
     try {
-      // Simuler un appel API avec un délai
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Créer FormData pour l'envoi multipart
+      const formData = new FormData();
       
-      console.log("Form data submitted:", data);
-      console.log("File:", file);
+      // Ajouter les champs requis selon les spécifications
+      formData.append('type_conges', data.type);
+      formData.append('motifs', data.reason);
+      formData.append('date_debut', format(data.startDate, 'yyyy-MM-dd'));
+      formData.append('nombre_jours', data.days.toString());
       
-      // Ici, vous feriez normalement un appel API pour soumettre les données
-      // await apiClient.post('/leave-request', formData);
+      // Ajouter le justificatif si présent
+      if (file) {
+        formData.append('justificatif', file);
+      }
+      
+      console.log("Submitting leave request with data:", {
+        type_conges: data.type,
+        motifs: data.reason,
+        date_debut: format(data.startDate, 'yyyy-MM-dd'),
+        nombre_jours: data.days,
+        justificatif: file?.name || 'No file'
+      });
+      
+      // Appel API vers l'endpoint spécifié
+      const response = await apiClient.post('/soumission-conge', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      console.log("Leave request submitted successfully:", response.data);
       
       toast.success("Demande de congé soumise avec succès");
       form.reset();
