@@ -132,7 +132,7 @@ const LeaveDetails = () => {
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle className="text-2xl font-bold text-gray-800">
-                    Demande de congé #{leaveDetails.id}
+                    Demande de congé
                   </CardTitle>
                   {leaveDetails.demandeur && (
                     <p className="text-gray-600 mt-1">
