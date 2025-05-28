@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
@@ -52,30 +53,16 @@ const LeaveDetails = () => {
   const leaveId = searchParams.get('id');
   const queryClient = useQueryClient();
 
-  console.log('LeaveDetails - leaveId from URL:', leaveId);
-
   // Get cached data from both queries
   const myLeaves = queryClient.getQueryData(['leaves', 'self']) as LeaveItem[] || [];
   const teamLeaves = queryClient.getQueryData(['leaves', 'team']) as LeaveItem[] || [];
   
-  console.log('LeaveDetails - myLeaves from cache:', myLeaves);
-  console.log('LeaveDetails - teamLeaves from cache:', teamLeaves);
-  
   // Find the leave in either cache
   const leaveDetails = React.useMemo(() => {
-    if (!leaveId) {
-      console.log('LeaveDetails - No leaveId provided');
-      return null;
-    }
+    if (!leaveId) return null;
     
     const allLeaves = [...myLeaves, ...teamLeaves];
-    console.log('LeaveDetails - All leaves combined:', allLeaves);
-    console.log('LeaveDetails - Looking for ID:', leaveId);
-    
-    const found = allLeaves.find(leave => leave.id === leaveId);
-    console.log('LeaveDetails - Found leave:', found);
-    
-    return found || null;
+    return allLeaves.find(leave => leave.id === leaveId) || null;
   }, [leaveId, myLeaves, teamLeaves]);
 
   const handleBack = () => {
@@ -143,12 +130,7 @@ const LeaveDetails = () => {
         <div className="container mx-auto p-6">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-800 mb-4">Demande introuvable</h1>
-            <p className="text-gray-500 mb-6">
-              Aucune demande trouvée avec l'identifiant: {leaveId}
-            </p>
-            <p className="text-gray-400 text-sm mb-6">
-              Vérifiez les logs de la console pour plus de détails de débogage.
-            </p>
+            <p className="text-gray-500 mb-6">Aucune demande trouvée avec cet identifiant.</p>
             <Button onClick={handleBack}>Retour à la gestion des congés</Button>
           </div>
         </div>
