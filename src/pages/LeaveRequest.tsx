@@ -23,20 +23,18 @@ const LeaveRequest = () => {
       <HRISNavbar />
       
       <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-fade-in">
-        <div className="flex flex-col items-center mb-6">
-          <div className="self-start mb-4">
-            <Button 
-              variant="ghost" 
-              onClick={handleGoBack}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour
-            </Button>
-          </div>
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-800">Nouvelle demande de congé</h1>
-            <p className="text-gray-500">Remplissez le formulaire ci-dessous pour soumettre votre demande</p>
-          </div>
+        <Button
+          variant="back"
+          onClick={handleGoBack}
+          className="mb-6"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Retour aux congés
+        </Button>
+        
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Nouvelle demande de congé</h1>
+          <p className="text-gray-500">Remplissez le formulaire ci-dessous pour soumettre votre demande</p>
         </div>
         
         <div className="flex justify-center">
