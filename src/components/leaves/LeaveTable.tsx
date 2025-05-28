@@ -1,4 +1,6 @@
+
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,6 +29,8 @@ interface LeaveTableProps {
 }
 
 const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTableProps) => {
+  const navigate = useNavigate();
+
   const handleDelete = (id: string) => {
     onActionClick(id, 'delete');
     toast.success(`Demande #${id} supprimée`);
@@ -38,7 +42,7 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
   };
 
   const handleView = (id: string) => {
-    onActionClick(id, 'view');
+    navigate(`/leave-details/${id}`);
   };
 
   const handleApprove = (id: string) => {
