@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -66,7 +65,6 @@ const leaveTypes = [
   { id: "legal", label: "Congés légaux" },
   { id: "special", label: "Congés exceptionnels" },
   { id: "unpaid", label: "Congés sans solde" },
-  { id: "medical", label: "Congés maladie" },
   { id: "exam", label: "Congés examen" },
   { id: "other", label: "Autres congés rémunérés" },
 ];
