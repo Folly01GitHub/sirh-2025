@@ -1,80 +1,51 @@
 
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Calendar, Clock, User, FileText, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import HRISNavbar from '@/components/hris/HRISNavbar';
+import apiClient from '@/utils/apiClient';
 
 interface LeaveDetailsData {
   id: string;
   demandeur?: string;
   type: string;
-  startDate: string;
-  endDate: string;
-  days: number;
-  status: string;
-  reason?: string;
+  date_debut: string;
+  date_fin: string;
+  jours_pris: number;
+  statut: string;
+  motif?: string;
   commentaire_rh?: string;
   isLegal: boolean;
-  requester?: string;
 }
+
+const fetchLeaveDetails = async (id: string): Promise<LeaveDetailsData> => {
+  try {
+    const response = await apiClient.get(`/demande-conge/${id}`);
+    console.log('API Response for leave details:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching leave details:', error);
+    throw error;
+  }
+};
 
 const LeaveDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
-  console.log('LeaveDetails - ID from URL:', id);
-
-  // Get cached data from both possible sources
-  const myLeavesData = queryClient.getQueryData(['leaves', 'self']) as any[];
-  const teamLeavesData = queryClient.getQueryData(['leaves', 'team']) as any[];
-  
-  console.log('LeaveDetails - My leaves cache:', myLeavesData);
-  console.log('LeaveDetails - Team leaves cache:', teamLeavesData);
-
-  // Find the leave request in cached data
-  let leaveDetails: LeaveDetailsData | null = null;
-  
-  if (myLeavesData) {
-    const foundInMyLeaves = myLeavesData.find((leave: any) => leave.id === id);
-    if (foundInMyLeaves) {
-      leaveDetails = {
-        id: foundInMyLeaves.id,
-        type: foundInMyLeaves.type,
-        startDate: foundInMyLeaves.startDate,
-        endDate: foundInMyLeaves.endDate,
-        days: foundInMyLeaves.days,
-        status: foundInMyLeaves.status,
-        reason: foundInMyLeaves.reason,
-        isLegal: foundInMyLeaves.isLegal
-      };
-      console.log('LeaveDetails - Found in my leaves:', leaveDetails);
-    }
-  }
-  
-  if (!leaveDetails && teamLeavesData) {
-    const foundInTeamLeaves = teamLeavesData.find((leave: any) => leave.id === id);
-    if (foundInTeamLeaves) {
-      leaveDetails = {
-        id: foundInTeamLeaves.id,
-        demandeur: foundInTeamLeaves.requester,
-        type: foundInTeamLeaves.type,
-        startDate: foundInTeamLeaves.startDate,
-        endDate: foundInTeamLeaves.endDate,
-        days: foundInTeamLeaves.days,
-        status: foundInTeamLeaves.status,
-        reason: foundInTeamLeaves.reason,
-        isLegal: foundInTeamLeaves.isLegal
-      };
-      console.log('LeaveDetails - Found in team leaves:', leaveDetails);
-    }
-  }
-
-  console.log('LeaveDetails - Final leave details:', leaveDetails);
+  const {
+    data: leaveDetails,
+    isLoading,
+    error
+  } = useQuery({
+    queryKey: ['leaveDetails', id],
+    queryFn: () => fetchLeaveDetails(id!),
+    enabled: !!id
+  });
 
   const handleBack = () => {
     navigate('/leave');
@@ -94,26 +65,35 @@ const LeaveDetails = () => {
       case 'Annulée':
         return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">Annulée</Badge>;
       case 'Acceptée':
-      case 'approved':
         return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Acceptée</Badge>;
       case 'Refusée':
-      case 'rejected':
         return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Refusée</Badge>;
-      case 'pending':
-        return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">En attente</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
 
-  // If no leave details found in cache, show error
-  if (!leaveDetails) {
+  if (isLoading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#f8f9fc]">
+        <HRISNavbar />
+        <div className="container mx-auto p-4 md:p-6 lg:p-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+            <div className="h-64 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !leaveDetails) {
     return (
       <div className="flex flex-col min-h-screen bg-[#f8f9fc]">
         <HRISNavbar />
         <div className="container mx-auto p-4 md:p-6 lg:p-8">
           <Button
-            variant="ghost"
+            variant="back"
             onClick={handleBack}
             className="mb-6"
           >
@@ -137,7 +117,7 @@ const LeaveDetails = () => {
       
       <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-fade-in">
         <Button
-          variant="ghost"
+          variant="back"
           onClick={handleBack}
           className="mb-6"
         >
@@ -160,7 +140,7 @@ const LeaveDetails = () => {
                     </p>
                   )}
                 </div>
-                {renderStatusBadge(leaveDetails.status)}
+                {renderStatusBadge(leaveDetails.statut)}
               </div>
             </CardHeader>
           </Card>
@@ -177,19 +157,21 @@ const LeaveDetails = () => {
               <CardContent className="space-y-4">
                 <div>
                   <label className="text-sm font-medium text-gray-600">Type de congé</label>
-                  <p className="text-gray-800">{leaveDetails.type}</p>
+                  <p className="text-gray-800">
+                    {leaveDetails.isLegal ? 'Congés légaux' : 'Congés sans solde'}
+                  </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">Date de début</label>
-                  <p className="text-gray-800">{leaveDetails.startDate}</p>
+                  <p className="text-gray-800">{leaveDetails.date_debut}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">Date de fin</label>
-                  <p className="text-gray-800">{leaveDetails.endDate}</p>
+                  <p className="text-gray-800">{leaveDetails.date_fin}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">Nombre de jours</label>
-                  <p className="text-gray-800 font-semibold">{leaveDetails.days} jours</p>
+                  <p className="text-gray-800 font-semibold">{leaveDetails.jours_pris} jours</p>
                 </div>
               </CardContent>
             </Card>
@@ -202,10 +184,10 @@ const LeaveDetails = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {leaveDetails.reason && (
+                {leaveDetails.motif && (
                   <div>
                     <label className="text-sm font-medium text-gray-600">Motif</label>
-                    <p className="text-gray-800">{leaveDetails.reason}</p>
+                    <p className="text-gray-800">{leaveDetails.motif}</p>
                   </div>
                 )}
                 {leaveDetails.commentaire_rh && (
