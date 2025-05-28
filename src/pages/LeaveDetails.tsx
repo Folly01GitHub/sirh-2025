@@ -2,14 +2,26 @@
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import apiClient from '@/utils/apiClient';
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Download, Calendar, Clock, User, FileText } from 'lucide-react';
+import { ArrowLeft, Download, Calendar as CalendarIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface LeaveDetailsData {
   id: string;
@@ -34,6 +46,21 @@ const fetchLeaveDetails = async (id: string): Promise<LeaveDetailsData> => {
     throw error;
   }
 };
+
+const leaveTypes = [
+  { id: "legal", label: "Congés légaux" },
+  { id: "special", label: "Congés exceptionnels" },
+  { id: "unpaid", label: "Congés sans solde" },
+  { id: "medical", label: "Congés maladie" },
+  { id: "exam", label: "Congés examen" },
+  { id: "other", label: "Autres congés rémunérés" },
+];
+
+const managers = [
+  { id: "1", name: "Sophie Martin" },
+  { id: "2", name: "Thomas Bernard" },
+  { id: "3", name: "Marie Dubois" },
+];
 
 const LeaveDetails = () => {
   const navigate = useNavigate();
@@ -77,6 +104,17 @@ const LeaveDetails = () => {
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
+  };
+
+  const getLeaveTypeKey = (typeLabel: string, isLegal: boolean) => {
+    if (isLegal) return "legal";
+    // Map other types based on the label or default to "other"
+    return "other";
+  };
+
+  const getManagerName = (managerId: string) => {
+    const manager = managers.find(m => m.id === managerId);
+    return manager ? manager.name : "Non spécifié";
   };
 
   if (!leaveId) {
@@ -132,100 +170,138 @@ const LeaveDetails = () => {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <Skeleton className="h-6 w-48" />
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <Skeleton className="h-6 w-48" />
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </CardContent>
-            </Card>
-          </div>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-48" />
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <Skeleton className="h-20 w-full" />
+            </CardContent>
+          </Card>
         ) : leaveDetails ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <User className="h-5 w-5 mr-2" />
-                  Informations générales
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Demandeur</label>
-                  <p className="text-gray-800">{leaveDetails.demandeur}</p>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Formulaire de demande de congé</span>
+                {renderStatusBadge(leaveDetails.statut)}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Demandeur */}
+                <div className="space-y-2">
+                  <Label htmlFor="requester">Demandeur</Label>
+                  <Input
+                    id="requester"
+                    value={leaveDetails.demandeur}
+                    disabled
+                    className="bg-gray-100 text-gray-700"
+                  />
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Type de congé</label>
-                  <p className="text-gray-800">{leaveDetails.isLegal ? 'Congés légaux' : 'Congés sans solde'}</p>
+
+                {/* Type de congé */}
+                <div className="space-y-2">
+                  <Label htmlFor="type">Type de congé</Label>
+                  <Select value={getLeaveTypeKey(leaveDetails.type, leaveDetails.isLegal)} disabled>
+                    <SelectTrigger className="bg-gray-100 text-gray-700">
+                      <SelectValue>
+                        {leaveDetails.isLegal ? 'Congés légaux' : leaveDetails.type}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {leaveTypes.map((type) => (
+                        <SelectItem key={type.id} value={type.id}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Statut</label>
-                  <div className="mt-1">
-                    {renderStatusBadge(leaveDetails.statut)}
+
+                {/* Nombre de jours */}
+                <div className="space-y-2">
+                  <Label htmlFor="days">Nombre de jours</Label>
+                  <Input
+                    id="days"
+                    type="number"
+                    value={leaveDetails.jours_pris}
+                    disabled
+                    className="bg-gray-100 text-gray-700"
+                  />
+                </div>
+
+                {/* Date de début */}
+                <div className="space-y-2">
+                  <Label htmlFor="startDate">Date de début</Label>
+                  <div className="relative">
+                    <Input
+                      id="startDate"
+                      value={leaveDetails.date_debut}
+                      disabled
+                      className="bg-gray-100 text-gray-700 pl-10"
+                    />
+                    <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   </div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Date de demande</label>
-                  <p className="text-gray-800">{leaveDetails.date_demande || 'Non spécifiée'}</p>
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Calendar className="h-5 w-5 mr-2" />
-                  Période et durée
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Date de début</label>
-                  <p className="text-gray-800">{leaveDetails.date_debut}</p>
+                {/* Date de fin */}
+                <div className="space-y-2">
+                  <Label htmlFor="endDate">Date de fin</Label>
+                  <div className="relative">
+                    <Input
+                      id="endDate"
+                      value={leaveDetails.date_fin}
+                      disabled
+                      className="bg-gray-100 text-gray-700 pl-10"
+                    />
+                    <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Date de fin</label>
-                  <p className="text-gray-800">{leaveDetails.date_fin}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Nombre de jours</label>
-                  <p className="text-gray-800 font-semibold">{leaveDetails.jours_pris} jour(s)</p>
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <FileText className="h-5 w-5 mr-2" />
-                  Motif et justificatifs
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Motif de la demande</label>
-                  <p className="text-gray-800 mt-2 p-3 bg-gray-50 rounded-md">
-                    {leaveDetails.motif || 'Aucun motif spécifié'}
-                  </p>
+                {/* Responsable hiérarchique */}
+                <div className="space-y-2">
+                  <Label htmlFor="manager">Responsable hiérarchique</Label>
+                  <Select value="1" disabled>
+                    <SelectTrigger className="bg-gray-100 text-gray-700">
+                      <SelectValue>
+                        {getManagerName("1")}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {managers.map((manager) => (
+                        <SelectItem key={manager.id} value={manager.id}>
+                          {manager.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                {!leaveDetails.isLegal && (
+              </div>
+
+              {/* Motifs */}
+              <div className="space-y-2">
+                <Label htmlFor="reason">Motifs</Label>
+                <Textarea
+                  id="reason"
+                  value={leaveDetails.motif || 'Aucun motif spécifié'}
+                  disabled
+                  className="bg-gray-100 text-gray-700 min-h-[100px]"
+                />
+              </div>
+
+              {/* Justificatif */}
+              {!leaveDetails.isLegal && (
+                <div className="space-y-2">
+                  <Label>Justificatif</Label>
                   <div className="flex items-center justify-between p-4 bg-blue-50 rounded-md border border-blue-200">
                     <div>
-                      <p className="text-sm font-medium text-blue-800">Justificatif requis</p>
+                      <p className="text-sm font-medium text-blue-800">Document justificatif</p>
                       <p className="text-sm text-blue-600">Un document justificatif est disponible pour cette demande</p>
                     </div>
                     <Button
@@ -238,10 +314,21 @@ const LeaveDetails = () => {
                       Télécharger
                     </Button>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                </div>
+              )}
+
+              {/* Date de demande */}
+              <div className="space-y-2">
+                <Label htmlFor="requestDate">Date de demande</Label>
+                <Input
+                  id="requestDate"
+                  value={leaveDetails.date_demande || 'Non spécifiée'}
+                  disabled
+                  className="bg-gray-100 text-gray-700"
+                />
+              </div>
+            </CardContent>
+          </Card>
         ) : null}
       </div>
     </div>
