@@ -188,13 +188,17 @@ const Leaves = () => {
     isLoading: leavesLoading
   } = useQuery({
     queryKey: ['leaves', activeFilter],
-    queryFn: () => activeFilter === 'self' ? fetchMyLeaves() : fetchTeamLeaves(),
-    onSuccess: (data) => {
-      console.log(`🎯 CACHE DEBUG - Query success for key ['leaves', '${activeFilter}']:`, data);
-      console.log(`🎯 CACHE DEBUG - Data cached with ${data.length} items`);
-      console.log(`🎯 CACHE DEBUG - All IDs in cache:`, data.map(item => item.id));
-    }
+    queryFn: () => activeFilter === 'self' ? fetchMyLeaves() : fetchTeamLeaves()
   });
+
+  // Add a useEffect to log cache data whenever it changes
+  React.useEffect(() => {
+    if (leaves) {
+      console.log(`🎯 CACHE DEBUG - Query data updated for key ['leaves', '${activeFilter}']:`, leaves);
+      console.log(`🎯 CACHE DEBUG - Data cached with ${leaves.length} items`);
+      console.log(`🎯 CACHE DEBUG - All IDs in cache:`, leaves.map(item => item.id));
+    }
+  }, [leaves, activeFilter]);
   
   const handleFilterChange = (value: string) => {
     setActiveFilter(value);
