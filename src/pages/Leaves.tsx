@@ -188,7 +188,12 @@ const Leaves = () => {
   
   const handleActionClick = (id: string, action: string) => {
     console.log(`Action ${action} on leave ${id}`);
-    // Handle different actions based on the action type
+    
+    if (action === 'view') {
+      navigate(`/leave/details?id=${id}`);
+    } else {
+      // Handle other actions (approve, reject, cancel, download, delete)
+    }
   };
   
   const handleNewLeaveRequest = () => {
