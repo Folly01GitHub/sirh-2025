@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,6 +31,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { cn } from '@/lib/utils';
 import apiClient from '@/utils/apiClient';
 
@@ -296,37 +296,30 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) 
             )}
           />
           
-          {/* Responsable hiérarchique */}
+          {/* Responsable hiérarchique avec SearchableSelect */}
           <FormField
             control={form.control}
             name="managerId"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Responsable hiérarchique</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                  disabled={isLoadingManagers}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue 
-                        placeholder={
-                          isLoadingManagers 
-                            ? "Chargement..." 
-                            : "Sélectionner un responsable"
-                        } 
-                      />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {managers.map((manager) => (
-                      <SelectItem key={manager.id} value={manager.id}>
-                        {manager.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <SearchableSelect
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                    placeholder={
+                      isLoadingManagers 
+                        ? "Chargement..." 
+                        : "Sélectionner un responsable"
+                    }
+                    options={managers.map((manager) => ({
+                      label: manager.name,
+                      value: manager.id,
+                    }))}
+                    loading={isLoadingManagers}
+                    disabled={isLoadingManagers}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
