@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -88,7 +89,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) 
   
   const form = useForm<LeaveFormValues>({
     resolver: zodResolver(createLeaveFormSchema()),
-    mode: 'onTouched', // Ne valide qu'après interaction
+    mode: 'onTouched',
     defaultValues: {
       days: 1,
       reason: "",
@@ -106,9 +107,15 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) 
         const response = await apiClient.get('/approver_list');
         console.log("Approvers fetched:", response.data);
         
-        // Adapter les données selon la structure de l'API
+        // Adapter les données selon la structure de l'API et s'assurer que les IDs sont des strings
         const approversData = response.data || [];
-        setManagers(approversData);
+        const processedApprovers = approversData.map((approver: any) => ({
+          id: String(approver.id), // Convertir l'ID en string
+          name: approver.name || `Utilisateur ${approver.id}` // Valeur par défaut si le nom est manquant
+        }));
+        
+        console.log("Processed approvers:", processedApprovers);
+        setManagers(processedApprovers);
       } catch (error) {
         console.error("Error fetching approvers:", error);
         toast.error("Erreur lors du chargement des responsables hiérarchiques");
@@ -314,7 +321,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) 
                     }
                     options={managers.map((manager) => ({
                       label: manager.name,
-                      value: manager.id,
+                      value: String(manager.id), // S'assurer que la valeur est une string
                     }))}
                     loading={isLoadingManagers}
                     disabled={isLoadingManagers}
