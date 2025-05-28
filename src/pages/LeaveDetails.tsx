@@ -199,15 +199,16 @@ const LeaveDetails = () => {
                 {!leaveDetails.isLegal && (
                   <div>
                     <label className="text-sm font-medium text-gray-600">Justificatif</label>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleDownloadAttachment}
-                      className="mt-2"
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Télécharger le justificatif
-                    </Button>
+                    <div className="mt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleDownloadAttachment}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Télécharger le justificatif
+                      </Button>
+                    </div>
                   </div>
                 )}
               </CardContent>
