@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -69,12 +70,11 @@ const leaveTypes = [
   { id: "other", label: "Autres congés rémunérés" },
 ];
 
-// Liste simulée de managers (à remplacer par un appel API réel)
-const managers = [
-  { id: "1", name: "Sophie Martin" },
-  { id: "2", name: "Thomas Bernard" },
-  { id: "3", name: "Marie Dubois" },
-];
+// Interface pour les données des approbateurs
+interface Approver {
+  id: string;
+  name: string;
+}
 
 interface LeaveRequestFormProps {
   onSubmitSuccess?: () => void;
@@ -83,6 +83,8 @@ interface LeaveRequestFormProps {
 const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) => {
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [managers, setManagers] = useState<Approver[]>([]);
+  const [isLoadingManagers, setIsLoadingManagers] = useState(true);
   
   const form = useForm<LeaveFormValues>({
     resolver: zodResolver(createLeaveFormSchema()),
@@ -95,6 +97,28 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) 
   
   const selectedType = form.watch("type");
   const needsJustification = selectedType && selectedType !== "legal";
+  
+  // Récupérer la liste des approbateurs
+  useEffect(() => {
+    const fetchApprovers = async () => {
+      try {
+        setIsLoadingManagers(true);
+        const response = await apiClient.get('/approver_list');
+        console.log("Approvers fetched:", response.data);
+        
+        // Adapter les données selon la structure de l'API
+        const approversData = response.data || [];
+        setManagers(approversData);
+      } catch (error) {
+        console.error("Error fetching approvers:", error);
+        toast.error("Erreur lors du chargement des responsables hiérarchiques");
+      } finally {
+        setIsLoadingManagers(false);
+      }
+    };
+
+    fetchApprovers();
+  }, []);
   
   // Mise à jour du schéma de validation quand le type change
   React.useEffect(() => {
@@ -127,6 +151,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) 
       formData.append('motifs', data.reason);
       formData.append('date_debut', format(data.startDate, 'yyyy-MM-dd'));
       formData.append('nombre_jours', data.days.toString());
+      formData.append('id_approbateur', data.managerId);
       
       // Ajouter le justificatif si présent
       if (file) {
@@ -138,6 +163,7 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) 
         motifs: data.reason,
         date_debut: format(data.startDate, 'yyyy-MM-dd'),
         nombre_jours: data.days,
+        id_approbateur: data.managerId,
         justificatif: file?.name || 'No file'
       });
       
@@ -280,10 +306,17 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) 
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
+                  disabled={isLoadingManagers}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un responsable" />
+                      <SelectValue 
+                        placeholder={
+                          isLoadingManagers 
+                            ? "Chargement..." 
+                            : "Sélectionner un responsable"
+                        } 
+                      />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
