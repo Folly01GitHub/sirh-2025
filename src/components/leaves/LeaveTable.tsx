@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Eye, Trash2, Download, CheckCircle, XCircle } from 'lucide-react';
+import { Eye, Trash2, Download, CheckCircle, XCircle, X } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
@@ -50,6 +49,11 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
   const handleReject = (id: string) => {
     onActionClick(id, 'reject');
     toast.success(`Demande #${id} rejetée`);
+  };
+
+  const handleCancel = (id: string) => {
+    onActionClick(id, 'cancel');
+    toast.success(`Demande #${id} annulée`);
   };
 
   const renderStatusBadge = (status: string) => {
@@ -182,6 +186,15 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                         title="Refuser"
                       >
                         <XCircle className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleCancel(leave.id)}
+                        className="text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                        title="Annuler la demande"
+                      >
+                        <X className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
