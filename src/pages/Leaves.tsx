@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -120,7 +120,7 @@ const fetchMyLeaves = async (): Promise<LeaveItem[]> => {
     console.log('API Response for my leaves:', response.data);
     
     // Transform API data to match LeaveItem interface
-    const transformedData = response.data.map((item: ApiLeaveItem) => ({
+    return response.data.map((item: ApiLeaveItem) => ({
       id: item.id,
       type: item.isLegal ? 'Congés légaux' : 'Congés sans solde',
       startDate: item.date_debut,
@@ -130,11 +130,6 @@ const fetchMyLeaves = async (): Promise<LeaveItem[]> => {
       hasAttachment: false, // Not provided by API
       isLegal: item.isLegal
     }));
-    
-    console.log('📝 CACHE DEBUG - My leaves transformed data:', transformedData);
-    console.log('📝 CACHE DEBUG - My leaves IDs:', transformedData.map(item => item.id));
-    
-    return transformedData;
   } catch (error) {
     console.error('Error fetching my leaves:', error);
     return [];
@@ -147,7 +142,7 @@ const fetchTeamLeaves = async (): Promise<LeaveItem[]> => {
     console.log('API Response for team leaves:', response.data);
     
     // Transform API data to match LeaveItem interface
-    const transformedData = response.data.map((item: ApiTeamLeaveItem) => ({
+    return response.data.map((item: ApiTeamLeaveItem) => ({
       id: item.id,
       requester: item.demandeur,
       type: item.isLegal ? 'Congés légaux' : 'Congés sans solde',
@@ -158,11 +153,6 @@ const fetchTeamLeaves = async (): Promise<LeaveItem[]> => {
       hasAttachment: !item.isLegal, // Show attachment for non-legal leaves
       isLegal: item.isLegal
     }));
-    
-    console.log('📝 CACHE DEBUG - Team leaves transformed data:', transformedData);
-    console.log('📝 CACHE DEBUG - Team leaves IDs:', transformedData.map(item => item.id));
-    
-    return transformedData;
   } catch (error) {
     console.error('Error fetching team leaves:', error);
     return [];
@@ -190,31 +180,15 @@ const Leaves = () => {
     queryKey: ['leaves', activeFilter],
     queryFn: () => activeFilter === 'self' ? fetchMyLeaves() : fetchTeamLeaves()
   });
-
-  // Add a useEffect to log cache data whenever it changes
-  React.useEffect(() => {
-    if (leaves) {
-      console.log(`🎯 CACHE DEBUG - Query data updated for key ['leaves', '${activeFilter}']:`, leaves);
-      console.log(`🎯 CACHE DEBUG - Data cached with ${leaves.length} items`);
-      console.log(`🎯 CACHE DEBUG - All IDs in cache:`, leaves.map(item => item.id));
-    }
-  }, [leaves, activeFilter]);
   
   const handleFilterChange = (value: string) => {
     setActiveFilter(value);
     setSearchTerm('');
-    console.log(`🔄 CACHE DEBUG - Filter changed to: ${value}`);
   };
   
   const handleActionClick = (id: string, action: string) => {
     console.log(`Action ${action} on leave ${id}`);
-    console.log(`🔍 CACHE DEBUG - Navigating to details with ID: ${id}`);
-    
-    if (action === 'view') {
-      navigate(`/leave/details?id=${id}`);
-    } else {
-      // Handle other actions (approve, reject, cancel, download, delete)
-    }
+    // Handle different actions based on the action type
   };
   
   const handleNewLeaveRequest = () => {
@@ -241,13 +215,6 @@ const Leaves = () => {
       );
     });
   }, [leaves, searchTerm]);
-
-  // Log cache state whenever component renders
-  React.useEffect(() => {
-    console.log(`🏪 CACHE DEBUG - Current active filter: ${activeFilter}`);
-    console.log(`🏪 CACHE DEBUG - Current leaves data:`, leaves);
-    console.log(`🏪 CACHE DEBUG - Leaves loading state:`, leavesLoading);
-  }, [activeFilter, leaves, leavesLoading]);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8f9fc]">

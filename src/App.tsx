@@ -16,7 +16,6 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Permissions from "./pages/Permissions";
 import Leaves from "./pages/Leaves";
 import LeaveRequest from "./pages/LeaveRequest";
-import LeaveDetails from "./pages/LeaveDetails";
 import Evaluation from "./pages/Evaluation";
 import EvaluationDashboard from "./pages/EvaluationDashboard";
 import EvaluationView from "./pages/EvaluationView";
@@ -43,7 +42,6 @@ const App = () => (
               <Route path="/admin/settings" element={<Settings />} />
               <Route path="/leave" element={<Leaves />} />
               <Route path="/leave/request" element={<LeaveRequest />} />
-              <Route path="/leave/details" element={<LeaveDetails />} />
               <Route path="/permissions" element={<Permissions />} />
               <Route path="/evaluations" element={<EvaluationDashboard />} />
               <Route path="/evaluation" element={<Evaluation />} />
