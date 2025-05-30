@@ -273,7 +273,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
             <h4 className="font-medium text-gray-700">Auto-évaluation</h4>
             <div className="flex items-center">
               <div className="text-3xl font-bold text-yellow-500 mr-3">
-                {isFirstGroup ? `${employeeAvg}/5` : `${employeeAvg}/5 (groupe)`}
+                {employeeAvg}/5
               </div>
             </div>
           </div>
@@ -282,7 +282,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
             <h4 className="font-medium text-primary">Évaluation</h4>
             <div className="flex items-center">
               <div className="text-3xl font-bold text-primary mr-3">
-                {isFirstGroup ? `${evaluatorAvg}/5` : `${evaluatorAvg}/5 (groupe)`}
+                {evaluatorAvg}/5
               </div>
             </div>
           </div>
