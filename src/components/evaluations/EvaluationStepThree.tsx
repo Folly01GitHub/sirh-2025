@@ -55,12 +55,26 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   const [isLoadingResponses, setIsLoadingResponses] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [allCriteriaItems, setAllCriteriaItems] = useState<CriteriaItem[]>([]);
   // Initialiser l'accordéon à "ouvert" par défaut
   const [accordionValue, setAccordionValue] = useState<string>("details");
 
   // Effet pour défiler en haut de la page lorsque le composant est monté
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  useEffect(() => {
+    const fetchAllItems = async () => {
+      try {
+        const response = await apiClient.get('/items');
+        setAllCriteriaItems(response.data);
+      } catch (error) {
+        console.error("Error fetching all items:", error);
+      }
+    };
+
+    fetchAllItems();
   }, []);
 
   useEffect(() => {
@@ -129,22 +143,43 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   );
 
   const calculateAverages = () => {
-    const numericItems = criteriaItems.filter(item => item.type === 'numeric');
-    
-    const employeeAvg = numericItems.reduce((sum, item) => {
-      const value = Number(getResponseValue(employeeResponses, item.id)) || 0;
-      return sum + value;
-    }, 0) / (numericItems.length || 1);
-    
-    const evaluatorAvg = numericItems.reduce((sum, item) => {
-      const value = Number(getResponseValue(evaluatorResponses, item.id)) || 0;
-      return sum + value;
-    }, 0) / (numericItems.length || 1);
-    
-    return {
-      employeeAvg: employeeAvg.toFixed(1),
-      evaluatorAvg: evaluatorAvg.toFixed(1)
-    };
+    // Si c'est le premier groupe, calculer la moyenne globale de tous les items numériques
+    if (isFirstGroup && allCriteriaItems.length > 0) {
+      const allNumericItems = allCriteriaItems.filter(item => item.type === 'numeric');
+      
+      const employeeAvg = allNumericItems.reduce((sum, item) => {
+        const value = Number(getResponseValue(employeeResponses, item.id)) || 0;
+        return sum + value;
+      }, 0) / (allNumericItems.length || 1);
+      
+      const evaluatorAvg = allNumericItems.reduce((sum, item) => {
+        const value = Number(getResponseValue(evaluatorResponses, item.id)) || 0;
+        return sum + value;
+      }, 0) / (allNumericItems.length || 1);
+      
+      return {
+        employeeAvg: employeeAvg.toFixed(1),
+        evaluatorAvg: evaluatorAvg.toFixed(1)
+      };
+    } else {
+      // Pour les autres groupes, calculer la moyenne du groupe actuel
+      const numericItems = criteriaItems.filter(item => item.type === 'numeric');
+      
+      const employeeAvg = numericItems.reduce((sum, item) => {
+        const value = Number(getResponseValue(employeeResponses, item.id)) || 0;
+        return sum + value;
+      }, 0) / (numericItems.length || 1);
+      
+      const evaluatorAvg = numericItems.reduce((sum, item) => {
+        const value = Number(getResponseValue(evaluatorResponses, item.id)) || 0;
+        return sum + value;
+      }, 0) / (numericItems.length || 1);
+      
+      return {
+        employeeAvg: employeeAvg.toFixed(1),
+        evaluatorAvg: evaluatorAvg.toFixed(1)
+      };
+    }
   };
 
   const { employeeAvg, evaluatorAvg } = calculateAverages();
@@ -237,16 +272,18 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
           <div className="space-y-2">
             <h4 className="font-medium text-gray-700">Auto-évaluation</h4>
             <div className="flex items-center">
-              {/* Affichage uniquement de la note moyenne, exemple : 3.3/5 */}
-              <div className="text-3xl font-bold text-yellow-500 mr-3">{employeeAvg}/5</div>
+              <div className="text-3xl font-bold text-yellow-500 mr-3">
+                {isFirstGroup ? `${employeeAvg}/5` : `${employeeAvg}/5 (groupe)`}
+              </div>
             </div>
           </div>
           
           <div className="space-y-2">
-            <h4 className="font-medium text-primary">Évaluation du manager</h4>
+            <h4 className="font-medium text-primary">Évaluation</h4>
             <div className="flex items-center">
-              {/* Affichage uniquement de la note moyenne, exemple : 3.3/5 */}
-              <div className="text-3xl font-bold text-primary mr-3">{evaluatorAvg}/5</div>
+              <div className="text-3xl font-bold text-primary mr-3">
+                {isFirstGroup ? `${evaluatorAvg}/5` : `${evaluatorAvg}/5 (groupe)`}
+              </div>
             </div>
           </div>
         </div>
