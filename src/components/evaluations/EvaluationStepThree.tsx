@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
@@ -68,7 +69,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   useEffect(() => {
     const fetchAllItems = async () => {
       try {
-        const response = await apiClient.get('/items');
+        const response = await apiClient.get('/items_approbateur');
         setAllCriteriaItems(response.data);
       } catch (error) {
         console.error("Error fetching all items:", error);
@@ -469,3 +470,4 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
 };
 
 export default EvaluationStepThree;
+
