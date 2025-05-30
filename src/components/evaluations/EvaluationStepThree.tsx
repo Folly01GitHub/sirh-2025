@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
@@ -266,7 +267,9 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   return (
     <div className="space-y-8">
       <div className="bg-white p-6 rounded-lg border shadow-sm">
-        <h3 className="text-xl font-medium mb-4">Résumé de l'évaluation</h3>
+        <h3 className="text-xl font-medium mb-4">
+          {isFirstGroup ? "Résumé global de l'évaluation" : "Résumé de l'évaluation par groupe"}
+        </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
