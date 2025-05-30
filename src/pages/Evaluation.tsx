@@ -51,8 +51,18 @@ const fetchCriteriaItems = async (groupId: number): Promise<CriteriaItem[]> => {
   return response.data.filter((item: CriteriaItem) => item.group_id === groupId);
 };
 
+const fetchCriteriaItemsForApprover = async (groupId: number): Promise<CriteriaItem[]> => {
+  const response = await apiClient.get('/items_approbateur');
+  return response.data.filter((item: CriteriaItem) => item.group_id === groupId);
+};
+
 const fetchAllCriteriaItems = async (): Promise<CriteriaItem[]> => {
   const response = await apiClient.get('/items');
+  return response.data;
+};
+
+const fetchAllCriteriaItemsForApprover = async (): Promise<CriteriaItem[]> => {
+  const response = await apiClient.get('/items_approbateur');
   return response.data;
 };
 
@@ -107,7 +117,16 @@ const Evaluation = () => {
   } = useQuery({
     queryKey: ['criteriaItems', currentGroupId],
     queryFn: () => fetchCriteriaItems(currentGroupId),
-    enabled: !!currentGroupId
+    enabled: !!currentGroupId && currentStep !== 3
+  });
+  
+  const {
+    data: criteriaItemsForApprover,
+    isLoading: itemsForApproverLoading
+  } = useQuery({
+    queryKey: ['criteriaItemsForApprover', currentGroupId],
+    queryFn: () => fetchCriteriaItemsForApprover(currentGroupId),
+    enabled: !!currentGroupId && currentStep === 3
   });
   
   const {
@@ -115,7 +134,17 @@ const Evaluation = () => {
     isLoading: allItemsLoading
   } = useQuery({
     queryKey: ['allCriteriaItems'],
-    queryFn: fetchAllCriteriaItems
+    queryFn: fetchAllCriteriaItems,
+    enabled: currentStep !== 3
+  });
+  
+  const {
+    data: allCriteriaItemsForApprover,
+    isLoading: allItemsForApproverLoading
+  } = useQuery({
+    queryKey: ['allCriteriaItemsForApprover'],
+    queryFn: fetchAllCriteriaItemsForApprover,
+    enabled: currentStep === 3
   });
   
   const {
@@ -125,6 +154,28 @@ const Evaluation = () => {
     queryKey: ['employees'],
     queryFn: fetchEmployees
   });
+  
+  // Helper function to get the correct items based on current step
+  const getCurrentCriteriaItems = () => {
+    if (currentStep === 3) {
+      return criteriaItemsForApprover || [];
+    }
+    return criteriaItems || [];
+  };
+  
+  const getCurrentAllCriteriaItems = () => {
+    if (currentStep === 3) {
+      return allCriteriaItemsForApprover || [];
+    }
+    return allCriteriaItems || [];
+  };
+  
+  const getCurrentItemsLoading = () => {
+    if (currentStep === 3) {
+      return itemsForApproverLoading;
+    }
+    return itemsLoading;
+  };
   
   // Helper function to validate a response based on criteria type
   const isValidResponse = useCallback((response: EvaluationResponse | undefined, type: string): boolean => {
@@ -151,10 +202,11 @@ const Evaluation = () => {
   // Calculate progress based on completed required fields
   const calculateProgress = useCallback(() => {
     if (currentStep === 1) {
-      if (!allCriteriaItems || allCriteriaItems.length === 0) return 0;
+      const currentAllItems = getCurrentAllCriteriaItems();
+      if (!currentAllItems || currentAllItems.length === 0) return 0;
       
       // Inclure tous les items, y compris les commentaires (désormais obligatoires)
-      const requiredItems = allCriteriaItems;
+      const requiredItems = currentAllItems;
       
       // Check basic fields (evaluator, approver, mission)
       let completedFields = 0;
@@ -174,10 +226,11 @@ const Evaluation = () => {
       
       return Math.round((completedFields / totalRequiredFields) * 100);
     } else if (currentStep === 2) {
-      if (!allCriteriaItems || allCriteriaItems.length === 0) return 0;
+      const currentAllItems = getCurrentAllCriteriaItems();
+      if (!currentAllItems || currentAllItems.length === 0) return 0;
       
       // Inclure tous les items, y compris les commentaires (désormais obligatoires)
-      const requiredItems = allCriteriaItems;
+      const requiredItems = currentAllItems;
       
       let completedFields = 0;
       const totalRequiredFields = requiredItems.length;
@@ -202,7 +255,7 @@ const Evaluation = () => {
     return Math.round(((currentGroupIndex + 1) / totalGroups) * 100);
   }, [
     currentStep, 
-    allCriteriaItems, 
+    getCurrentAllCriteriaItems, 
     evaluatorId, 
     approverId, 
     selectedMissionId, 
@@ -215,7 +268,8 @@ const Evaluation = () => {
   
   // Nouvelle fonction pour calculer les erreurs par groupe
   const calculateGroupErrors = useCallback(() => {
-    if (!allCriteriaItems || !criteriaGroups) return;
+    const currentAllItems = getCurrentAllCriteriaItems();
+    if (!currentAllItems || !criteriaGroups) return;
 
     const newGroupValidation: Record<number, boolean> = {};
 
@@ -226,7 +280,7 @@ const Evaluation = () => {
 
     // Vérifier les champs obligatoires par groupe
     // Inclure tous les items, y compris les commentaires (désormais obligatoires)
-    allCriteriaItems.forEach(item => {
+    currentAllItems.forEach(item => {
       const responses = currentStep === 1 ? employeeResponses : evaluatorResponses;
       const response = responses.find(r => r.item_id === item.id);
       
@@ -248,7 +302,7 @@ const Evaluation = () => {
     
     setGroupValidationState(newGroupValidation);
   }, [
-    allCriteriaItems,
+    getCurrentAllCriteriaItems,
     criteriaGroups,
     currentStep,
     employeeResponses,
@@ -264,7 +318,7 @@ const Evaluation = () => {
     calculateGroupErrors();
   }, [
     calculateGroupErrors,
-    allCriteriaItems,
+    getCurrentAllCriteriaItems,
     employeeResponses,
     evaluatorResponses,
     evaluatorId,
@@ -484,13 +538,13 @@ const Evaluation = () => {
               <div className="animate-fade-in">
                 {currentStep === 1 && (
                   <EvaluationStepOne 
-                    criteriaItems={criteriaItems || []}
+                    criteriaItems={getCurrentCriteriaItems()}
                     onResponseChange={handleEmployeeResponseChange}
                     responses={employeeResponses}
                     employees={employees || []}
                     onEvaluatorChange={setEvaluatorId}
                     onApproverChange={setApproverId}
-                    isLoading={itemsLoading || isSubmitting}
+                    isLoading={getCurrentItemsLoading() || isSubmitting}
                     onSubmit={handleSubmitSelfAssessment}
                     onMissionChange={handleMissionChange}
                     selectedMissionId={selectedMissionId}
@@ -501,18 +555,18 @@ const Evaluation = () => {
                 
                 {currentStep === 2 && (
                   <EvaluationStepTwo 
-                    criteriaItems={criteriaItems || []}
+                    criteriaItems={getCurrentCriteriaItems()}
                     onResponseChange={handleEvaluatorResponseChange}
                     employeeResponses={employeeResponses}
-                    isLoading={itemsLoading || isSubmitting}
+                    isLoading={getCurrentItemsLoading() || isSubmitting}
                     onSubmit={handleSubmitEvaluation}
                   />
                 )}
                 
                 {currentStep === 3 && (
                   <EvaluationStepThree 
-                    criteriaItems={criteriaItems || []}
-                    isLoading={itemsLoading || isSubmitting}
+                    criteriaItems={getCurrentCriteriaItems()}
+                    isLoading={getCurrentItemsLoading() || isSubmitting}
                     onApprove={handleApprove}
                     onPreviousGroup={handlePreviousGroup}
                     onNextGroup={handleNextGroup}
