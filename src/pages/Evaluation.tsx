@@ -117,7 +117,7 @@ const Evaluation = () => {
   } = useQuery({
     queryKey: ['criteriaItems', currentGroupId],
     queryFn: () => fetchCriteriaItems(currentGroupId),
-    enabled: !!currentGroupId && currentStep !== 3
+    enabled: !!currentGroupId && currentStep === 3
   });
   
   const {
@@ -126,7 +126,7 @@ const Evaluation = () => {
   } = useQuery({
     queryKey: ['criteriaItemsForApprover', currentGroupId],
     queryFn: () => fetchCriteriaItemsForApprover(currentGroupId),
-    enabled: !!currentGroupId && currentStep === 3
+    enabled: !!currentGroupId && currentStep !== 3
   });
   
   const {
@@ -135,7 +135,7 @@ const Evaluation = () => {
   } = useQuery({
     queryKey: ['allCriteriaItems'],
     queryFn: fetchAllCriteriaItems,
-    enabled: currentStep !== 3
+    enabled: currentStep === 3
   });
   
   const {
@@ -144,7 +144,7 @@ const Evaluation = () => {
   } = useQuery({
     queryKey: ['allCriteriaItemsForApprover'],
     queryFn: fetchAllCriteriaItemsForApprover,
-    enabled: currentStep === 3
+    enabled: currentStep !== 3
   });
   
   const {
@@ -158,23 +158,23 @@ const Evaluation = () => {
   // Helper function to get the correct items based on current step
   const getCurrentCriteriaItems = () => {
     if (currentStep === 3) {
-      return criteriaItemsForApprover || [];
+      return criteriaItems || [];
     }
-    return criteriaItems || [];
+    return criteriaItemsForApprover || [];
   };
   
   const getCurrentAllCriteriaItems = () => {
     if (currentStep === 3) {
-      return allCriteriaItemsForApprover || [];
+      return allCriteriaItems || [];
     }
-    return allCriteriaItems || [];
+    return allCriteriaItemsForApprover || [];
   };
   
   const getCurrentItemsLoading = () => {
     if (currentStep === 3) {
-      return itemsForApproverLoading;
+      return itemsLoading;
     }
-    return itemsLoading;
+    return itemsForApproverLoading;
   };
   
   // Helper function to validate a response based on criteria type
