@@ -79,7 +79,7 @@ const EvaluationHeader: React.FC<EvaluationHeaderProps> = ({ currentStep }) => {
               )}
             </div>
             <span className={`text-sm font-medium ${currentStep >= 2 ? 'text-primary' : 'text-gray-400'}`}>
-              Évaluation manager
+              Évaluation
             </span>
           </div>
           
