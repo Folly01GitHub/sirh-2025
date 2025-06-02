@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
@@ -182,7 +183,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     }
     
     const response = collaboratorResponses.find(r => {
-      const responseItemId = parseInt(r.item_id);
+      const responseItemId = r.item_id; // Already parsed as number in query
       console.log(`Comparing ${responseItemId} with ${itemId}:`, responseItemId === itemId);
       return responseItemId === itemId;
     });
