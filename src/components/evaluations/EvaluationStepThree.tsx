@@ -91,7 +91,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
           apiClient.get<ApiResponse>(`/evaluator_responses?evaluation_id=${evaluationId}`)
         ]);
 
-        // Fonction unifiée de formatage (même logique qu'EvaluationView.tsx)
+        // Fonction de formatage exactement identique à EvaluationView.tsx
         const formatResponses = (apiResponses: any): EvaluationResponse[] => {
           if (!apiResponses || !apiResponses.responses) {
             return [];
@@ -103,11 +103,9 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
               item_id: parseInt(response.id_item),
               value:
                 response.type_item === "numerique" || response.type_item === "numeric"
-                  ? response.reponse_item === "N/A" 
-                    ? "N/A"
-                    : response.reponse_item
-                      ? parseInt(response.reponse_item)
-                      : 0
+                  ? response.reponse_item
+                    ? parseInt(response.reponse_item)
+                    : 0
                   : response.reponse_item || ""
             }));
         };
