@@ -91,27 +91,71 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
           apiClient.get<ApiResponse>(`/evaluator_responses?evaluation_id=${evaluationId}`)
         ]);
 
-        // Fonction de formatage exactement identique à EvaluationView.tsx
-        const formatResponses = (apiResponses: any): EvaluationResponse[] => {
+        console.log("=== DEBUG: Données brutes des APIs ===");
+        console.log("Raw collab response:", collabResponse.data);
+        console.log("Raw evaluator response:", evaluatorResponse.data);
+
+        // Fonction de formatage avec logs détaillés
+        const formatResponses = (apiResponses: any, source: string): EvaluationResponse[] => {
+          console.log(`=== Formatage ${source} ===`);
+          console.log("Input data:", apiResponses);
+          
           if (!apiResponses || !apiResponses.responses) {
+            console.log(`${source}: Pas de réponses trouvées`);
             return [];
           }
 
-          return apiResponses.responses
-            .filter((response: any) => response && response.id_item)
-            .map((response: any) => ({
-              item_id: parseInt(response.id_item),
-              value:
-                response.type_item === "numerique" || response.type_item === "numeric"
-                  ? response.reponse_item
-                    ? parseInt(response.reponse_item)
-                    : 0
-                  : response.reponse_item || ""
-            }));
+          const formatted = apiResponses.responses
+            .filter((response: any) => {
+              const isValid = response && response.id_item;
+              if (!isValid) {
+                console.log(`${source}: Réponse filtrée (invalide):`, response);
+              }
+              return isValid;
+            })
+            .map((response: any) => {
+              console.log(`${source}: Processing response:`, response);
+              
+              let processedValue;
+              if (response.type_item === "numerique" || response.type_item === "numeric") {
+                // Gestion stricte des valeurs numériques
+                const rawValue = response.reponse_item;
+                console.log(`${source}: Raw numeric value:`, rawValue, typeof rawValue);
+                
+                if (rawValue === "N/A" || rawValue === null || rawValue === undefined || rawValue === "") {
+                  processedValue = "N/A";
+                  console.log(`${source}: Converted to N/A`);
+                } else {
+                  const numericValue = parseInt(String(rawValue));
+                  processedValue = isNaN(numericValue) ? 0 : numericValue;
+                  console.log(`${source}: Converted to number:`, processedValue);
+                }
+              } else {
+                processedValue = response.reponse_item || "";
+                console.log(`${source}: Non-numeric value:`, processedValue);
+              }
+
+              const result = {
+                item_id: parseInt(response.id_item),
+                value: processedValue
+              };
+              console.log(`${source}: Final formatted result:`, result);
+              return result;
+            });
+
+          console.log(`${source}: All formatted responses:`, formatted);
+          return formatted;
         };
 
-        setEmployeeResponses(formatResponses(collabResponse.data));
-        setEvaluatorResponses(formatResponses(evaluatorResponse.data));
+        const formattedEmployeeResponses = formatResponses(collabResponse.data, "EMPLOYEE");
+        const formattedEvaluatorResponses = formatResponses(evaluatorResponse.data, "EVALUATOR");
+
+        console.log("=== COMPARAISON FINALE ===");
+        console.log("Employee responses:", formattedEmployeeResponses);
+        console.log("Evaluator responses:", formattedEvaluatorResponses);
+
+        setEmployeeResponses(formattedEmployeeResponses);
+        setEvaluatorResponses(formattedEvaluatorResponses);
       } catch (error) {
         toast.error("Erreur lors de la récupération des réponses");
         console.error("Error fetching responses:", error);
@@ -132,7 +176,9 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
 
   const getResponseValue = (responses: EvaluationResponse[], itemId: number) => {
     const response = responses.find(r => r.item_id === itemId);
-    return response ? response.value : "";
+    const value = response ? response.value : "";
+    console.log(`getResponseValue for item ${itemId}:`, value, typeof value);
+    return value;
   };
 
   const renderStarRating = (value: number) => {
@@ -148,9 +194,10 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
     );
   };
 
-  const renderNumericBoxReadOnly = (value: number | string) => (
-    <NumericBoxGroup value={value} readOnly />
-  );
+  const renderNumericBoxReadOnly = (value: number | string) => {
+    console.log("renderNumericBoxReadOnly called with:", value, typeof value);
+    return <NumericBoxGroup value={value} readOnly />;
+  };
 
   const calculateAverages = () => {
     // Si c'est le premier groupe, calculer la moyenne globale de tous les items numériques
@@ -351,65 +398,74 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-6 mt-4">
-              {criteriaItems.map((item) => (
-                <div key={item.id} className="p-4 border rounded-md">
-                  <h3 className="text-lg font-medium mb-4">{item.label}</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2 bg-gray-50 p-4 rounded-md">
-                      <h4 className="font-medium text-gray-700">Auto-évaluation du collaborateur</h4>
-                      
-                      {item.type === 'numeric' ? (
-                        <div className="mt-4">
-                          {renderNumericBoxReadOnly(getResponseValue(employeeResponses, item.id) || 0)}
-                        </div>
-                      ) : item.type === 'boolean' ? (
-                        <div className="mt-4">
-                          <div className="p-3 rounded">
-                            {getResponseValue(employeeResponses, item.id) === 'oui' ? 'Oui' : 
-                             getResponseValue(employeeResponses, item.id) === 'non' ? 'Non' : 
-                             'Non spécifié'}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="mt-2">
-                          <ScrollArea className="h-[100px] w-full rounded-md">
-                            <div className="p-3 bg-gray-100 rounded text-gray-600 whitespace-pre-wrap">
-                              {getResponseValue(employeeResponses, item.id) || "Aucune observation fournie"}
-                            </div>
-                          </ScrollArea>
-                        </div>
-                      )}
-                    </div>
+              {criteriaItems.map((item) => {
+                const employeeValue = getResponseValue(employeeResponses, item.id);
+                const evaluatorValue = getResponseValue(evaluatorResponses, item.id);
+                
+                console.log(`=== Item ${item.id} (${item.label}) ===`);
+                console.log("Employee value:", employeeValue, typeof employeeValue);
+                console.log("Evaluator value:", evaluatorValue, typeof evaluatorValue);
+                
+                return (
+                  <div key={item.id} className="p-4 border rounded-md">
+                    <h3 className="text-lg font-medium mb-4">{item.label}</h3>
                     
-                    <div className="space-y-2 bg-blue-50 p-4 rounded-md">
-                      <h4 className="font-medium text-primary">Évaluation du manager</h4>
-                      
-                      {item.type === 'numeric' ? (
-                        <div className="mt-4">
-                          {renderNumericBoxReadOnly(getResponseValue(evaluatorResponses, item.id) || 0)}
-                        </div>
-                      ) : item.type === 'boolean' ? (
-                        <div className="mt-4">
-                          <div className="p-3 rounded">
-                            {getResponseValue(evaluatorResponses, item.id) === 'oui' ? 'Oui' : 
-                             getResponseValue(evaluatorResponses, item.id) === 'non' ? 'Non' : 
-                             'Non spécifié'}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2 bg-gray-50 p-4 rounded-md">
+                        <h4 className="font-medium text-gray-700">Auto-évaluation du collaborateur</h4>
+                        
+                        {item.type === 'numeric' ? (
+                          <div className="mt-4">
+                            {renderNumericBoxReadOnly(employeeValue || 0)}
                           </div>
-                        </div>
-                      ) : (
-                        <div className="mt-2">
-                          <ScrollArea className="h-[100px] w-full rounded-md">
-                            <div className="p-3 bg-blue-100 rounded text-blue-800 whitespace-pre-wrap">
-                              {getResponseValue(evaluatorResponses, item.id) || "Aucune observation fournie"}
+                        ) : item.type === 'boolean' ? (
+                          <div className="mt-4">
+                            <div className="p-3 rounded">
+                              {employeeValue === 'oui' ? 'Oui' : 
+                               employeeValue === 'non' ? 'Non' : 
+                               'Non spécifié'}
                             </div>
-                          </ScrollArea>
-                        </div>
-                      )}
+                          </div>
+                        ) : (
+                          <div className="mt-2">
+                            <ScrollArea className="h-[100px] w-full rounded-md">
+                              <div className="p-3 bg-gray-100 rounded text-gray-600 whitespace-pre-wrap">
+                                {employeeValue || "Aucune observation fournie"}
+                              </div>
+                            </ScrollArea>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="space-y-2 bg-blue-50 p-4 rounded-md">
+                        <h4 className="font-medium text-primary">Évaluation du manager</h4>
+                        
+                        {item.type === 'numeric' ? (
+                          <div className="mt-4">
+                            {renderNumericBoxReadOnly(evaluatorValue || 0)}
+                          </div>
+                        ) : item.type === 'boolean' ? (
+                          <div className="mt-4">
+                            <div className="p-3 rounded">
+                              {evaluatorValue === 'oui' ? 'Oui' : 
+                               evaluatorValue === 'non' ? 'Non' : 
+                               'Non spécifié'}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="mt-2">
+                            <ScrollArea className="h-[100px] w-full rounded-md">
+                              <div className="p-3 bg-blue-100 rounded text-blue-800 whitespace-pre-wrap">
+                                {evaluatorValue || "Aucune observation fournie"}
+                              </div>
+                            </ScrollArea>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </AccordionContent>
         </AccordionItem>
