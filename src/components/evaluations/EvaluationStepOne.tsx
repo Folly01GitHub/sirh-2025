@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
@@ -193,6 +191,25 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     }
   }, [selectedApproverId, form]);
 
+  // Fonction de formatage identique à EvaluationView.tsx
+  const formatResponses = (apiResponses: any): EvaluationResponse[] => {
+    if (!apiResponses || !apiResponses.responses) {
+      return [];
+    }
+
+    return apiResponses.responses
+      .filter((response: any) => response && response.id_item)
+      .map((response: any) => ({
+        item_id: parseInt(response.id_item),
+        value:
+          response.type_item === "numerique" || response.type_item === "numeric"
+            ? response.reponse_item
+              ? parseInt(response.reponse_item)
+              : 0
+            : response.reponse_item || ""
+      }));
+  };
+
   useEffect(() => {
     if (evaluationId) {
       apiClient.get<CollabResponse>(`/collab_responses?evaluation_id=${evaluationId}`)
@@ -207,20 +224,10 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
             onMissionChange(Number(response.data.mission_id));
           }
           
-          response.data.responses.forEach(resp => {
-            // Utiliser la même logique que EvaluationView.tsx
-            let value: string | number = resp.reponse_item;
-            
-            // Conversion identique à celle d'EvaluationView
-            if ((resp.type_item === "numerique" || resp.type_item === "numeric") && resp.reponse_item) {
-              value = parseInt(resp.reponse_item);
-            } else if (resp.type_item === "numerique" || resp.type_item === "numeric") {
-              value = 0;
-            } else {
-              value = resp.reponse_item || "";
-            }
-            
-            onResponseChange(Number(resp.id_item), value);
+          // Utiliser la fonction formatResponses identique à EvaluationView.tsx
+          const formattedResponses = formatResponses(response.data);
+          formattedResponses.forEach(resp => {
+            onResponseChange(resp.item_id, resp.value);
           });
         })
         .catch(error => {
@@ -670,4 +677,3 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
 };
 
 export default EvaluationStepOne;
-
