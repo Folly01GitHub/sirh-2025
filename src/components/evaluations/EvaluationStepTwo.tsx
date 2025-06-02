@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
@@ -88,8 +87,17 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         const response = await apiClient.get('/responses', {
           params: { evaluation_id: evaluationId }
         });
-        console.log("Collaborator responses fetched:", response.data);
-        return response.data || [];
+        console.log("Raw collaborator responses from API:", response.data);
+        
+        // Ensure we have an array and format the responses properly
+        const rawResponses = Array.isArray(response.data) ? response.data : [];
+        const formattedResponses = rawResponses.map(resp => ({
+          item_id: parseInt(resp.item_id || resp.id_item),
+          value: resp.value || resp.reponse_item || ""
+        }));
+        
+        console.log("Formatted collaborator responses:", formattedResponses);
+        return formattedResponses;
       } catch (error) {
         console.error("Error fetching collaborator responses:", error);
         return [];
@@ -167,9 +175,21 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   }, []);
   
   const getCollaboratorResponseValue = (itemId: number) => {
-    if (!collaboratorResponses || !collaboratorResponses.length) return "";
-    const response = collaboratorResponses.find(r => r.item_id === itemId);
-    return response ? response.value : "";
+    console.log(`Looking for collaborator response for item ${itemId}:`, collaboratorResponses);
+    if (!collaboratorResponses || !collaboratorResponses.length) {
+      console.log("No collaborator responses available");
+      return "";
+    }
+    
+    const response = collaboratorResponses.find(r => {
+      const responseItemId = parseInt(r.item_id);
+      console.log(`Comparing ${responseItemId} with ${itemId}:`, responseItemId === itemId);
+      return responseItemId === itemId;
+    });
+    
+    const value = response ? response.value : "";
+    console.log(`Found value for item ${itemId}:`, value);
+    return value;
   };
   
   const getEvaluatorResponseValue = (itemId: number) => {
@@ -202,6 +222,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   const renderCollaboratorStarRating = (itemId: number) => {
     const currentValue = Number(getCollaboratorResponseValue(itemId)) || 0;
+    console.log(`Rendering collaborator star rating for item ${itemId} with value:`, currentValue);
     
     return (
       <div className="flex space-x-2">
@@ -251,6 +272,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       getCollaboratorResponseValue(itemId) : 
       getEvaluatorResponseValue(itemId);
     
+    console.log(`Rendering boolean response for item ${itemId}, isCollaborator: ${isCollaborator}, value:`, value);
+    
     if (isCollaborator) {
       return (
         <div className="flex gap-6">
@@ -290,6 +313,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   const renderCollaboratorNumericBox = (itemId: number) => {
     const currentValue = getCollaboratorResponseValue(itemId);
+    console.log(`Rendering collaborator numeric box for item ${itemId} with value:`, currentValue);
     // Preserve "N/A" value as-is, otherwise convert to number
     const displayValue = currentValue === "N/A" ? "N/A" : (currentValue ? Number(currentValue) : 0);
     return (
@@ -299,6 +323,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   const renderEvaluatorNumericBox = (itemId: number) => {
     const currentValue = getEvaluatorResponseValue(itemId);
+    console.log(`Rendering evaluator numeric box for item ${itemId} with value:`, currentValue);
     // Preserve "N/A" value as-is, otherwise convert to number
     const displayValue = currentValue === "N/A" ? "N/A" : (currentValue ? Number(currentValue) : 0);
     return (
