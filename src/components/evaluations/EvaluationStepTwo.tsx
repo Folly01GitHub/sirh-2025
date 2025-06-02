@@ -288,17 +288,21 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   };
   
   const renderCollaboratorNumericBox = (itemId: number) => {
-    const currentValue = Number(getCollaboratorResponseValue(itemId)) || 0;
+    const currentValue = getCollaboratorResponseValue(itemId);
+    // Handle both numeric and "N/A" values
+    const displayValue = currentValue === "N/A" ? "N/A" : (Number(currentValue) || 0);
     return (
-      <NumericBoxGroup value={currentValue} readOnly />
+      <NumericBoxGroup value={displayValue} readOnly />
     );
   };
   
   const renderEvaluatorNumericBox = (itemId: number) => {
-    const currentValue = Number(getEvaluatorResponseValue(itemId)) || 0;
+    const currentValue = getEvaluatorResponseValue(itemId);
+    // Handle both numeric and "N/A" values
+    const displayValue = currentValue === "N/A" ? "N/A" : (Number(currentValue) || 0);
     return (
       <NumericBoxGroup
-        value={currentValue}
+        value={displayValue}
         onChange={(val) => handleEvaluatorResponseChange(itemId, val)}
       />
     );
@@ -310,6 +314,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
     
     switch (type) {
       case 'numeric':
+        // Accept "N/A" as a valid response for numeric items
+        if (response.value === "N/A") return true;
         const numericValue = typeof response.value === 'number' ? response.value : 
                           (typeof response.value === 'string' ? Number(response.value) : 0);
         return numericValue >= 1 && numericValue <= 5;

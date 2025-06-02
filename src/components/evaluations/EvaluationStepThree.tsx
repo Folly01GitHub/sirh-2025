@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
@@ -140,7 +138,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
     );
   };
 
-  const renderNumericBoxReadOnly = (value: number) => (
+  const renderNumericBoxReadOnly = (value: number | string) => (
     <NumericBoxGroup value={value} readOnly />
   );
 
@@ -149,42 +147,68 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
     if (isFirstGroup && allCriteriaItems.length > 0) {
       const allNumericItems = allCriteriaItems.filter(item => item.type === 'numeric');
       
-      const employeeAvg = allNumericItems.reduce((sum, item) => {
-        const value = Number(getResponseValue(employeeResponses, item.id)) || 0;
-        return sum + value;
-      }, 0) / (allNumericItems.length || 1);
+      const getValidNumericValues = (responses: EvaluationResponse[], items: CriteriaItem[]) => {
+        return items.map(item => {
+          const response = responses.find(r => r.item_id === item.id);
+          const value = response ? response.value : null;
+          // Only include numeric values (1-5), exclude "N/A"
+          return (value !== "N/A" && value !== null && value !== undefined) ? Number(value) : null;
+        }).filter(val => val !== null && val >= 1 && val <= 5) as number[];
+      };
       
-      const evaluatorAvg = allNumericItems.reduce((sum, item) => {
-        const value = Number(getResponseValue(evaluatorResponses, item.id)) || 0;
-        return sum + value;
-      }, 0) / (allNumericItems.length || 1);
+      const employeeValidValues = getValidNumericValues(employeeResponses, allNumericItems);
+      const evaluatorValidValues = getValidNumericValues(evaluatorResponses, allNumericItems);
+      
+      const employeeAvg = employeeValidValues.length > 0 
+        ? employeeValidValues.reduce((sum, val) => sum + val, 0) / employeeValidValues.length
+        : 0;
+        
+      const evaluatorAvg = evaluatorValidValues.length > 0
+        ? evaluatorValidValues.reduce((sum, val) => sum + val, 0) / evaluatorValidValues.length
+        : 0;
       
       return {
         employeeAvg: employeeAvg.toFixed(1),
-        evaluatorAvg: evaluatorAvg.toFixed(1)
+        evaluatorAvg: evaluatorAvg.toFixed(1),
+        employeeCount: employeeValidValues.length,
+        evaluatorCount: evaluatorValidValues.length,
+        totalItems: allNumericItems.length
       };
     } else {
       // Pour les autres groupes, calculer la moyenne du groupe actuel
       const numericItems = criteriaItems.filter(item => item.type === 'numeric');
       
-      const employeeAvg = numericItems.reduce((sum, item) => {
-        const value = Number(getResponseValue(employeeResponses, item.id)) || 0;
-        return sum + value;
-      }, 0) / (numericItems.length || 1);
+      const getValidNumericValues = (responses: EvaluationResponse[], items: CriteriaItem[]) => {
+        return items.map(item => {
+          const response = responses.find(r => r.item_id === item.id);
+          const value = response ? response.value : null;
+          // Only include numeric values (1-5), exclude "N/A"
+          return (value !== "N/A" && value !== null && value !== undefined) ? Number(value) : null;
+        }).filter(val => val !== null && val >= 1 && val <= 5) as number[];
+      };
       
-      const evaluatorAvg = numericItems.reduce((sum, item) => {
-        const value = Number(getResponseValue(evaluatorResponses, item.id)) || 0;
-        return sum + value;
-      }, 0) / (numericItems.length || 1);
+      const employeeValidValues = getValidNumericValues(employeeResponses, numericItems);
+      const evaluatorValidValues = getValidNumericValues(evaluatorResponses, numericItems);
+      
+      const employeeAvg = employeeValidValues.length > 0 
+        ? employeeValidValues.reduce((sum, val) => sum + val, 0) / employeeValidValues.length
+        : 0;
+        
+      const evaluatorAvg = evaluatorValidValues.length > 0
+        ? evaluatorValidValues.reduce((sum, val) => sum + val, 0) / evaluatorValidValues.length
+        : 0;
       
       return {
         employeeAvg: employeeAvg.toFixed(1),
-        evaluatorAvg: evaluatorAvg.toFixed(1)
+        evaluatorAvg: evaluatorAvg.toFixed(1),
+        employeeCount: employeeValidValues.length,
+        evaluatorCount: evaluatorValidValues.length,
+        totalItems: numericItems.length
       };
     }
   };
 
-  const { employeeAvg, evaluatorAvg } = calculateAverages();
+  const { employeeAvg, evaluatorAvg, employeeCount, evaluatorCount, totalItems } = calculateAverages();
 
   const handleApprove = async () => {
     if (!evaluationId) {
@@ -279,6 +303,11 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
               <div className="text-3xl font-bold text-yellow-500 mr-3">
                 {employeeAvg}/5
               </div>
+              {employeeCount < totalItems && (
+                <div className="text-sm text-gray-500">
+                  ({employeeCount}/{totalItems} critères notés)
+                </div>
+              )}
             </div>
           </div>
           
@@ -288,6 +317,11 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
               <div className="text-3xl font-bold text-primary mr-3">
                 {evaluatorAvg}/5
               </div>
+              {evaluatorCount < totalItems && (
+                <div className="text-sm text-gray-500">
+                  ({evaluatorCount}/{totalItems} critères notés)
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -317,7 +351,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                       
                       {item.type === 'numeric' ? (
                         <div className="mt-4">
-                          {renderNumericBoxReadOnly(Number(getResponseValue(employeeResponses, item.id)) || 0)}
+                          {renderNumericBoxReadOnly(getResponseValue(employeeResponses, item.id) || 0)}
                         </div>
                       ) : item.type === 'boolean' ? (
                         <div className="mt-4">
@@ -343,7 +377,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                       
                       {item.type === 'numeric' ? (
                         <div className="mt-4">
-                          {renderNumericBoxReadOnly(Number(getResponseValue(evaluatorResponses, item.id)) || 0)}
+                          {renderNumericBoxReadOnly(getResponseValue(evaluatorResponses, item.id) || 0)}
                         </div>
                       ) : item.type === 'boolean' ? (
                         <div className="mt-4">
@@ -470,4 +504,3 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
 };
 
 export default EvaluationStepThree;
-
