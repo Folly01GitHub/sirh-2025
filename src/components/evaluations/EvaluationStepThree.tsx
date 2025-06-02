@@ -92,12 +92,23 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         ]);
 
         const formatResponses = (apiResponses: ApiResponse['responses']): EvaluationResponse[] => {
-          return apiResponses.map(response => ({
-            item_id: parseInt(response.id_item),
-            value: response.type_item === "numerique" 
-              ? (response.reponse_item === "N/A" ? "N/A" : parseInt(response.reponse_item))
-              : response.reponse_item
-          }));
+          if (!apiResponses) {
+            return [];
+          }
+
+          return apiResponses
+            .filter((response: any) => response && response.id_item)
+            .map((response: any) => ({
+              item_id: parseInt(response.id_item),
+              value:
+                response.type_item === "numerique" || response.type_item === "numeric"
+                  ? response.reponse_item === "N/A" 
+                    ? "N/A"
+                    : response.reponse_item
+                      ? parseInt(response.reponse_item)
+                      : 0
+                  : response.reponse_item || ""
+            }));
         };
 
         setEmployeeResponses(formatResponses(collabResponse.data.responses));
