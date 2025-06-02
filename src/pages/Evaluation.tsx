@@ -6,7 +6,7 @@ import { useSearchParams } from 'react-router-dom';
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChevronLeft, ChevronRight, FileText, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, Star, ArrowLeft } from 'lucide-react';
 import EvaluationHeader from '@/components/evaluations/EvaluationHeader';
 import EvaluationStepOne from '@/components/evaluations/EvaluationStepOne';
 import EvaluationStepTwo from '@/components/evaluations/EvaluationStepTwo';
@@ -14,6 +14,7 @@ import EvaluationStepThree from '@/components/evaluations/EvaluationStepThree';
 import GroupTabTrigger from '@/components/evaluations/GroupTabTrigger';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 // Types for our evaluation data
 export interface CriteriaGroup {
@@ -486,12 +487,25 @@ const Evaluation = () => {
     return `${name.substring(0, maxLength)}...`;
   };
   
+  const handleGoBack = () => {
+    navigate('/evaluation-dashboard');
+  };
+
   return (
     <div className="flex flex-col min-h-screen w-full bg-[#f8f9fc]">
       <HRISNavbar />
       
       <div className="flex flex-col h-full w-full overflow-auto">
         <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-fade-in">
+          <Button
+            variant="back"
+            onClick={handleGoBack}
+            className="mb-6"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Retour aux évaluations
+          </Button>
+
           <EvaluationHeader currentStep={currentStep} />
           
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
