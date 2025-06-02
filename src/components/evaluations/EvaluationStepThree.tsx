@@ -95,7 +95,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
           return apiResponses.map(response => ({
             item_id: parseInt(response.id_item),
             value: response.type_item === "numerique" 
-              ? parseInt(response.reponse_item) 
+              ? (response.reponse_item === "N/A" ? "N/A" : parseInt(response.reponse_item))
               : response.reponse_item
           }));
         };
