@@ -488,6 +488,7 @@ const Evaluation = () => {
   };
   
   const handleGoBack = () => {
+    console.log('Navigating back to evaluation dashboard...');
     navigate('/evaluation-dashboard');
   };
 
