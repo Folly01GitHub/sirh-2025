@@ -565,7 +565,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
                 <div className="space-y-2">
                   <p className="text-sm text-gray-500 mb-2">Sélectionnez une note de 1 à 5</p>
                   <NumericBoxGroup
-                    value={Number(getResponseValue(item.id)) || 0}
+                    value={getResponseValue(item.id)}
                     onChange={val => onResponseChange(item.id, val)}
                   />
                 </div>
