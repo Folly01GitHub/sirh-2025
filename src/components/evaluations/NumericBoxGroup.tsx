@@ -13,10 +13,18 @@ export const NumericBoxGroup: React.FC<NumericBoxGroupProps> = ({ value, onChang
   };
 
   const isSelected = (val: number | string) => {
-    if (typeof value === 'number' && typeof val === 'number') {
-      return value === val;
+    // Handle "N/A" case
+    if (val === "N/A" && value === "N/A") {
+      return true;
     }
-    return value === val;
+    
+    // For numeric values, convert both to numbers for comparison
+    if (typeof val === 'number' && value !== "N/A") {
+      const numericValue = typeof value === 'string' ? parseFloat(value) : value;
+      return numericValue === val;
+    }
+    
+    return false;
   };
 
   return (
