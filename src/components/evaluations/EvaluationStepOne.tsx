@@ -226,9 +226,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
           
           // Utiliser la fonction formatResponses identique à EvaluationView.tsx
           const formattedResponses = formatResponses(response.data);
-          console.log('Formatted responses from API:', formattedResponses);
           formattedResponses.forEach(resp => {
-            console.log(`Setting response for item ${resp.item_id} with value:`, resp.value, typeof resp.value);
             onResponseChange(resp.item_id, resp.value);
           });
         })
@@ -244,16 +242,12 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
   const getResponseValue = (itemId: number) => {
     const response = responses.find(r => r.item_id === itemId);
     const value = response ? response.value : "";
-    console.log(`getResponseValue for item ${itemId}:`, value, typeof value);
     return value;
   };
 
   // Helper function to validate a response based on criteria type
   const isValidResponse = useCallback((response: EvaluationResponse | undefined, type: string): boolean => {
-    console.log(`Validating response for ${type}:`, response);
-    
     if (!response) {
-      console.log('No response found');
       return false;
     }
     
@@ -262,42 +256,32 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         const numericValue = typeof response.value === 'number' ? response.value : 
                           (typeof response.value === 'string' ? Number(response.value) : 0);
         const isNumericValid = numericValue >= 1 && numericValue <= 5;
-        console.log(`Numeric validation: ${isNumericValid} (value: ${numericValue})`);
         return isNumericValid;
       case 'observation':
         if (typeof response.value !== 'string') {
-          console.log('Observation value is not a string');
           return false;
         }
         // Remove the 50-character minimum check and just verify it's not empty
         const isObservationValid = response.value.trim().length > 0;
-        console.log(`Observation validation: ${isObservationValid} (length: ${response.value.length})`);
         return isObservationValid;
       case 'commentaire':
         if (typeof response.value !== 'string') {
-          console.log('Commentaire value is not a string');
           return false;
         }
         const isCommentaireValid = response.value.trim().length > 0;
-        console.log(`Commentaire validation: ${isCommentaireValid} (length: ${response.value.length})`);
         return isCommentaireValid;
       case 'boolean':
         if (typeof response.value !== 'string') {
-          console.log('Boolean value is not a string');
           return false;
         }
         const isBooleanValid = ['oui', 'non'].includes(response.value);
-        console.log(`Boolean validation: ${isBooleanValid} (value: ${response.value})`);
         return isBooleanValid;
       default:
-        console.log('Unknown type');
         return false;
     }
   }, []);
 
   const validateAllFields = (): boolean => {
-    console.log('Starting full form validation');
-    
     if (!allCriteriaItems || allCriteriaItems.length === 0) {
       console.warn("Cannot validate form - all criteria items not loaded yet");
       toast.error("Erreur de validation", { 
@@ -305,9 +289,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       });
       return false;
     }
-    
-    console.log(`Total criteria items to validate: ${allCriteriaItems.length}`);
-    console.log(`Total responses: ${responses.length}`);
     
     const missing: { group?: string, label: string, type: string }[] = [];
 
@@ -340,7 +321,6 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     });
 
     if (missingFieldsCount > 0) {
-      console.log('Validation failed with missing items:', missing);
       const message = `Veuillez compléter tous les champs obligatoires avant de soumettre votre auto-évaluation:\n\n${
         missing.map(item => `- ${item.group ? `${item.group}: ` : ''}${item.label}`).join('\n')
       }`;
@@ -352,13 +332,11 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
       return false;
     }
 
-    console.log('All fields validated successfully');
     return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submit handler triggered');
     
     if (!validateAllFields()) {
       console.error('Field validation failed');
@@ -589,19 +567,12 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
               {item.type === 'numeric' ? (
                 <div className="space-y-2">
                   <p className="text-sm text-gray-500 mb-2">Sélectionnez une note de 1 à 5</p>
-                  {(() => {
-                    const value = getResponseValue(item.id);
-                    console.log(`Rendering NumericBoxGroup for item ${item.id} with value:`, value, typeof value);
-                    return (
-                      <NumericBoxGroup
-                        value={value}
-                        onChange={val => {
-                          console.log(`NumericBoxGroup onChange for item ${item.id} with new value:`, val, typeof val);
-                          onResponseChange(item.id, val);
-                        }}
-                      />
-                    );
-                  })()}
+                  <NumericBoxGroup
+                    value={getResponseValue(item.id)}
+                    onChange={val => {
+                      onResponseChange(item.id, val);
+                    }}
+                  />
                 </div>
               ) : item.type === 'boolean' ? (
                 <div className="space-y-2">
