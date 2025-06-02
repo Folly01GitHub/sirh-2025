@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
@@ -105,7 +106,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                   ? response.reponse_item === "N/A" 
                     ? "N/A"
                     : response.reponse_item
-                      ? parseInt(response.reponse_item)
+                      ? Number(response.reponse_item)
                       : 0
                   : response.reponse_item || ""
             }));
