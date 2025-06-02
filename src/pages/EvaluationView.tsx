@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { CriteriaItem } from "@/pages/Evaluation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import HRISNavbar from "@/components/hris/HRISNavbar";
 import apiClient from "@/utils/apiClient";
@@ -28,6 +30,7 @@ interface GroupeItem {
 
 const EvaluationView = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const evaluationId = searchParams.get("id");
   const [employeeResponses, setEmployeeResponses] = useState<EvaluationResponse[]>([]);
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
@@ -166,6 +169,10 @@ const EvaluationView = () => {
     return `${name.substring(0, maxLength)}...`;
   };
 
+  const handleBackToEvaluations = () => {
+    navigate('/evaluations');
+  };
+
   if (itemsLoading || groupesLoading) {
     return (
       <div className="space-y-6">
@@ -182,6 +189,18 @@ const EvaluationView = () => {
       <HRISNavbar />
 
       <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-8">
+        {/* Bouton de retour */}
+        <div className="flex justify-start">
+          <Button
+            variant="back"
+            onClick={handleBackToEvaluations}
+            className="flex items-center"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Retour aux évaluations
+          </Button>
+        </div>
+
         <div className="bg-white p-6 rounded-lg border shadow-sm">
           <h3 className="text-xl font-medium mb-4">Résumé de l'évaluation</h3>
 
