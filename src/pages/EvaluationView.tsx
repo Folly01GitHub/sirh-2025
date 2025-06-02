@@ -106,9 +106,11 @@ const EvaluationView = () => {
               item_id: parseInt(response.id_item),
               value:
                 response.type_item === "numerique" || response.type_item === "numeric"
-                  ? response.reponse_item
-                    ? parseInt(response.reponse_item)
-                    : 0
+                  ? response.reponse_item === "N/A" 
+                    ? "N/A" 
+                    : response.reponse_item
+                      ? parseInt(response.reponse_item)
+                      : 0
                   : response.reponse_item || ""
             }));
         };
@@ -138,20 +140,28 @@ const EvaluationView = () => {
     let employeeSum = 0;
     let employeeCount = 0;
     numericItems.forEach((item) => {
-      const value = Number(getResponseValue(employeeResponses, item.id));
-      if (!isNaN(value) && value > 0) {
-        employeeSum += value;
-        employeeCount++;
+      const value = getResponseValue(employeeResponses, item.id);
+      // Only include numeric values (1-5), exclude "N/A"
+      if (value !== "N/A" && value !== null && value !== undefined) {
+        const numValue = Number(value);
+        if (!isNaN(numValue) && numValue > 0) {
+          employeeSum += numValue;
+          employeeCount++;
+        }
       }
     });
 
     let evaluatorSum = 0;
     let evaluatorCount = 0;
     numericItems.forEach((item) => {
-      const value = Number(getResponseValue(evaluatorResponses, item.id));
-      if (!isNaN(value) && value > 0) {
-        evaluatorSum += value;
-        evaluatorCount++;
+      const value = getResponseValue(evaluatorResponses, item.id);
+      // Only include numeric values (1-5), exclude "N/A"
+      if (value !== "N/A" && value !== null && value !== undefined) {
+        const numValue = Number(value);
+        if (!isNaN(numValue) && numValue > 0) {
+          evaluatorSum += numValue;
+          evaluatorCount++;
+        }
       }
     });
 
@@ -260,7 +270,7 @@ const EvaluationView = () => {
                           {item.type === "numeric" ? (
                             <div className="mt-4">
                               <NumericBoxGroup
-                                value={Number(getResponseValue(employeeResponses, item.id)) || 0}
+                                value={getResponseValue(employeeResponses, item.id) || 0}
                                 readOnly
                               />
                             </div>
@@ -292,7 +302,7 @@ const EvaluationView = () => {
                           {item.type === "numeric" ? (
                             <div className="mt-4">
                               <NumericBoxGroup
-                                value={Number(getResponseValue(evaluatorResponses, item.id)) || 0}
+                                value={getResponseValue(evaluatorResponses, item.id) || 0}
                                 readOnly
                               />
                             </div>
