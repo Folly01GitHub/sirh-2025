@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
@@ -92,7 +91,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
           apiClient.get<ApiResponse>(`/evaluator_responses?evaluation_id=${evaluationId}`)
         ]);
 
-        // Formatage pour les réponses du collaborateur (même logique qu'EvaluationView.tsx)
+        // Formatage pour les réponses du collaborateur (logique exacte d'EvaluationView.tsx)
         const formatCollabResponses = (apiResponses: any): EvaluationResponse[] => {
           if (!apiResponses || !apiResponses.responses) {
             return [];
