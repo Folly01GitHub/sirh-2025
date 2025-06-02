@@ -226,7 +226,9 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
           
           // Utiliser la fonction formatResponses identique à EvaluationView.tsx
           const formattedResponses = formatResponses(response.data);
+          console.log('Formatted responses from API:', formattedResponses);
           formattedResponses.forEach(resp => {
+            console.log(`Setting response for item ${resp.item_id} with value:`, resp.value, typeof resp.value);
             onResponseChange(resp.item_id, resp.value);
           });
         })
@@ -241,7 +243,9 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
 
   const getResponseValue = (itemId: number) => {
     const response = responses.find(r => r.item_id === itemId);
-    return response ? response.value : "";
+    const value = response ? response.value : "";
+    console.log(`getResponseValue for item ${itemId}:`, value, typeof value);
+    return value;
   };
 
   // Helper function to validate a response based on criteria type
@@ -585,10 +589,19 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
               {item.type === 'numeric' ? (
                 <div className="space-y-2">
                   <p className="text-sm text-gray-500 mb-2">Sélectionnez une note de 1 à 5</p>
-                  <NumericBoxGroup
-                    value={getResponseValue(item.id)}
-                    onChange={val => onResponseChange(item.id, val)}
-                  />
+                  {(() => {
+                    const value = getResponseValue(item.id);
+                    console.log(`Rendering NumericBoxGroup for item ${item.id} with value:`, value, typeof value);
+                    return (
+                      <NumericBoxGroup
+                        value={value}
+                        onChange={val => {
+                          console.log(`NumericBoxGroup onChange for item ${item.id} with new value:`, val, typeof val);
+                          onResponseChange(item.id, val);
+                        }}
+                      />
+                    );
+                  })()}
                 </div>
               ) : item.type === 'boolean' ? (
                 <div className="space-y-2">
