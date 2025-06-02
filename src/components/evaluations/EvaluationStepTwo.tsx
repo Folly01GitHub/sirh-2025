@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse, CriteriaGroup } from '@/pages/Evaluation';
@@ -132,7 +133,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
         .map(response => ({
           item_id: parseInt(response.id_item),
           value: response.type_item === 'numeric' 
-            ? (response.reponse_item ? parseFloat(response.reponse_item) : '') 
+            ? (response.reponse_item === "N/A" ? "N/A" : (response.reponse_item ? parseFloat(response.reponse_item) : ''))
             : (response.reponse_item || '')
         }));
       
@@ -289,8 +290,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   const renderCollaboratorNumericBox = (itemId: number) => {
     const currentValue = getCollaboratorResponseValue(itemId);
-    // Handle both numeric and "N/A" values
-    const displayValue = currentValue === "N/A" ? "N/A" : (Number(currentValue) || 0);
+    // Preserve "N/A" value as-is, otherwise convert to number
+    const displayValue = currentValue === "N/A" ? "N/A" : (currentValue ? Number(currentValue) : 0);
     return (
       <NumericBoxGroup value={displayValue} readOnly />
     );
@@ -298,8 +299,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   const renderEvaluatorNumericBox = (itemId: number) => {
     const currentValue = getEvaluatorResponseValue(itemId);
-    // Handle both numeric and "N/A" values
-    const displayValue = currentValue === "N/A" ? "N/A" : (Number(currentValue) || 0);
+    // Preserve "N/A" value as-is, otherwise convert to number
+    const displayValue = currentValue === "N/A" ? "N/A" : (currentValue ? Number(currentValue) : 0);
     return (
       <NumericBoxGroup
         value={displayValue}
