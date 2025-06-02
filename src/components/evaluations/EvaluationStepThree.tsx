@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
@@ -92,7 +91,27 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
           apiClient.get<ApiResponse>(`/evaluator_responses?evaluation_id=${evaluationId}`)
         ]);
 
-        const formatResponses = (apiResponses: ApiResponse['responses']): EvaluationResponse[] => {
+        // Formatage pour les réponses du collaborateur (même logique qu'EvaluationView.tsx)
+        const formatCollabResponses = (apiResponses: ApiResponse['responses']): EvaluationResponse[] => {
+          if (!apiResponses) {
+            return [];
+          }
+
+          return apiResponses
+            .filter((response: any) => response && response.id_item)
+            .map((response: any) => ({
+              item_id: parseInt(response.id_item),
+              value:
+                response.type_item === "numerique" || response.type_item === "numeric"
+                  ? response.reponse_item
+                    ? parseInt(response.reponse_item)
+                    : 0
+                  : response.reponse_item || ""
+            }));
+        };
+
+        // Formatage pour les réponses de l'évaluateur (logique corrigée)
+        const formatEvaluatorResponses = (apiResponses: ApiResponse['responses']): EvaluationResponse[] => {
           if (!apiResponses) {
             return [];
           }
@@ -112,8 +131,8 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
             }));
         };
 
-        setEmployeeResponses(formatResponses(collabResponse.data.responses));
-        setEvaluatorResponses(formatResponses(evaluatorResponse.data.responses));
+        setEmployeeResponses(formatCollabResponses(collabResponse.data.responses));
+        setEvaluatorResponses(formatEvaluatorResponses(evaluatorResponse.data.responses));
       } catch (error) {
         toast.error("Erreur lors de la récupération des réponses");
         console.error("Error fetching responses:", error);
