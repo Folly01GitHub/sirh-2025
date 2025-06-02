@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
@@ -95,7 +96,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         console.log("Raw collab response:", collabResponse.data);
         console.log("Raw evaluator response:", evaluatorResponse.data);
 
-        // Fonction de formatage avec logs détaillés
+        // Fonction de formatage avec logs détaillés et normalisation des valeurs numériques
         const formatResponses = (apiResponses: any, source: string): EvaluationResponse[] => {
           console.log(`=== Formatage ${source} ===`);
           console.log("Input data:", apiResponses);
@@ -118,7 +119,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
               
               let processedValue;
               if (response.type_item === "numerique" || response.type_item === "numeric") {
-                // Gestion stricte des valeurs numériques
+                // Gestion stricte des valeurs numériques avec normalisation
                 const rawValue = response.reponse_item;
                 console.log(`${source}: Raw numeric value:`, rawValue, typeof rawValue);
                 
@@ -126,9 +127,10 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
                   processedValue = "N/A";
                   console.log(`${source}: Converted to N/A`);
                 } else {
-                  const numericValue = parseInt(String(rawValue));
+                  // Normaliser les valeurs numériques : convertir les strings avec décimales en entiers
+                  const numericValue = Math.round(parseFloat(String(rawValue)));
                   processedValue = isNaN(numericValue) ? 0 : numericValue;
-                  console.log(`${source}: Converted to number:`, processedValue);
+                  console.log(`${source}: Raw value "${rawValue}" converted to normalized integer:`, processedValue);
                 }
               } else {
                 processedValue = response.reponse_item || "";
@@ -150,7 +152,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         const formattedEmployeeResponses = formatResponses(collabResponse.data, "EMPLOYEE");
         const formattedEvaluatorResponses = formatResponses(evaluatorResponse.data, "EVALUATOR");
 
-        console.log("=== COMPARAISON FINALE ===");
+        console.log("=== COMPARAISON FINALE APRÈS NORMALISATION ===");
         console.log("Employee responses:", formattedEmployeeResponses);
         console.log("Evaluator responses:", formattedEvaluatorResponses);
 
