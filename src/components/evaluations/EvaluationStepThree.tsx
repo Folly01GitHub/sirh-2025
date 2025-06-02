@@ -153,8 +153,12 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
           const response = responses.find(r => r.item_id === item.id);
           const value = response ? response.value : null;
           // Only include numeric values (1-5), exclude "N/A"
-          return (value !== "N/A" && value !== null && value !== undefined) ? Number(value) : null;
-        }).filter(val => val !== null && val >= 1 && val <= 5) as number[];
+          if (value !== "N/A" && value !== null && value !== undefined) {
+            const numValue = Number(value);
+            return (!isNaN(numValue) && numValue >= 1 && numValue <= 5) ? numValue : null;
+          }
+          return null;
+        }).filter(val => val !== null) as number[];
       };
       
       const employeeValidValues = getValidNumericValues(employeeResponses, allNumericItems);
@@ -184,8 +188,12 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
           const response = responses.find(r => r.item_id === item.id);
           const value = response ? response.value : null;
           // Only include numeric values (1-5), exclude "N/A"
-          return (value !== "N/A" && value !== null && value !== undefined) ? Number(value) : null;
-        }).filter(val => val !== null && val >= 1 && val <= 5) as number[];
+          if (value !== "N/A" && value !== null && value !== undefined) {
+            const numValue = Number(value);
+            return (!isNaN(numValue) && numValue >= 1 && numValue <= 5) ? numValue : null;
+          }
+          return null;
+        }).filter(val => val !== null) as number[];
       };
       
       const employeeValidValues = getValidNumericValues(employeeResponses, numericItems);
