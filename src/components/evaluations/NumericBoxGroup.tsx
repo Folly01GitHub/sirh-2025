@@ -35,6 +35,7 @@ export const NumericBoxGroup: React.FC<NumericBoxGroupProps> = ({ value, onChang
             transition-colors duration-100
             focus:outline-none focus:ring-2 focus:ring-primary
             cursor-pointer
+            ${!readOnly && !isSelected(num) ? "hover:bg-primary/10" : ""}
           `}
           aria-pressed={isSelected(num)}
         >
@@ -54,6 +55,7 @@ export const NumericBoxGroup: React.FC<NumericBoxGroupProps> = ({ value, onChang
           transition-colors duration-100
           focus:outline-none focus:ring-2 focus:ring-orange-400
           cursor-pointer
+          ${!readOnly && !isSelected("N/A") ? "hover:bg-orange-400/10" : ""}
         `}
         aria-pressed={isSelected("N/A")}
       >
