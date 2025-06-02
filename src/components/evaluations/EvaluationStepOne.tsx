@@ -253,6 +253,8 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     
     switch (type) {
       case 'numeric':
+        // Accept "N/A" as a valid response for numeric items
+        if (response.value === "N/A") return true;
         const numericValue = typeof response.value === 'number' ? response.value : 
                           (typeof response.value === 'string' ? Number(response.value) : 0);
         const isNumericValid = numericValue >= 1 && numericValue <= 5;
