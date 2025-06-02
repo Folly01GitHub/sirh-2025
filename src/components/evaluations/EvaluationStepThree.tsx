@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CriteriaItem, EvaluationResponse } from '@/pages/Evaluation';
@@ -92,12 +93,12 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
         ]);
 
         // Formatage pour les réponses du collaborateur (même logique qu'EvaluationView.tsx)
-        const formatCollabResponses = (apiResponses: ApiResponse['responses']): EvaluationResponse[] => {
-          if (!apiResponses) {
+        const formatCollabResponses = (apiResponses: any): EvaluationResponse[] => {
+          if (!apiResponses || !apiResponses.responses) {
             return [];
           }
 
-          return apiResponses
+          return apiResponses.responses
             .filter((response: any) => response && response.id_item)
             .map((response: any) => ({
               item_id: parseInt(response.id_item),
@@ -131,7 +132,7 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
             }));
         };
 
-        setEmployeeResponses(formatCollabResponses(collabResponse.data.responses));
+        setEmployeeResponses(formatCollabResponses(collabResponse.data));
         setEvaluatorResponses(formatEvaluatorResponses(evaluatorResponse.data.responses));
       } catch (error) {
         toast.error("Erreur lors de la récupération des réponses");
