@@ -1,4 +1,5 @@
 
+
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CriteriaItem, Employee } from '@/pages/Evaluation';
@@ -207,15 +208,16 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
           }
           
           response.data.responses.forEach(resp => {
-            // Convertir les valeurs numériques en entiers pour l'affichage correct
+            // Utiliser la même logique que EvaluationView.tsx
             let value: string | number = resp.reponse_item;
             
-            // Si c'est un item numérique et que la valeur est une chaîne qui représente un nombre
-            if (resp.type_item === 'numeric' && typeof value === 'string' && value !== 'N/A') {
-              const numericValue = parseFloat(value);
-              if (!isNaN(numericValue)) {
-                value = Math.round(numericValue);
-              }
+            // Conversion identique à celle d'EvaluationView
+            if ((resp.type_item === "numerique" || resp.type_item === "numeric") && resp.reponse_item) {
+              value = parseInt(resp.reponse_item);
+            } else if (resp.type_item === "numerique" || resp.type_item === "numeric") {
+              value = 0;
+            } else {
+              value = resp.reponse_item || "";
             }
             
             onResponseChange(Number(resp.id_item), value);
@@ -668,3 +670,4 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
 };
 
 export default EvaluationStepOne;
+
