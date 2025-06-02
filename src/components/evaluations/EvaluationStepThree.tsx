@@ -91,8 +91,8 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
           apiClient.get<ApiResponse>(`/evaluator_responses?evaluation_id=${evaluationId}`)
         ]);
 
-        // Formatage pour les réponses du collaborateur (logique exacte d'EvaluationView.tsx)
-        const formatCollabResponses = (apiResponses: any): EvaluationResponse[] => {
+        // Fonction unifiée de formatage (même logique qu'EvaluationView.tsx)
+        const formatResponses = (apiResponses: any): EvaluationResponse[] => {
           if (!apiResponses || !apiResponses.responses) {
             return [];
           }
@@ -103,36 +103,17 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
               item_id: parseInt(response.id_item),
               value:
                 response.type_item === "numerique" || response.type_item === "numeric"
-                  ? response.reponse_item
-                    ? parseInt(response.reponse_item)
-                    : 0
-                  : response.reponse_item || ""
-            }));
-        };
-
-        // Formatage pour les réponses de l'évaluateur (logique corrigée)
-        const formatEvaluatorResponses = (apiResponses: ApiResponse['responses']): EvaluationResponse[] => {
-          if (!apiResponses) {
-            return [];
-          }
-
-          return apiResponses
-            .filter((response: any) => response && response.id_item)
-            .map((response: any) => ({
-              item_id: parseInt(response.id_item),
-              value:
-                response.type_item === "numerique" || response.type_item === "numeric"
                   ? response.reponse_item === "N/A" 
                     ? "N/A"
                     : response.reponse_item
-                      ? Number(response.reponse_item)
+                      ? parseInt(response.reponse_item)
                       : 0
                   : response.reponse_item || ""
             }));
         };
 
-        setEmployeeResponses(formatCollabResponses(collabResponse.data));
-        setEvaluatorResponses(formatEvaluatorResponses(evaluatorResponse.data.responses));
+        setEmployeeResponses(formatResponses(collabResponse.data));
+        setEvaluatorResponses(formatResponses(evaluatorResponse.data));
       } catch (error) {
         toast.error("Erreur lors de la récupération des réponses");
         console.error("Error fetching responses:", error);
