@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -137,6 +136,14 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
     }
   };
 
+  const canShowActionButtons = (status: string) => {
+    // For team section, hide action buttons for final statuses
+    if (activeFilter === 'team') {
+      return !['Acceptée', 'Refusée', 'Annulée'].includes(status);
+    }
+    return true;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <Table>
@@ -212,33 +219,37 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                           <Download className="h-4 w-4" />
                         </Button>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleApprove(leave.id)}
-                        className="text-green-600 hover:text-green-800 hover:bg-green-50"
-                        title="Valider"
-                      >
-                        <CheckCircle className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleReject(leave.id)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        title="Refuser"
-                      >
-                        <XCircle className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleCancel(leave.id)}
-                        className="text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                        title="Annuler la demande"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                      {canShowActionButtons(leave.status) && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleApprove(leave.id)}
+                            className="text-green-600 hover:text-green-800 hover:bg-green-50"
+                            title="Valider"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleReject(leave.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            title="Refuser"
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleCancel(leave.id)}
+                            className="text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                            title="Annuler la demande"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"
