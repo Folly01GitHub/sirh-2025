@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -8,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import apiClient from '@/utils/apiClient';
+import { toast } from 'sonner';
 
 interface LeaveDetailsData {
   id: string;
@@ -51,9 +51,47 @@ const LeaveDetails = () => {
     navigate('/leave');
   };
 
-  const handleDownloadAttachment = () => {
-    console.log(`Téléchargement du justificatif pour la demande #${id}`);
-    // Logique de téléchargement à implémenter
+  const handleDownloadAttachment = async () => {
+    if (!id) return;
+    
+    try {
+      console.log(`Téléchargement du justificatif pour la demande #${id}`);
+      
+      const response = await apiClient.get(`/justificatif/${id}`, {
+        responseType: 'blob'
+      });
+      
+      // Create blob URL
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
+      
+      // Get filename from response headers or use default
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = `justificatif_${id}`;
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
+        }
+      }
+      
+      // Create download link and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success(`Justificatif téléchargé avec succès`);
+    } catch (error) {
+      console.error('Erreur lors du téléchargement du justificatif:', error);
+      toast.error('Erreur lors du téléchargement du justificatif');
+    }
   };
 
   const renderStatusBadge = (status: string) => {

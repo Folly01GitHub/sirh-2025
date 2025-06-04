@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -7,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Eye, Trash2, Download, CheckCircle, XCircle, X } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import apiClient from '@/utils/apiClient';
 
 interface LeaveItem {
   id: string;
@@ -36,9 +36,45 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
     toast.success(`Demande #${id} supprimée`);
   };
 
-  const handleDownload = (id: string) => {
-    onActionClick(id, 'download');
-    toast.info(`Téléchargement du justificatif pour la demande #${id}`);
+  const handleDownload = async (id: string) => {
+    try {
+      console.log(`Téléchargement du justificatif pour la demande #${id}`);
+      
+      const response = await apiClient.get(`/justificatif/${id}`, {
+        responseType: 'blob'
+      });
+      
+      // Create blob URL
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
+      
+      // Get filename from response headers or use default
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = `justificatif_${id}`;
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
+        }
+      }
+      
+      // Create download link and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success(`Justificatif téléchargé avec succès`);
+    } catch (error) {
+      console.error('Erreur lors du téléchargement du justificatif:', error);
+      toast.error('Erreur lors du téléchargement du justificatif');
+    }
   };
 
   const handleView = (id: string) => {
