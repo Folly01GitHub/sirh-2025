@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -110,7 +111,7 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
     if (activeFilter === 'team') {
       try {
         await apiClient.patch(`/demandes-conges/${id}/valider`);
-        toast.success('Demande approuvée');
+        toast.success('Demande approuvée avec succès');
         onActionClick(id, 'approve');
       } catch (error) {
         console.error('Erreur lors de l\'approbation de la demande:', error);
@@ -128,7 +129,7 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
         await apiClient.patch(`/demandes-conges/${id}/rejeter`, {
           motif: rejectionReason
         });
-        toast.success('Demande rejetée');
+        toast.success('Demande refusée avec succès');
         onActionClick(id, 'reject');
         setIsRejectDialogOpen(false);
         setRejectionReason('');
@@ -147,7 +148,7 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
     if (activeFilter === 'team') {
       try {
         await apiClient.patch(`/demandes-conges/${id}/annuler`);
-        toast.success('Demande annulée');
+        toast.success('Demande annulée avec succès');
         onActionClick(id, 'cancel');
       } catch (error) {
         console.error('Erreur lors de l\'annulation de la demande:', error);
