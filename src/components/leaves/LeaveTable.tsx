@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +7,27 @@ import { Eye, Trash2, Download, CheckCircle, XCircle, X } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import apiClient from '@/utils/apiClient';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 
 interface LeaveItem {
   id: string;
@@ -32,6 +52,9 @@ interface LeaveTableProps {
 
 const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTableProps) => {
   const navigate = useNavigate();
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [selectedLeaveId, setSelectedLeaveId] = useState<string>('');
 
   const handleDelete = (id: string) => {
     onActionClick(id, 'delete');
@@ -102,9 +125,14 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
   const handleReject = async (id: string) => {
     if (activeFilter === 'team') {
       try {
-        await apiClient.patch(`/demandes-conges/${id}/rejeter`);
+        await apiClient.patch(`/demandes-conges/${id}/rejeter`, {
+          motif: rejectionReason
+        });
         toast.success(`Demande #${id} rejetée`);
         onActionClick(id, 'reject');
+        setIsRejectDialogOpen(false);
+        setRejectionReason('');
+        setSelectedLeaveId('');
       } catch (error) {
         console.error('Erreur lors du rejet de la demande:', error);
         toast.error('Erreur lors du rejet de la demande');
@@ -128,6 +156,18 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
     } else {
       onActionClick(id, 'cancel');
       toast.success(`Demande #${id} annulée`);
+    }
+  };
+
+  const openRejectDialog = (id: string) => {
+    setSelectedLeaveId(id);
+    setRejectionReason('');
+    setIsRejectDialogOpen(true);
+  };
+
+  const confirmReject = () => {
+    if (selectedLeaveId && rejectionReason.trim()) {
+      handleReject(selectedLeaveId);
     }
   };
 
@@ -273,31 +313,66 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                       {canShowActionButtons(leave.status) && (
                         <>
                           {canShowCancelButton(leave.status) && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleCancel(leave.id)}
-                              className="text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                              title="Annuler la demande"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                                  title="Annuler la demande"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Confirmer l'annulation</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Êtes-vous sûr de vouloir annuler cette demande de congé ? Cette action ne peut pas être annulée.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleCancel(leave.id)}>
+                                    Confirmer l'annulation
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           )}
                           {canShowApprovalButtons(leave.status, leave.isValidation) && (
                             <>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-green-600 hover:text-green-800 hover:bg-green-50"
+                                    title="Valider"
+                                  >
+                                    <CheckCircle className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Confirmer l'approbation</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Êtes-vous sûr de vouloir approuver cette demande de congé ?
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleApprove(leave.id)}>
+                                      Approuver
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                              
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => handleApprove(leave.id)}
-                                className="text-green-600 hover:text-green-800 hover:bg-green-50"
-                                title="Valider"
-                              >
-                                <CheckCircle className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleReject(leave.id)}
+                                onClick={() => openRejectDialog(leave.id)}
                                 className="text-red-500 hover:text-red-700 hover:bg-red-50"
                                 title="Refuser"
                               >
@@ -323,6 +398,38 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
           )}
         </TableBody>
       </Table>
+
+      {/* Dialog de refus avec motif */}
+      <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Refuser la demande de congé</DialogTitle>
+            <DialogDescription>
+              Veuillez fournir un motif pour le refus de cette demande.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Textarea
+              placeholder="Motif du refus..."
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              className="min-h-[100px]"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRejectDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={confirmReject}
+              disabled={!rejectionReason.trim()}
+            >
+              Refuser la demande
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
