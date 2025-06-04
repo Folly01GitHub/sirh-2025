@@ -110,7 +110,7 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
     if (activeFilter === 'team') {
       try {
         await apiClient.patch(`/demandes-conges/${id}/valider`);
-        toast.success(`Demande #${id} approuvée`);
+        toast.success('Demande approuvée');
         onActionClick(id, 'approve');
       } catch (error) {
         console.error('Erreur lors de l\'approbation de la demande:', error);
@@ -128,7 +128,7 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
         await apiClient.patch(`/demandes-conges/${id}/rejeter`, {
           motif: rejectionReason
         });
-        toast.success(`Demande #${id} rejetée`);
+        toast.success('Demande rejetée');
         onActionClick(id, 'reject');
         setIsRejectDialogOpen(false);
         setRejectionReason('');
@@ -147,7 +147,7 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
     if (activeFilter === 'team') {
       try {
         await apiClient.patch(`/demandes-conges/${id}/annuler`);
-        toast.success(`Demande #${id} annulée`);
+        toast.success('Demande annulée');
         onActionClick(id, 'cancel');
       } catch (error) {
         console.error('Erreur lors de l\'annulation de la demande:', error);
