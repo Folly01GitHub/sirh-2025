@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,6 +54,7 @@ interface LeaveTableProps {
 
 const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTableProps) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [rejectionReason, setRejectionReason] = useState('');
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [selectedLeaveId, setSelectedLeaveId] = useState<string>('');
@@ -112,6 +114,11 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
       try {
         await apiClient.patch(`/demandes-conges/${id}/valider`);
         toast.success('Demande approuvée avec succès');
+        
+        // Actualiser les données
+        await queryClient.invalidateQueries({ queryKey: ['leaves', 'team'] });
+        await queryClient.invalidateQueries({ queryKey: ['leaveStats', 'team'] });
+        
         onActionClick(id, 'approve');
       } catch (error) {
         console.error('Erreur lors de l\'approbation de la demande:', error);
@@ -130,6 +137,11 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
           motif: rejectionReason
         });
         toast.success('Demande refusée avec succès');
+        
+        // Actualiser les données
+        await queryClient.invalidateQueries({ queryKey: ['leaves', 'team'] });
+        await queryClient.invalidateQueries({ queryKey: ['leaveStats', 'team'] });
+        
         onActionClick(id, 'reject');
         setIsRejectDialogOpen(false);
         setRejectionReason('');
@@ -149,6 +161,11 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
       try {
         await apiClient.patch(`/demandes-conges/${id}/annuler`);
         toast.success('Demande annulée avec succès');
+        
+        // Actualiser les données
+        await queryClient.invalidateQueries({ queryKey: ['leaves', 'team'] });
+        await queryClient.invalidateQueries({ queryKey: ['leaveStats', 'team'] });
+        
         onActionClick(id, 'cancel');
       } catch (error) {
         console.error('Erreur lors de l\'annulation de la demande:', error);
