@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -230,6 +231,17 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                       )}
                       {canShowActionButtons(leave.status) && (
                         <>
+                          {canShowCancelButton(leave.status) && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleCancel(leave.id)}
+                              className="text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                              title="Annuler la demande"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"
@@ -248,17 +260,6 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                           >
                             <XCircle className="h-4 w-4" />
                           </Button>
-                          {canShowCancelButton(leave.status) && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleCancel(leave.id)}
-                              className="text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                              title="Annuler la demande"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          )}
                         </>
                       )}
                       <Button
@@ -282,3 +283,4 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
 };
 
 export default LeaveTable;
+
