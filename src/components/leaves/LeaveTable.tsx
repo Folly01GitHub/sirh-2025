@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -44,8 +45,8 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
         responseType: 'blob'
       });
       
-      // Create blob URL
-      const blob = new Blob([response.data]);
+      // Create blob URL with original content type
+      const blob = new Blob([response.data], { type: response.headers['content-type'] });
       const url = window.URL.createObjectURL(blob);
       
       // Get filename from response headers or use default
