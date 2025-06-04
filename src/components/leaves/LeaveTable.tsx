@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -144,6 +145,14 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
     return true;
   };
 
+  const canShowCancelButton = (status: string) => {
+    // For team section, only show cancel button for "Niveau responsable" status
+    if (activeFilter === 'team') {
+      return status === 'Niveau responsable';
+    }
+    return true;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <Table>
@@ -239,15 +248,17 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                           >
                             <XCircle className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleCancel(leave.id)}
-                            className="text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                            title="Annuler la demande"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+                          {canShowCancelButton(leave.status) && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleCancel(leave.id)}
+                              className="text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                              title="Annuler la demande"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
                         </>
                       )}
                       <Button
