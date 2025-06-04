@@ -31,6 +31,7 @@ interface LeaveItem {
   requester?: string;
   reason?: string;
   isLegal?: boolean;
+  isValidation?: boolean;
 }
 
 interface ApiLeaveItem {
@@ -50,6 +51,7 @@ interface ApiTeamLeaveItem {
   jours_pris: number;
   statut: string;
   isLegal: boolean;
+  isValidation: boolean;
 }
 
 interface ApiLeaveStatsResponse {
@@ -151,7 +153,8 @@ const fetchTeamLeaves = async (): Promise<LeaveItem[]> => {
       days: item.jours_pris,
       status: item.statut as LeaveItem['status'],
       hasAttachment: !item.isLegal, // Show attachment for non-legal leaves
-      isLegal: item.isLegal
+      isLegal: item.isLegal,
+      isValidation: item.isValidation
     }));
   } catch (error) {
     console.error('Error fetching team leaves:', error);

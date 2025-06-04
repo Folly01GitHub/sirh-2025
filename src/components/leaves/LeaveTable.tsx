@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -21,6 +19,7 @@ interface LeaveItem {
   requester?: string;
   reason?: string;
   isLegal?: boolean;
+  isValidation?: boolean;
 }
 
 interface LeaveTableProps {
@@ -154,6 +153,14 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
     return true;
   };
 
+  const canShowApprovalButtons = (status: string, isValidation?: boolean) => {
+    // For team section, only show approval/rejection buttons when isValidation is true
+    if (activeFilter === 'team') {
+      return isValidation === true && !['Acceptée', 'Refusée', 'Annulée'].includes(status);
+    }
+    return true;
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <Table>
@@ -242,24 +249,28 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                               <X className="h-4 w-4" />
                             </Button>
                           )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleApprove(leave.id)}
-                            className="text-green-600 hover:text-green-800 hover:bg-green-50"
-                            title="Valider"
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleReject(leave.id)}
-                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                            title="Refuser"
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
+                          {canShowApprovalButtons(leave.status, leave.isValidation) && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleApprove(leave.id)}
+                                className="text-green-600 hover:text-green-800 hover:bg-green-50"
+                                title="Valider"
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleReject(leave.id)}
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                title="Refuser"
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
                         </>
                       )}
                       <Button
@@ -283,4 +294,3 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
 };
 
 export default LeaveTable;
-
