@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -82,19 +83,52 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
     navigate(`/leave-details/${id}`);
   };
 
-  const handleApprove = (id: string) => {
-    onActionClick(id, 'approve');
-    toast.success(`Demande #${id} approuvée`);
+  const handleApprove = async (id: string) => {
+    if (activeFilter === 'team') {
+      try {
+        await apiClient.patch(`/demandes-conges/${id}/valider`);
+        toast.success(`Demande #${id} approuvée`);
+        onActionClick(id, 'approve');
+      } catch (error) {
+        console.error('Erreur lors de l\'approbation de la demande:', error);
+        toast.error('Erreur lors de l\'approbation de la demande');
+      }
+    } else {
+      onActionClick(id, 'approve');
+      toast.success(`Demande #${id} approuvée`);
+    }
   };
 
-  const handleReject = (id: string) => {
-    onActionClick(id, 'reject');
-    toast.success(`Demande #${id} rejetée`);
+  const handleReject = async (id: string) => {
+    if (activeFilter === 'team') {
+      try {
+        await apiClient.patch(`/demandes-conges/${id}/rejeter`);
+        toast.success(`Demande #${id} rejetée`);
+        onActionClick(id, 'reject');
+      } catch (error) {
+        console.error('Erreur lors du rejet de la demande:', error);
+        toast.error('Erreur lors du rejet de la demande');
+      }
+    } else {
+      onActionClick(id, 'reject');
+      toast.success(`Demande #${id} rejetée`);
+    }
   };
 
-  const handleCancel = (id: string) => {
-    onActionClick(id, 'cancel');
-    toast.success(`Demande #${id} annulée`);
+  const handleCancel = async (id: string) => {
+    if (activeFilter === 'team') {
+      try {
+        await apiClient.patch(`/demandes-conges/${id}/annuler`);
+        toast.success(`Demande #${id} annulée`);
+        onActionClick(id, 'cancel');
+      } catch (error) {
+        console.error('Erreur lors de l\'annulation de la demande:', error);
+        toast.error('Erreur lors de l\'annulation de la demande');
+      }
+    } else {
+      onActionClick(id, 'cancel');
+      toast.success(`Demande #${id} annulée`);
+    }
   };
 
   const renderStatusBadge = (status: string) => {
