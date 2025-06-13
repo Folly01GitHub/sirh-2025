@@ -17,12 +17,9 @@ import {
   SidebarTrigger
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { 
   LayoutDashboard, 
   Settings, 
-  Bell, 
-  Search, 
   LogOut, 
   User,
   ArrowLeft
@@ -37,7 +34,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const [notifications] = useState(3); // Placeholder for notifications count
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -124,23 +120,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           <header className="bg-white border-b flex justify-between items-center p-4 sticky top-0 z-10">
             <div className="flex items-center">
               <SidebarTrigger className="mr-2" />
-              <div className="relative w-64">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-                <Input 
-                  placeholder="Rechercher..." 
-                  className="pl-8" 
-                />
-              </div>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                {notifications > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {notifications}
-                  </span>
-                )}
-              </Button>
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
                   <User className="h-4 w-4 text-gray-600" />
@@ -161,4 +142,3 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 };
 
 export default AdminLayout;
-
