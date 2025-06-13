@@ -4,7 +4,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, User as UserIcon } from 'lucide-react';
-import apiClient from '@/utils/apiClient';
 import { User } from '@/types/user.types';
 import UserLeaveStats from '@/components/admin/UserLeaveStats';
 import UserEvaluationStats from '@/components/admin/UserEvaluationStats';
@@ -16,20 +15,27 @@ const UserStats = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserFromLocalStorage = () => {
       if (!userId) return;
       
       try {
-        const response = await apiClient.get(`/employees/${userId}`);
-        setUser(response.data);
+        // Récupérer les utilisateurs stockés localement (provenant de UserTable)
+        const storedUsers = localStorage.getItem('adminUsers');
+        if (storedUsers) {
+          const users: User[] = JSON.parse(storedUsers);
+          const foundUser = users.find(u => u.id.toString() === userId);
+          if (foundUser) {
+            setUser(foundUser);
+          }
+        }
       } catch (error) {
-        console.error('Error fetching user:', error);
+        console.error('Error fetching user from local storage:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUser();
+    fetchUserFromLocalStorage();
   }, [userId]);
 
   const handleBack = () => {

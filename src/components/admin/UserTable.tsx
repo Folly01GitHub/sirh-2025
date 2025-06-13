@@ -70,6 +70,9 @@ const UserTable: React.FC = () => {
         }
         
         setUsers(fetchedUsers);
+        
+        // Store users in localStorage for UserStats component
+        localStorage.setItem('adminUsers', JSON.stringify(fetchedUsers));
       } catch (err) {
         console.error('Error fetching users:', err);
         setError('Impossible de charger la liste des utilisateurs. Veuillez réessayer plus tard.');
