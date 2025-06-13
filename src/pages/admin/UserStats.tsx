@@ -77,7 +77,7 @@ const UserStats = () => {
               <UserIcon className="h-6 w-6 text-primary" />
             </div>
             <h1 className="text-3xl font-bold">
-              Profil de <span className="text-primary">{user ? `${user.firstName} ${user.lastName}` : 'Utilisateur'}</span>
+              <span className="text-primary">{user ? `${user.firstName} ${user.lastName}` : 'Utilisateur'}</span>
             </h1>
           </div>
           <p className="text-gray-600 text-lg">
