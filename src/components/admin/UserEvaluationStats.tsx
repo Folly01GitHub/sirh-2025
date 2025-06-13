@@ -3,7 +3,6 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { CheckCircle, Clock, BarChart3, Star } from 'lucide-react';
 
 interface UserEvaluationStatsProps {
@@ -56,30 +55,11 @@ const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => 
     },
     {
       title: 'Note globale obtenue',
-      value: `★★★★☆ (${evaluationStats.globalRating}/5)`,
+      value: `${evaluationStats.globalRating}/5`,
       icon: <Star className="h-6 w-6 text-white" />,
-      color: 'bg-blue-500',
-      isRating: true,
-      ratingValue: evaluationStats.globalRating
+      color: 'bg-blue-500'
     }
   ];
-
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-
-    for (let i = 0; i < 5; i++) {
-      if (i < fullStars) {
-        stars.push(<span key={i} className="text-yellow-400">★</span>);
-      } else if (i === fullStars && hasHalfStar) {
-        stars.push(<span key={i} className="text-yellow-400">★</span>);
-      } else {
-        stars.push(<span key={i} className="text-gray-300">☆</span>);
-      }
-    }
-    return stars;
-  };
 
   return (
     <section>
@@ -99,23 +79,8 @@ const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => 
                   {stat.icon}
                 </div>
               </div>
-              <div className="space-y-2">
-                <div className="text-2xl font-bold text-gray-900">
-                  {stat.isRating ? (
-                    <div className="flex items-center gap-2">
-                      <div className="flex">{renderStars(stat.ratingValue!)}</div>
-                      <span className="text-sm text-gray-600">({stat.ratingValue}/5)</span>
-                    </div>
-                  ) : (
-                    stat.value
-                  )}
-                </div>
-                {stat.isRating && (
-                  <div className="space-y-1">
-                    <Progress value={(stat.ratingValue! / 5) * 100} className="h-2" />
-                    <p className="text-xs text-gray-500">Progression: {((stat.ratingValue! / 5) * 100).toFixed(0)}%</p>
-                  </div>
-                )}
+              <div className="text-2xl font-bold text-gray-900">
+                {stat.value}
               </div>
             </CardContent>
           </Card>
@@ -153,20 +118,10 @@ const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => 
                     <TableCell>{evaluation.evaluator}</TableCell>
                     <TableCell>{evaluation.approver}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1">
-                        <span className="font-semibold">{evaluation.autoEvalRating}/5</span>
-                        <div className="flex text-sm">
-                          {renderStars(evaluation.autoEvalRating)}
-                        </div>
-                      </div>
+                      <span className="font-semibold">{evaluation.autoEvalRating}/5</span>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1">
-                        <span className="font-semibold">{evaluation.evalRating}/5</span>
-                        <div className="flex text-sm">
-                          {renderStars(evaluation.evalRating)}
-                        </div>
-                      </div>
+                      <span className="font-semibold">{evaluation.evalRating}/5</span>
                     </TableCell>
                     <TableCell className="text-center">
                       <Button variant="ghost" size="icon" title="Voir le détail">
