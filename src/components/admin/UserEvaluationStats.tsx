@@ -1,22 +1,50 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Clock, BarChart3, Star } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import apiClient from '@/utils/apiClient';
 
 interface UserEvaluationStatsProps {
   userId?: string;
 }
 
-const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => {
-  // Ces données seraient normalement récupérées depuis une API
-  const evaluationStats = {
-    validated: 5,
-    inProgress: 1,
-    globalRating: 4.2
-  };
+interface EvaluationStatsData {
+  validees: number;
+  en_cours: number;
+  moyenne: string;
+}
 
+const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => {
+  const [evaluationStats, setEvaluationStats] = useState<EvaluationStatsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchEvaluationStats = async () => {
+      if (!userId) return;
+      
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const response = await apiClient.get(`/admin/evaluations/stats?user_id=${userId}`);
+        console.log('Evaluation stats API response:', response.data);
+        setEvaluationStats(response.data);
+      } catch (err) {
+        console.error('Error fetching evaluation stats:', err);
+        setError('Impossible de charger les statistiques d\'évaluations');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvaluationStats();
+  }, [userId]);
+
+  // Ces données seraient normalement récupérées depuis une API
   const evaluationHistory = [
     {
       mission: 'Audit Financier',
@@ -40,22 +68,81 @@ const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => 
     }
   ];
 
+  if (loading) {
+    return (
+      <section>
+        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+          <span className="text-2xl">📊</span>
+          Historique des Évaluations
+        </h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {[...Array(3)].map((_, index) => (
+            <Card key={index} className="hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                </div>
+                <Skeleton className="h-8 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section>
+        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+          <span className="text-2xl">📊</span>
+          Historique des Évaluations
+        </h2>
+        
+        <div className="text-center py-12">
+          <div className="text-6xl mb-4">❌</div>
+          <h3 className="text-lg font-semibold text-gray-600 mb-2">Erreur de chargement</h3>
+          <p className="text-gray-500">{error}</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (!evaluationStats) {
+    return (
+      <section>
+        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+          <span className="text-2xl">📊</span>
+          Historique des Évaluations
+        </h2>
+        
+        <div className="text-center py-12">
+          <div className="text-6xl mb-4">📊</div>
+          <h3 className="text-lg font-semibold text-gray-600 mb-2">Aucune donnée</h3>
+          <p className="text-gray-500">Les statistiques d'évaluations ne sont pas disponibles.</p>
+        </div>
+      </section>
+    );
+  }
+
   const statsCards = [
     {
       title: 'Évaluations Validées',
-      value: evaluationStats.validated.toString(),
+      value: evaluationStats.validees.toString(),
       icon: <CheckCircle className="h-6 w-6 text-white" />,
       color: 'bg-green-500'
     },
     {
       title: 'Évaluations En cours',
-      value: evaluationStats.inProgress.toString(),
+      value: evaluationStats.en_cours.toString(),
       icon: <Clock className="h-6 w-6 text-white" />,
       color: 'bg-amber-500'
     },
     {
       title: 'Note globale obtenue',
-      value: `${evaluationStats.globalRating}/5`,
+      value: `${evaluationStats.moyenne}/5`,
       icon: <Star className="h-6 w-6 text-white" />,
       color: 'bg-blue-500'
     }
