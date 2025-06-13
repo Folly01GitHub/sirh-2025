@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import Dashboard from "./pages/admin/Dashboard";
 import Settings from "./pages/admin/Settings";
+import UserStats from "./pages/admin/UserStats";
 import Activate from "./pages/Activate";
 import ForgotPassword from "./pages/ForgotPassword";
 import Permissions from "./pages/Permissions";
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/home" element={<Home />} />
               <Route path="/admin/dashboard" element={<Dashboard />} />
               <Route path="/admin/settings" element={<Settings />} />
+              <Route path="/admin/user-stats/:userId" element={<UserStats />} />
               <Route path="/leave" element={<Leaves />} />
               <Route path="/leave/request" element={<LeaveRequest />} />
               <Route path="/leave-details/:id" element={<LeaveDetails />} />

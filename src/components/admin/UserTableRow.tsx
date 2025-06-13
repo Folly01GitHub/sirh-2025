@@ -3,15 +3,21 @@ import React from 'react';
 import { User } from '@/types/user.types';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, Check, Clock } from 'lucide-react';
+import { BarChart3, Trash2, Check, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface UserTableRowProps {
   user: User;
-  onEdit: (user: User) => void;
   onDelete: (user: User) => void;
 }
 
-const UserTableRow: React.FC<UserTableRowProps> = ({ user, onEdit, onDelete }) => {
+const UserTableRow: React.FC<UserTableRowProps> = ({ user, onDelete }) => {
+  const navigate = useNavigate();
+
+  const handleViewStats = () => {
+    navigate(`/admin/user-stats/${user.id}`);
+  };
+
   return (
     <TableRow className="transition-colors hover:bg-gray-50">
       <TableCell>{user.id}</TableCell>
@@ -44,9 +50,10 @@ const UserTableRow: React.FC<UserTableRowProps> = ({ user, onEdit, onDelete }) =
           <Button 
             variant="ghost" 
             size="icon"
-            onClick={() => onEdit(user)}
+            onClick={handleViewStats}
+            title="Voir les statistiques"
           >
-            <Edit className="h-4 w-4" />
+            <BarChart3 className="h-4 w-4" />
           </Button>
           <Button 
             variant="ghost" 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Table, 
@@ -14,10 +13,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Filter, Download, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { User, FilterFormData, UserEditFormData } from '@/types/user.types';
+import { User, FilterFormData } from '@/types/user.types';
 import { exportToCsv } from '@/utils/exportUtils';
 import UserTableRow from './UserTableRow';
-import UserEditDialog from './UserEditDialog';
 import UserDeleteDialog from './UserDeleteDialog';
 import UserFilterDialog from './UserFilterDialog';
 import apiClient from '@/utils/apiClient';
@@ -27,7 +25,6 @@ const UserTable: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterFormData>({});
@@ -96,40 +93,10 @@ const UserTable: React.FC = () => {
     setActiveFiltersCount(count);
   }, [filters]);
 
-  // Handle editing a user
-  const handleEdit = (user: User) => {
-    setSelectedUser(user);
-    setIsEditDialogOpen(true);
-  };
-
   // Handle deleting a user
   const handleDelete = (user: User) => {
     setSelectedUser(user);
     setIsDeleteDialogOpen(true);
-  };
-
-  // Submit the edit form
-  const onEditSubmit = async (data: UserEditFormData) => {
-    if (!selectedUser) return;
-    
-    setLoading(true);
-    try {
-      await apiClient.put(`/employees/${selectedUser.id}`, data);
-      
-      // Update the user in the local state
-      setUsers(users.map(user => 
-        user.id === selectedUser.id 
-          ? { ...user, ...data } 
-          : user
-      ));
-      toast.success("Utilisateur mis à jour avec succès");
-      setIsEditDialogOpen(false);
-    } catch (err) {
-      console.error('Error updating user:', err);
-      toast.error("Erreur lors de la mise à jour de l'utilisateur");
-    } finally {
-      setLoading(false);
-    }
   };
 
   // Confirm deletion of a user
@@ -249,12 +216,14 @@ const UserTable: React.FC = () => {
                 </TableRow>
               ))
             ) : error ? (
+              // Error state
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-6 text-red-500">
                   {error}
                 </TableCell>
               </TableRow>
             ) : filteredUsers.length === 0 ? (
+              // No users state
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-6 text-gray-500">
                   Aucun utilisateur trouvé
@@ -265,7 +234,6 @@ const UserTable: React.FC = () => {
                 <UserTableRow 
                   key={user.id} 
                   user={user} 
-                  onEdit={handleEdit} 
                   onDelete={handleDelete}
                 />
               ))
@@ -275,13 +243,6 @@ const UserTable: React.FC = () => {
       </div>
 
       {/* Dialogs */}
-      <UserEditDialog 
-        user={selectedUser} 
-        isOpen={isEditDialogOpen} 
-        onOpenChange={setIsEditDialogOpen} 
-        onSave={onEditSubmit} 
-      />
-      
       <UserDeleteDialog 
         user={selectedUser} 
         isOpen={isDeleteDialogOpen} 
