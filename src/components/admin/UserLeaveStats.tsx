@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { CalendarDays, Clock, MapPin } from 'lucide-react';
@@ -10,9 +9,9 @@ interface UserLeaveStatsProps {
 }
 
 interface LeaveStatsData {
-  remainingDays: number;
-  daysUsed: number;
-  pendingRequests: number;
+  jours_legaux_pris_annee: number;
+  nombre_demandes_en_attente: number;
+  solde_conges_legaux: string;
 }
 
 const UserLeaveStats: React.FC<UserLeaveStatsProps> = ({ userId }) => {
@@ -107,21 +106,21 @@ const UserLeaveStats: React.FC<UserLeaveStatsProps> = ({ userId }) => {
   const statsCards = [
     {
       title: 'Solde congés',
-      value: `${leaveStats.remainingDays} jours`,
+      value: `${leaveStats.solde_conges_legaux} jours`,
       icon: <MapPin className="h-6 w-6 text-white" />,
       color: 'bg-green-500',
       emoji: '🏝️'
     },
     {
       title: 'Jours pris',
-      value: `${leaveStats.daysUsed} jours`,
+      value: `${leaveStats.jours_legaux_pris_annee} jours`,
       icon: <CalendarDays className="h-6 w-6 text-white" />,
       color: 'bg-amber-500',
       emoji: '📅'
     },
     {
       title: 'Demandes en attente',
-      value: `${leaveStats.pendingRequests} demandes`,
+      value: `${leaveStats.nombre_demandes_en_attente} demandes`,
       icon: <Clock className="h-6 w-6 text-white" />,
       color: 'bg-blue-500',
       emoji: '⏳'
