@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -41,7 +40,7 @@ const AdminEvaluationView = () => {
   const { data: criteriaItems, isLoading: itemsLoading } = useQuery({
     queryKey: ["criteriaItems", evaluationId],
     queryFn: async () => {
-      const response = await apiClient.get("/items");
+      const response = await apiClient.get("/items_approbateur");
       return response.data;
     }
   });
