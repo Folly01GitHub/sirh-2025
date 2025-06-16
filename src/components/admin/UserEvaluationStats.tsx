@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
@@ -50,7 +49,8 @@ const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => 
         // Fetch evaluation history
         const historyResponse = await apiClient.get(`/admin/evaluations/synthese?user_id=${userId}`);
         console.log('Evaluation history API response:', historyResponse.data);
-        setEvaluationHistory(historyResponse.data);
+        // Extract the evaluations array from the response
+        setEvaluationHistory(historyResponse.data.evaluations || []);
       } catch (err) {
         console.error('Error fetching evaluation data:', err);
         setError('Impossible de charger les données d\'évaluations');
