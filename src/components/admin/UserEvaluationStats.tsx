@@ -17,56 +17,50 @@ interface EvaluationStatsData {
   moyenne: string;
 }
 
+interface EvaluationHistoryItem {
+  mission: string;
+  date_auto_eval: string;
+  date_eval: string;
+  date_validation: string;
+  evaluateur: string;
+  approbateur: string;
+  note_auto_eval: number;
+  note_eval: number;
+}
+
 const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => {
   const [evaluationStats, setEvaluationStats] = useState<EvaluationStatsData | null>(null);
+  const [evaluationHistory, setEvaluationHistory] = useState<EvaluationHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchEvaluationStats = async () => {
+    const fetchEvaluationData = async () => {
       if (!userId) return;
       
       setLoading(true);
       setError(null);
       
       try {
-        const response = await apiClient.get(`/admin/evaluations/stats?user_id=${userId}`);
-        console.log('Evaluation stats API response:', response.data);
-        setEvaluationStats(response.data);
+        // Fetch evaluation stats
+        const statsResponse = await apiClient.get(`/admin/evaluations/stats?user_id=${userId}`);
+        console.log('Evaluation stats API response:', statsResponse.data);
+        setEvaluationStats(statsResponse.data);
+
+        // Fetch evaluation history
+        const historyResponse = await apiClient.get(`/admin/evaluations/synthese?user_id=${userId}`);
+        console.log('Evaluation history API response:', historyResponse.data);
+        setEvaluationHistory(historyResponse.data);
       } catch (err) {
-        console.error('Error fetching evaluation stats:', err);
-        setError('Impossible de charger les statistiques d\'évaluations');
+        console.error('Error fetching evaluation data:', err);
+        setError('Impossible de charger les données d\'évaluations');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchEvaluationStats();
+    fetchEvaluationData();
   }, [userId]);
-
-  // Ces données seraient normalement récupérées depuis une API
-  const evaluationHistory = [
-    {
-      mission: 'Audit Financier',
-      autoEvalDate: '15/01/2024',
-      evalDate: '22/01/2024',
-      validationDate: '30/01/2024',
-      evaluator: 'Sophie M.',
-      approver: 'Pierre L.',
-      autoEvalRating: 3.5,
-      evalRating: 4.0
-    },
-    {
-      mission: 'Projet X',
-      autoEvalDate: '10/03/2024',
-      evalDate: '22/01/2024',
-      validationDate: '30/01/2024',
-      evaluator: 'F. Tiekoura',
-      approver: 'E. Kougnaglo',
-      autoEvalRating: 4.2,
-      evalRating: 2.8
-    }
-  ];
 
   if (loading) {
     return (
@@ -199,16 +193,16 @@ const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => 
                 {evaluationHistory.map((evaluation, index) => (
                   <TableRow key={index} className="hover:bg-gray-50 transition-colors">
                     <TableCell className="font-medium">{evaluation.mission}</TableCell>
-                    <TableCell>{evaluation.autoEvalDate}</TableCell>
-                    <TableCell>{evaluation.evalDate}</TableCell>
-                    <TableCell>{evaluation.validationDate}</TableCell>
-                    <TableCell>{evaluation.evaluator}</TableCell>
-                    <TableCell>{evaluation.approver}</TableCell>
+                    <TableCell>{evaluation.date_auto_eval}</TableCell>
+                    <TableCell>{evaluation.date_eval}</TableCell>
+                    <TableCell>{evaluation.date_validation}</TableCell>
+                    <TableCell>{evaluation.evaluateur}</TableCell>
+                    <TableCell>{evaluation.approbateur}</TableCell>
                     <TableCell>
-                      <span className="font-semibold">{evaluation.autoEvalRating}/5</span>
+                      <span className="font-semibold">{evaluation.note_auto_eval}/5</span>
                     </TableCell>
                     <TableCell>
-                      <span className="font-semibold">{evaluation.evalRating}/5</span>
+                      <span className="font-semibold">{evaluation.note_eval}/5</span>
                     </TableCell>
                     <TableCell className="text-center">
                       <Button variant="ghost" size="icon" title="Voir le détail">
