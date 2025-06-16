@@ -12,6 +12,7 @@ import Home from "./pages/Home";
 import Dashboard from "./pages/admin/Dashboard";
 import Settings from "./pages/admin/Settings";
 import UserStats from "./pages/admin/UserStats";
+import AdminEvaluationView from "./pages/admin/EvaluationView";
 import Activate from "./pages/Activate";
 import ForgotPassword from "./pages/ForgotPassword";
 import Permissions from "./pages/Permissions";
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/admin/dashboard" element={<Dashboard />} />
               <Route path="/admin/settings" element={<Settings />} />
               <Route path="/admin/user-stats/:userId" element={<UserStats />} />
+              <Route path="/admin/evaluation-view" element={<AdminEvaluationView />} />
               <Route path="/leave" element={<Leaves />} />
               <Route path="/leave/request" element={<LeaveRequest />} />
               <Route path="/leave-details/:id" element={<LeaveDetails />} />

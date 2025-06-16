@@ -4,6 +4,7 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Clock, BarChart3, Star } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useNavigate } from 'react-router-dom';
 import apiClient from '@/utils/apiClient';
 
 interface UserEvaluationStatsProps {
@@ -17,6 +18,7 @@ interface EvaluationStatsData {
 }
 
 interface EvaluationHistoryItem {
+  id: number;
   mission: string;
   date_auto_eval: string;
   date_eval: string;
@@ -28,6 +30,7 @@ interface EvaluationHistoryItem {
 }
 
 const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => {
+  const navigate = useNavigate();
   const [evaluationStats, setEvaluationStats] = useState<EvaluationStatsData | null>(null);
   const [evaluationHistory, setEvaluationHistory] = useState<EvaluationHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +53,8 @@ const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => 
         const historyResponse = await apiClient.get(`/admin/evaluations/synthese?user_id=${userId}`);
         console.log('Evaluation history API response:', historyResponse.data);
         // Extract the evaluations array from the response
-        setEvaluationHistory(historyResponse.data.evaluations || []);
+        const evaluations = historyResponse.data?.evaluations || [];
+        setEvaluationHistory(Array.isArray(evaluations) ? evaluations : []);
       } catch (err) {
         console.error('Error fetching evaluation data:', err);
         setError('Impossible de charger les données d\'évaluations');
@@ -61,6 +65,10 @@ const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => 
 
     fetchEvaluationData();
   }, [userId]);
+
+  const handleViewEvaluationDetail = (evaluationId: number) => {
+    navigate(`/admin/evaluation-view?id=${evaluationId}&userId=${userId}`);
+  };
 
   if (loading) {
     return (
@@ -205,7 +213,12 @@ const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => 
                       <span className="font-semibold">{evaluation.note_eval}/5</span>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Button variant="ghost" size="icon" title="Voir le détail">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        title="Voir le détail"
+                        onClick={() => handleViewEvaluationDetail(evaluation.id)}
+                      >
                         <BarChart3 className="h-4 w-4" />
                       </Button>
                     </TableCell>
