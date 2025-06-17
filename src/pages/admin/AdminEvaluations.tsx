@@ -12,7 +12,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Search, Award, Users } from 'lucide-react';
+import { Search, Award, Users, Eye, Edit } from 'lucide-react';
 import apiClient from '@/utils/apiClient';
 
 interface Employee {
@@ -115,18 +115,19 @@ const AdminEvaluations = () => {
                     <TableHead>Département</TableHead>
                     <TableHead className="text-center">Évaluations validées</TableHead>
                     <TableHead className="text-center">Évaluations en cours</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8">
+                      <TableCell colSpan={6} className="text-center py-8">
                         Chargement...
                       </TableCell>
                     </TableRow>
                   ) : filteredEmployees.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                         Aucun collaborateur trouvé
                       </TableCell>
                     </TableRow>
@@ -151,6 +152,24 @@ const AdminEvaluations = () => {
                               0
                             </span>
                           )}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex justify-center gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              title="Voir les détails"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              title="Modifier"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
