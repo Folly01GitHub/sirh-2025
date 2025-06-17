@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -49,7 +48,7 @@ const LeaveDetails = () => {
   });
 
   const handleBack = () => {
-    navigate('/leave');
+    navigate(-1);
   };
 
   const handleDownloadAttachment = async () => {
