@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { CalendarDays, Clock, MapPin } from 'lucide-react';
@@ -45,7 +46,6 @@ const UserLeaveStats: React.FC<UserLeaveStatsProps> = ({ userId }) => {
     return (
       <section>
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <span className="text-2xl">🏖️</span>
           Gestion des Congés
         </h2>
         
@@ -73,7 +73,6 @@ const UserLeaveStats: React.FC<UserLeaveStatsProps> = ({ userId }) => {
     return (
       <section>
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <span className="text-2xl">🏖️</span>
           Gestion des Congés
         </h2>
         
@@ -90,12 +89,11 @@ const UserLeaveStats: React.FC<UserLeaveStatsProps> = ({ userId }) => {
     return (
       <section>
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <span className="text-2xl">🏖️</span>
           Gestion des Congés
         </h2>
         
         <div className="text-center py-12">
-          <div className="text-6xl mb-4">📊</div>
+          <div className="text-6xl mb-4">📋</div>
           <h3 className="text-lg font-semibold text-gray-600 mb-2">Aucune donnée</h3>
           <p className="text-gray-500">Les statistiques de congés ne sont pas disponibles.</p>
         </div>
@@ -108,29 +106,25 @@ const UserLeaveStats: React.FC<UserLeaveStatsProps> = ({ userId }) => {
       title: 'Solde congés',
       value: `${leaveStats.solde_conges_legaux} jours`,
       icon: <MapPin className="h-6 w-6 text-white" />,
-      color: 'bg-green-500',
-      emoji: '🏝️'
+      color: 'bg-green-500'
     },
     {
       title: 'Jours pris',
       value: `${leaveStats.jours_legaux_pris_annee} jours`,
       icon: <CalendarDays className="h-6 w-6 text-white" />,
-      color: 'bg-amber-500',
-      emoji: '📅'
+      color: 'bg-amber-500'
     },
     {
       title: 'Demandes en attente',
       value: `${leaveStats.nombre_demandes_en_attente} demandes`,
       icon: <Clock className="h-6 w-6 text-white" />,
-      color: 'bg-blue-500',
-      emoji: '⏳'
+      color: 'bg-blue-500'
     }
   ];
 
   return (
     <section>
       <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <span className="text-2xl">🏖️</span>
         Gestion des Congés
       </h2>
       
@@ -144,10 +138,7 @@ const UserLeaveStats: React.FC<UserLeaveStatsProps> = ({ userId }) => {
                   {stat.icon}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">{stat.emoji}</span>
-                <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-              </div>
+              <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
             </CardContent>
           </Card>
         ))}

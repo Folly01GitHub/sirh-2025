@@ -74,7 +74,6 @@ const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => 
     return (
       <section>
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <span className="text-2xl">📊</span>
           Historique des Évaluations
         </h2>
         
@@ -99,7 +98,6 @@ const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => 
     return (
       <section>
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <span className="text-2xl">📊</span>
           Historique des Évaluations
         </h2>
         
@@ -116,12 +114,11 @@ const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => 
     return (
       <section>
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <span className="text-2xl">📊</span>
           Historique des Évaluations
         </h2>
         
         <div className="text-center py-12">
-          <div className="text-6xl mb-4">📊</div>
+          <div className="text-6xl mb-4">📋</div>
           <h3 className="text-lg font-semibold text-gray-600 mb-2">Aucune donnée</h3>
           <p className="text-gray-500">Les statistiques d'évaluations ne sont pas disponibles.</p>
         </div>
@@ -153,7 +150,6 @@ const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => 
   return (
     <section>
       <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <span className="text-2xl">📊</span>
         Historique des Évaluations
       </h2>
       
@@ -229,7 +225,7 @@ const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => 
           </div>
           {evaluationHistory.length === 0 && (
             <div className="text-center py-12">
-              <div className="text-6xl mb-4">📊</div>
+              <div className="text-6xl mb-4">📋</div>
               <h3 className="text-lg font-semibold text-gray-600 mb-2">Aucune évaluation</h3>
               <p className="text-gray-500">Les évaluations de cet employé apparaîtront ici.</p>
             </div>
