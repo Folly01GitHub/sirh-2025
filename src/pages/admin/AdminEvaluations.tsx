@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +22,7 @@ interface Employee {
   departement: string;
   evaluations_validees: number;
   evaluations_en_cours: number;
+  note_globale: number;
 }
 
 const AdminEvaluations = () => {
@@ -53,7 +55,8 @@ const AdminEvaluations = () => {
           poste: 'Développeur Senior',
           departement: 'IT',
           evaluations_validees: 4,
-          evaluations_en_cours: 1
+          evaluations_en_cours: 1,
+          note_globale: 4.2
         },
         {
           id: '2',
@@ -61,7 +64,8 @@ const AdminEvaluations = () => {
           poste: 'Chef de Projet',
           departement: 'Management',
           evaluations_validees: 6,
-          evaluations_en_cours: 0
+          evaluations_en_cours: 0,
+          note_globale: 4.8
         },
         {
           id: '3',
@@ -69,7 +73,8 @@ const AdminEvaluations = () => {
           poste: 'Designer UX',
           departement: 'Design',
           evaluations_validees: 3,
-          evaluations_en_cours: 2
+          evaluations_en_cours: 2,
+          note_globale: 3.9
         }
       ];
       setEmployees(mockData);
@@ -114,19 +119,20 @@ const AdminEvaluations = () => {
                     <TableHead>Département</TableHead>
                     <TableHead className="text-center">Évaluations validées</TableHead>
                     <TableHead className="text-center">Évaluations en cours</TableHead>
+                    <TableHead className="text-center">Note globale</TableHead>
                     <TableHead className="text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8">
+                      <TableCell colSpan={7} className="text-center py-8">
                         Chargement...
                       </TableCell>
                     </TableRow>
                   ) : filteredEmployees.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                         Aucun collaborateur trouvé
                       </TableCell>
                     </TableRow>
@@ -151,6 +157,11 @@ const AdminEvaluations = () => {
                               0
                             </span>
                           )}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-blue-100 text-blue-800 font-medium">
+                            {employee.note_globale.toFixed(1)}/5
+                          </span>
                         </TableCell>
                         <TableCell className="text-center">
                           <div className="flex justify-center gap-2">
