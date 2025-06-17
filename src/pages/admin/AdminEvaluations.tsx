@@ -13,6 +13,7 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Search, Award, Users, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import apiClient from '@/utils/apiClient';
 
 interface Employee {
@@ -27,6 +28,7 @@ interface Employee {
 }
 
 const AdminEvaluations = () => {
+  const navigate = useNavigate();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,6 +60,12 @@ const AdminEvaluations = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewDetails = (employee: Employee) => {
+    // Stocker les données de l'employé dans localStorage pour la page de détails
+    localStorage.setItem('adminUsers', JSON.stringify(employees));
+    navigate(`/admin/user-stats-evals/${employee.id}`);
   };
 
   const formatGlobalScore = (score: any): string => {
@@ -156,6 +164,7 @@ const AdminEvaluations = () => {
                               variant="ghost" 
                               size="icon"
                               title="Voir les détails"
+                              onClick={() => handleViewDetails(employee)}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>

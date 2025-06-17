@@ -15,6 +15,7 @@ import AdminEvaluations from "./pages/admin/AdminEvaluations";
 import Settings from "./pages/admin/Settings";
 import UserStats from "./pages/admin/UserStats";
 import UserStatsConges from "./pages/admin/UserStatsConges";
+import UserStatsEvals from "./pages/admin/UserStatsEvals";
 import AdminEvaluationView from "./pages/admin/EvaluationView";
 import Activate from "./pages/Activate";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/admin/settings" element={<Settings />} />
               <Route path="/admin/user-stats/:userId" element={<UserStats />} />
               <Route path="/admin/user-stats-conges/:userId" element={<UserStatsConges />} />
+              <Route path="/admin/user-stats-evals/:userId" element={<UserStatsEvals />} />
               <Route path="/admin/evaluation-view" element={<AdminEvaluationView />} />
               <Route path="/leave" element={<Leaves />} />
               <Route path="/leave/request" element={<LeaveRequest />} />
