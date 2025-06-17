@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,12 +17,13 @@ import apiClient from '@/utils/apiClient';
 
 interface Employee {
   id: string;
-  nom: string;
-  poste: string;
-  departement: string;
-  solde_conges: number;
-  jours_pris: number;
-  demandes_en_attente: number;
+  firstName: string;
+  lastName: string;
+  position: string;
+  department: string;
+  evaluations_terminees: number;
+  evaluations_en_cours: number;
+  moyenne_evaluations: number;
 }
 
 const AdminLeaves = () => {
@@ -36,9 +38,9 @@ const AdminLeaves = () => {
 
   useEffect(() => {
     const filtered = employees.filter(employee =>
-      employee.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.poste.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.departement.toLowerCase().includes(searchTerm.toLowerCase())
+      `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.department.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredEmployees(filtered);
   }, [employees, searchTerm]);
@@ -46,37 +48,9 @@ const AdminLeaves = () => {
   const fetchEmployees = async () => {
     try {
       setLoading(true);
-      // Simulation des données - remplacer par l'API réelle
-      const mockData: Employee[] = [
-        {
-          id: '1',
-          nom: 'Jean Dupont',
-          poste: 'Développeur Senior',
-          departement: 'IT',
-          solde_conges: 25,
-          jours_pris: 10,
-          demandes_en_attente: 1
-        },
-        {
-          id: '2',
-          nom: 'Marie Martin',
-          poste: 'Chef de Projet',
-          departement: 'Management',
-          solde_conges: 30,
-          jours_pris: 15,
-          demandes_en_attente: 0
-        },
-        {
-          id: '3',
-          nom: 'Pierre Durand',
-          poste: 'Designer UX',
-          departement: 'Design',
-          solde_conges: 22,
-          jours_pris: 8,
-          demandes_en_attente: 2
-        }
-      ];
-      setEmployees(mockData);
+      const response = await apiClient.get('/admin/userListe/conges');
+      console.log('API response for admin leaves:', response.data);
+      setEmployees(response.data);
     } catch (error) {
       console.error('Erreur lors du chargement des employés:', error);
     } finally {
@@ -116,9 +90,9 @@ const AdminLeaves = () => {
                     <TableHead>Nom</TableHead>
                     <TableHead>Poste</TableHead>
                     <TableHead>Département</TableHead>
-                    <TableHead className="text-center">Solde congés</TableHead>
-                    <TableHead className="text-center">Jours pris</TableHead>
-                    <TableHead className="text-center">Demandes en attente</TableHead>
+                    <TableHead className="text-center">Évaluations terminées</TableHead>
+                    <TableHead className="text-center">Évaluations en cours</TableHead>
+                    <TableHead className="text-center">Note globale</TableHead>
                     <TableHead className="text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -138,22 +112,30 @@ const AdminLeaves = () => {
                   ) : (
                     filteredEmployees.map((employee) => (
                       <TableRow key={employee.id} className="hover:bg-gray-50">
-                        <TableCell className="font-medium">{employee.nom}</TableCell>
-                        <TableCell>{employee.poste}</TableCell>
-                        <TableCell>{employee.departement}</TableCell>
+                        <TableCell className="font-medium">
+                          {employee.firstName} {employee.lastName}
+                        </TableCell>
+                        <TableCell>{employee.position}</TableCell>
+                        <TableCell>{employee.department}</TableCell>
                         <TableCell className="text-center">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
-                            {employee.solde_conges} jours
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-green-100 text-green-800">
+                            {employee.evaluations_terminees}
                           </span>
                         </TableCell>
                         <TableCell className="text-center">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-amber-100 text-amber-800">
-                            {employee.jours_pris}
-                          </span>
+                          {employee.evaluations_en_cours > 0 ? (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-orange-100 text-orange-800">
+                              {employee.evaluations_en_cours}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-gray-100 text-gray-600">
+                              0
+                            </span>
+                          )}
                         </TableCell>
                         <TableCell className="text-center">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-orange-100 text-orange-800">
-                            {employee.demandes_en_attente}
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-blue-100 text-blue-800 font-medium">
+                            {employee.moyenne_evaluations.toFixed(1)}/5
                           </span>
                         </TableCell>
                         <TableCell className="text-center">
