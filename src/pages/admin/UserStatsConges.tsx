@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, User as UserIcon } from 'lucide-react';
 import { User } from '@/types/user.types';
 import UserLeaveStats from '@/components/admin/UserLeaveStats';
+import UserLeaveRequestsTable from '@/components/admin/UserLeaveRequestsTable';
 
 const UserStatsConges = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -87,6 +88,9 @@ const UserStatsConges = () => {
         <div className="max-w-7xl mx-auto space-y-12">
           {/* Section Congés */}
           <UserLeaveStats userId={userId} />
+          
+          {/* Section Historique des Demandes */}
+          <UserLeaveRequestsTable userId={userId} />
         </div>
       </div>
     </AdminLayout>
