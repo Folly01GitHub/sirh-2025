@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -149,19 +148,13 @@ const AdminLeaves = () => {
                         </TableCell>
                         <TableCell className="text-center">
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-amber-100 text-amber-800">
-                            {employee.jours_pris} jours
+                            {employee.jours_pris}
                           </span>
                         </TableCell>
                         <TableCell className="text-center">
-                          {employee.demandes_en_attente > 0 ? (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-orange-100 text-orange-800">
-                              {employee.demandes_en_attente} demande{employee.demandes_en_attente > 1 ? 's' : ''}
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-green-100 text-green-800">
-                              Aucune
-                            </span>
-                          )}
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-orange-100 text-orange-800">
+                            {employee.demandes_en_attente}
+                          </span>
                         </TableCell>
                         <TableCell className="text-center">
                           <div className="flex justify-center gap-2">
