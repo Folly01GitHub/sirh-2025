@@ -10,6 +10,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import Dashboard from "./pages/admin/Dashboard";
+import AdminLeaves from "./pages/admin/AdminLeaves";
+import AdminEvaluations from "./pages/admin/AdminEvaluations";
 import Settings from "./pages/admin/Settings";
 import UserStats from "./pages/admin/UserStats";
 import AdminEvaluationView from "./pages/admin/EvaluationView";
@@ -42,6 +44,8 @@ const App = () => (
             <Route element={<AuthGuard />}>
               <Route path="/home" element={<Home />} />
               <Route path="/admin/dashboard" element={<Dashboard />} />
+              <Route path="/admin/leaves" element={<AdminLeaves />} />
+              <Route path="/admin/evaluations" element={<AdminEvaluations />} />
               <Route path="/admin/settings" element={<Settings />} />
               <Route path="/admin/user-stats/:userId" element={<UserStats />} />
               <Route path="/admin/evaluation-view" element={<AdminEvaluationView />} />

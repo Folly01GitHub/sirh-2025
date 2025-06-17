@@ -22,7 +22,9 @@ import {
   Settings, 
   LogOut, 
   User,
-  ArrowLeft
+  ArrowLeft,
+  CalendarDays,
+  Award
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -50,6 +52,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   const menuItems = [
     { path: '/admin/dashboard', label: 'Tableau de Bord', icon: LayoutDashboard },
+    { path: '/admin/leaves', label: 'Congés', icon: CalendarDays },
+    { path: '/admin/evaluations', label: 'Evaluations', icon: Award },
     { path: '/admin/settings', label: 'Paramètres', icon: Settings }
   ];
 
