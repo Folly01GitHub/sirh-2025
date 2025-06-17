@@ -17,12 +17,13 @@ import apiClient from '@/utils/apiClient';
 
 interface Employee {
   id: string;
-  nom: string;
-  poste: string;
-  departement: string;
-  evaluations_validees: number;
+  firstName: string;
+  lastName: string;
+  position: string;
+  department: string;
+  evaluations_terminees: number;
   evaluations_en_cours: number;
-  note_globale: number;
+  moyenne_evaluations: number;
 }
 
 const AdminEvaluations = () => {
@@ -37,9 +38,10 @@ const AdminEvaluations = () => {
 
   useEffect(() => {
     const filtered = employees.filter(employee =>
-      employee.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.poste.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.departement.toLowerCase().includes(searchTerm.toLowerCase())
+      (employee.firstName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (employee.lastName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (employee.position?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (employee.department?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     );
     setFilteredEmployees(filtered);
   }, [employees, searchTerm]);
@@ -47,39 +49,12 @@ const AdminEvaluations = () => {
   const fetchEmployees = async () => {
     try {
       setLoading(true);
-      // Simulation des données - remplacer par l'API réelle
-      const mockData: Employee[] = [
-        {
-          id: '1',
-          nom: 'Jean Dupont',
-          poste: 'Développeur Senior',
-          departement: 'IT',
-          evaluations_validees: 4,
-          evaluations_en_cours: 1,
-          note_globale: 4.2
-        },
-        {
-          id: '2',
-          nom: 'Marie Martin',
-          poste: 'Chef de Projet',
-          departement: 'Management',
-          evaluations_validees: 6,
-          evaluations_en_cours: 0,
-          note_globale: 4.8
-        },
-        {
-          id: '3',
-          nom: 'Pierre Durand',
-          poste: 'Designer UX',
-          departement: 'Design',
-          evaluations_validees: 3,
-          evaluations_en_cours: 2,
-          note_globale: 3.9
-        }
-      ];
-      setEmployees(mockData);
+      const response = await apiClient.get('/admin/userListe/evaluations');
+      setEmployees(response.data || []);
     } catch (error) {
       console.error('Erreur lors du chargement des employés:', error);
+      // Fallback to empty array if API fails
+      setEmployees([]);
     } finally {
       setLoading(false);
     }
@@ -139,16 +114,18 @@ const AdminEvaluations = () => {
                   ) : (
                     filteredEmployees.map((employee) => (
                       <TableRow key={employee.id} className="hover:bg-gray-50">
-                        <TableCell className="font-medium">{employee.nom}</TableCell>
-                        <TableCell>{employee.poste}</TableCell>
-                        <TableCell>{employee.departement}</TableCell>
+                        <TableCell className="font-medium">
+                          {`${employee.firstName || ''} ${employee.lastName || ''}`.trim()}
+                        </TableCell>
+                        <TableCell>{employee.position || 'N/A'}</TableCell>
+                        <TableCell>{employee.department || 'N/A'}</TableCell>
                         <TableCell className="text-center">
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-green-100 text-green-800">
-                            {employee.evaluations_validees}
+                            {employee.evaluations_terminees || 0}
                           </span>
                         </TableCell>
                         <TableCell className="text-center">
-                          {employee.evaluations_en_cours > 0 ? (
+                          {(employee.evaluations_en_cours || 0) > 0 ? (
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-orange-100 text-orange-800">
                               {employee.evaluations_en_cours}
                             </span>
@@ -160,7 +137,7 @@ const AdminEvaluations = () => {
                         </TableCell>
                         <TableCell className="text-center">
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-blue-100 text-blue-800 font-medium">
-                            {employee.note_globale.toFixed(1)}/5
+                            {employee.moyenne_evaluations != null ? `${employee.moyenne_evaluations.toFixed(1)}/5` : 'N/A'}
                           </span>
                         </TableCell>
                         <TableCell className="text-center">
