@@ -9,11 +9,10 @@ import apiClient from '@/utils/apiClient';
 
 interface LeaveRequest {
   id: string;
-  dateCreation: string;
-  dateDebut: string;
-  dateFin: string;
-  nombreJours: number;
-  status?: string;
+  date_demande: string;
+  date_debut: string;
+  date_fin: string;
+  jours_pris: number;
 }
 
 interface UserLeaveRequestsTableProps {
@@ -93,12 +92,12 @@ const UserLeaveRequestsTable = ({ userId }: UserLeaveRequestsTableProps) => {
               ) : (
                 leaveRequests.map((request) => (
                   <TableRow key={request.id} className="hover:bg-gray-50">
-                    <TableCell>{formatDate(request.dateCreation)}</TableCell>
-                    <TableCell>{formatDate(request.dateDebut)}</TableCell>
-                    <TableCell>{formatDate(request.dateFin)}</TableCell>
+                    <TableCell>{formatDate(request.date_demande)}</TableCell>
+                    <TableCell>{formatDate(request.date_debut)}</TableCell>
+                    <TableCell>{formatDate(request.date_fin)}</TableCell>
                     <TableCell className="text-center">
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
-                        {request.nombreJours || 0} jours
+                        {request.jours_pris || 0} jours
                       </span>
                     </TableCell>
                     <TableCell className="text-center">
