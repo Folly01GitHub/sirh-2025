@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
@@ -130,20 +131,20 @@ const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => 
     {
       title: 'Évaluations Validées',
       value: evaluationStats.validees.toString(),
-      icon: <CheckCircle className="h-6 w-6 text-white" />,
-      color: 'bg-green-500'
+      icon: <CheckCircle className="h-6 w-6 text-green-600" />,
+      color: 'green'
     },
     {
       title: 'Évaluations En cours',
       value: evaluationStats.en_cours.toString(),
-      icon: <Clock className="h-6 w-6 text-white" />,
-      color: 'bg-amber-500'
+      icon: <Clock className="h-6 w-6 text-amber-600" />,
+      color: 'amber'
     },
     {
       title: 'Note globale obtenue',
       value: `${evaluationStats.moyenne}/5`,
-      icon: <Star className="h-6 w-6 text-white" />,
-      color: 'bg-blue-500'
+      icon: <Star className="h-6 w-6 text-blue-600" />,
+      color: 'blue'
     }
   ];
 
@@ -156,18 +157,33 @@ const UserEvaluationStats: React.FC<UserEvaluationStatsProps> = ({ userId }) => 
       {/* Cartes Statistiques */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {statsCards.map((stat, index) => (
-          <Card key={index} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-600">{stat.title}</h3>
-                <div className={`p-2 rounded-full ${stat.color} shadow-md`}>
-                  {stat.icon}
+          <Card key={index} className="overflow-hidden transition-all duration-300 hover:shadow-md hover:translate-y-[-4px] group">
+            <div className="relative">
+              <div className={`absolute inset-0 bg-gradient-to-br ${
+                stat.color === 'green' ? 'from-green-50 to-green-100' :
+                stat.color === 'amber' ? 'from-amber-50 to-amber-100' :
+                'from-blue-50 to-blue-100'
+              } opacity-50 group-hover:opacity-70 transition-opacity`}></div>
+              
+              <div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] group-hover:backdrop-blur-[1px] transition-all"></div>
+              
+              <CardContent className="p-6 relative">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-medium text-gray-500">{stat.title}</h3>
+                  <div className={`h-10 w-10 rounded-full flex items-center justify-center border ${
+                    stat.color === 'green' ? 'border-green-200 bg-green-500/10' :
+                    stat.color === 'amber' ? 'border-amber-200 bg-amber-500/10' :
+                    'border-blue-200 bg-blue-500/10'
+                  }`}>
+                    {stat.icon}
+                  </div>
                 </div>
-              </div>
-              <div className="text-2xl font-bold text-gray-900">
-                {stat.value}
-              </div>
-            </CardContent>
+                
+                <div className="space-y-1">
+                  <p className="text-2xl font-bold">{stat.value}</p>
+                </div>
+              </CardContent>
+            </div>
           </Card>
         ))}
       </div>
