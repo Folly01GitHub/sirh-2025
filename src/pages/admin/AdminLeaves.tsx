@@ -13,6 +13,7 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Search, CalendarDays, Users, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import apiClient from '@/utils/apiClient';
 
 interface Employee {
@@ -27,6 +28,7 @@ interface Employee {
 }
 
 const AdminLeaves = () => {
+  const navigate = useNavigate();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,6 +60,12 @@ const AdminLeaves = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewDetails = (employee: Employee) => {
+    // Stocker les données de l'employé dans localStorage pour la page de détails
+    localStorage.setItem('adminUsers', JSON.stringify(employees));
+    navigate(`/admin/user-stats-conges/${employee.id}`);
   };
 
   return (
@@ -140,6 +148,7 @@ const AdminLeaves = () => {
                               variant="ghost" 
                               size="icon"
                               title="Voir les détails"
+                              onClick={() => handleViewDetails(employee)}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
