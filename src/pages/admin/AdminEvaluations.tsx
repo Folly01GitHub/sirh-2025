@@ -60,6 +60,16 @@ const AdminEvaluations = () => {
     }
   };
 
+  const formatGlobalScore = (score: any): string => {
+    if (score == null || score === '') return 'N/A';
+    
+    const numericScore = typeof score === 'string' ? parseFloat(score) : Number(score);
+    
+    if (isNaN(numericScore)) return 'N/A';
+    
+    return `${numericScore.toFixed(1)}/5`;
+  };
+
   return (
     <AdminLayout>
       <div className="p-6">
@@ -137,7 +147,7 @@ const AdminEvaluations = () => {
                         </TableCell>
                         <TableCell className="text-center">
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-blue-100 text-blue-800 font-medium">
-                            {employee.moyenne_evaluations != null ? `${employee.moyenne_evaluations.toFixed(1)}/5` : 'N/A'}
+                            {formatGlobalScore(employee.moyenne_evaluations)}
                           </span>
                         </TableCell>
                         <TableCell className="text-center">
