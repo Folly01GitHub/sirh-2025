@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +11,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Search, Award, Users, Eye, Edit } from 'lucide-react';
+import { Search, Award, Users, Eye } from 'lucide-react';
 import apiClient from '@/utils/apiClient';
 
 interface Employee {
@@ -161,13 +160,6 @@ const AdminEvaluations = () => {
                               title="Voir les détails"
                             >
                               <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              title="Modifier"
-                            >
-                              <Edit className="h-4 w-4" />
                             </Button>
                           </div>
                         </TableCell>

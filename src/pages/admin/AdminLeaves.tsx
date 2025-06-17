@@ -11,7 +11,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Search, CalendarDays, Users, Eye, Edit } from 'lucide-react';
+import { Search, CalendarDays, Users, Eye } from 'lucide-react';
 import apiClient from '@/utils/apiClient';
 
 interface Employee {
@@ -164,13 +164,6 @@ const AdminLeaves = () => {
                               title="Voir les détails"
                             >
                               <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              title="Modifier"
-                            >
-                              <Edit className="h-4 w-4" />
                             </Button>
                           </div>
                         </TableCell>
