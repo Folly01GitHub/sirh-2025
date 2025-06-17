@@ -17,7 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger 
 } from '@/components/ui/popover';
-import { Menu, X, Home, LayoutDashboard, CalendarDays, Award, LogOut, User, Settings, Lock, Wallet, FileCheck } from 'lucide-react';
+import { Menu, X, Home, LayoutDashboard, CalendarDays, Award, LogOut, User, Settings, Lock, Wallet, FileCheck, Briefcase } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const HRISNavbar = () => {
@@ -77,6 +77,14 @@ const HRISNavbar = () => {
                     <Link to="/permissions">
                       <Lock className="h-4 w-4 mr-1" />
                       <span>Permissions</span>
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                    <Link to="/missions">
+                      <Briefcase className="h-4 w-4 mr-1" />
+                      <span>Missions</span>
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
@@ -212,6 +220,14 @@ const HRISNavbar = () => {
                 >
                   <Lock className="h-5 w-5 mr-3" />
                   <span>Permissions</span>
+                </Link>
+                <Link
+                  to="/missions"
+                  className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
+                  onClick={toggleMobileMenu}
+                >
+                  <Briefcase className="h-5 w-5 mr-3" />
+                  <span>Missions</span>
                 </Link>
                 <Link
                   to="/evaluations"
