@@ -23,7 +23,7 @@ interface Employee {
   department: string;
   evaluations_terminees: number;
   evaluations_en_cours: number;
-  moyenne_evaluations: number;
+  moyenne_evaluations: number | null | undefined;
 }
 
 const AdminLeaves = () => {
@@ -135,7 +135,7 @@ const AdminLeaves = () => {
                         </TableCell>
                         <TableCell className="text-center">
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-sm bg-blue-100 text-blue-800 font-medium">
-                            {employee.moyenne_evaluations.toFixed(1)}/5
+                            {employee.moyenne_evaluations != null ? `${employee.moyenne_evaluations.toFixed(1)}/5` : 'N/A'}
                           </span>
                         </TableCell>
                         <TableCell className="text-center">
