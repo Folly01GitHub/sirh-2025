@@ -174,11 +174,7 @@ const AdminEvaluationView = () => {
   };
 
   const handleBackToUserStats = () => {
-    if (userId) {
-      navigate(`/admin/user-stats/${userId}`);
-    } else {
-      navigate('/admin/dashboard');
-    }
+    navigate(-1);
   };
 
   if (itemsLoading || groupesLoading) {
