@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -174,8 +173,7 @@ const Missions = () => {
   };
   
   const handleNewMission = () => {
-    console.log('Navigate to new mission form');
-    // TODO: Navigate to mission creation form
+    navigate('/missions/create');
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

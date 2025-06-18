@@ -24,6 +24,7 @@ import Leaves from "./pages/Leaves";
 import LeaveRequest from "./pages/LeaveRequest";
 import LeaveDetails from "./pages/LeaveDetails";
 import Missions from "./pages/Missions";
+import MissionCreate from "./pages/MissionCreate";
 import Evaluation from "./pages/Evaluation";
 import EvaluationDashboard from "./pages/EvaluationDashboard";
 import EvaluationView from "./pages/EvaluationView";
@@ -59,6 +60,7 @@ const App = () => (
               <Route path="/leave-details/:id" element={<LeaveDetails />} />
               <Route path="/permissions" element={<Permissions />} />
               <Route path="/missions" element={<Missions />} />
+              <Route path="/missions/create" element={<MissionCreate />} />
               <Route path="/evaluations" element={<EvaluationDashboard />} />
               <Route path="/evaluation" element={<Evaluation />} />
               <Route path="/evaluation-view" element={<EvaluationView />} />
