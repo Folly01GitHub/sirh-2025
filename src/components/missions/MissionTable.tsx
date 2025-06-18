@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -93,8 +92,8 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
               <TableCell>
                 <div className="flex gap-2">
                   <Button
-                    variant="outline"
-                    size="sm"
+                    variant="ghost"
+                    size="icon"
                     onClick={() => onActionClick(mission.id, 'view')}
                   >
                     <Eye className="h-4 w-4" />
