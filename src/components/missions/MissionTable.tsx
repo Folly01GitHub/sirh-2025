@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Check, X } from 'lucide-react';
+import { Eye, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import MissionConfirmationDialog from './MissionConfirmationDialog';
 
@@ -152,22 +152,22 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
                     {activeFilter === 'team' && isMissionPending(mission.status) && (
                       <>
                         <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-green-600 border-green-200 hover:bg-green-50"
+                          variant="ghost"
+                          size="icon"
+                          className="text-green-600 hover:text-green-800 hover:bg-green-50"
                           onClick={() => handleActionClick(mission.id, 'approve', mission.title)}
+                          title="Valider"
                         >
-                          <Check className="h-4 w-4 mr-1" />
-                          Valider
+                          <CheckCircle className="h-4 w-4" />
                         </Button>
                         <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-red-600 border-red-200 hover:bg-red-50"
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-600 hover:text-red-800 hover:bg-red-50"
                           onClick={() => handleActionClick(mission.id, 'reject', mission.title)}
+                          title="Refuser"
                         >
-                          <X className="h-4 w-4 mr-1" />
-                          Refuser
+                          <XCircle className="h-4 w-4" />
                         </Button>
                       </>
                     )}
