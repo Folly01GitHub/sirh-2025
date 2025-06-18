@@ -25,9 +25,10 @@ const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) =
       setLoadingDepartements(true);
       try {
         const response = await apiClient.get('/departements');
-        const departementsData = response.data.map((dept: any) => ({
-          label: dept.name || dept.nom || dept.libelle,
-          value: dept.id || dept.code || dept.name || dept.nom || dept.libelle
+        // The API returns an array of strings, so we map each string to an object
+        const departementsData = response.data.map((dept: string) => ({
+          label: dept,
+          value: dept
         }));
         setDepartements(departementsData);
       } catch (error) {
