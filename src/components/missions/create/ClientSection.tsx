@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 
 interface ClientSectionProps {
   data: any;
@@ -56,6 +57,101 @@ const ClientSection = ({ data, onChange }: ClientSectionProps) => {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="publicEntity">
+              Entité d'Intérêt Public
+            </Label>
+            <Select 
+              value={data.publicEntity || ''} 
+              onValueChange={(value) => onChange({ ...data, publicEntity: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="oui">Oui</SelectItem>
+                <SelectItem value="non">Non</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="referred">
+              Référé [entité Mazars qui nous réfère la mission]
+            </Label>
+            <Select 
+              value={data.referred || ''} 
+              onValueChange={(value) => onChange({ ...data, referred: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="oui">Oui</SelectItem>
+                <SelectItem value="non">Non</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="confidentialityContract">
+              Client sous contrat de confidentialité
+            </Label>
+            <Select 
+              value={data.confidentialityContract || ''} 
+              onValueChange={(value) => onChange({ ...data, confidentialityContract: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Sélectionner..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="oui">Oui</SelectItem>
+                <SelectItem value="non">Non</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="activitySectors">
+            Secteurs d'activités
+          </Label>
+          <Textarea
+            id="activitySectors"
+            placeholder="Décrivez les secteurs d'activités du client..."
+            value={data.activitySectors || ''}
+            onChange={(e) => onChange({ ...data, activitySectors: e.target.value })}
+            className="min-h-[80px]"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="taxationRegime">
+              Régime d'Imposition
+            </Label>
+            <Input
+              id="taxationRegime"
+              placeholder="Régime d'imposition..."
+              value={data.taxationRegime || ''}
+              onChange={(e) => onChange({ ...data, taxationRegime: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="taxpayerAccount">
+              Compte contribuable
+            </Label>
+            <Input
+              id="taxpayerAccount"
+              placeholder="Numéro de compte contribuable..."
+              value={data.taxpayerAccount || ''}
+              onChange={(e) => onChange({ ...data, taxpayerAccount: e.target.value })}
+            />
           </div>
         </div>
       </CardContent>
