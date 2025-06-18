@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -141,9 +142,33 @@ const fetchTeamMissions = async (): Promise<MissionItem[]> => {
 };
 
 const Missions = () => {
-  const [activeFilter, setActiveFilter] = useState<string>('self');
-  const [searchTerm, setSearchTerm] = useState<string>('');
   const { user } = useAuth();
+  
+  // Determine available tabs based on user role
+  const getAvailableTabs = () => {
+    if (user?.role === 'comptable') {
+      return ['team']; // Only "Missions à valider"
+    } else if (user?.role === 'collaborateur') {
+      return ['self']; // Only "Mes missions"
+    } else if (user?.role === 'admin') {
+      return ['self', 'team']; // Both sections
+    }
+    return ['self']; // Default fallback
+  };
+
+  const availableTabs = getAvailableTabs();
+  
+  // Set initial filter based on available tabs
+  const getInitialFilter = () => {
+    if (user?.role === 'comptable') {
+      return 'team';
+    } else {
+      return 'self';
+    }
+  };
+
+  const [activeFilter, setActiveFilter] = useState<string>(getInitialFilter());
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const navigate = useNavigate();
   
   const { 
@@ -209,27 +234,35 @@ const Missions = () => {
             <h1 className="text-2xl font-bold text-gray-800 mb-2">Gestion des Missions</h1>
             <p className="text-gray-500">Gérez vos missions et validez les demandes de vos collaborateurs</p>
           </div>
-          <Button 
-            className="mt-4 md:mt-0" 
-            onClick={handleNewMission}
-          >
-            Nouvelle mission
-          </Button>
+          {(user?.role === 'collaborateur' || user?.role === 'admin') && (
+            <Button 
+              className="mt-4 md:mt-0" 
+              onClick={handleNewMission}
+            >
+              Nouvelle mission
+            </Button>
+          )}
         </div>
         
-        <div className="bg-white rounded-lg shadow-md p-4 mb-6 flex justify-center">
-          <Tabs
-            defaultValue="self"
-            value={activeFilter}
-            onValueChange={handleFilterChange}
-            className="w-full md:w-auto"
-          >
-            <TabsList className="grid w-full md:w-[400px] grid-cols-2">
-              <TabsTrigger value="self">Mes missions</TabsTrigger>
-              <TabsTrigger value="team">Missions à valider</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
+        {availableTabs.length > 1 && (
+          <div className="bg-white rounded-lg shadow-md p-4 mb-6 flex justify-center">
+            <Tabs
+              defaultValue={getInitialFilter()}
+              value={activeFilter}
+              onValueChange={handleFilterChange}
+              className="w-full md:w-auto"
+            >
+              <TabsList className="grid w-full md:w-[400px] grid-cols-2">
+                {availableTabs.includes('self') && (
+                  <TabsTrigger value="self">Mes missions</TabsTrigger>
+                )}
+                {availableTabs.includes('team') && (
+                  <TabsTrigger value="team">Missions à valider</TabsTrigger>
+                )}
+              </TabsList>
+            </Tabs>
+          </div>
+        )}
         
         <MissionStatsSection 
           stats={stats}
