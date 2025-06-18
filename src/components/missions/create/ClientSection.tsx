@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -58,6 +57,19 @@ const ClientSection = ({ data, onChange }: ClientSectionProps) => {
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="clientAddress">
+            Adresse géographique client
+          </Label>
+          <Textarea
+            id="clientAddress"
+            placeholder="Adresse complète du client..."
+            value={data.clientAddress || ''}
+            onChange={(e) => onChange({ ...data, clientAddress: e.target.value })}
+            className="min-h-[80px]"
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
