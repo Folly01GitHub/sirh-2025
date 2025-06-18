@@ -66,9 +66,9 @@ const MissionCreate = () => {
         {/* Bouton retour */}
         <div className="mb-6">
           <Button
-            variant="ghost"
+            variant="back"
             onClick={handleBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+            className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
             Retour aux missions
