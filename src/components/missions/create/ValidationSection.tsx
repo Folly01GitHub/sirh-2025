@@ -19,21 +19,15 @@ const ValidationSection = ({ validations, onChange }: ValidationSectionProps) =>
     },
     {
       id: 'kyc',
-      label: 'KYC/LBC-FT à jour',
+      label: 'QAM/KYC/LBC-FT à jour',
       required: true,
-      description: 'Know Your Customer et Lutte contre le Blanchiment et le Financement du Terrorisme'
+      description: 'Quality Assurance Management, Know Your Customer et Lutte contre le Blanchiment et le Financement du Terrorisme'
     },
     {
-      id: 'budget_approved',
-      label: 'Budget validé par la hiérarchie',
+      id: 'mandate_renewal',
+      label: 'S\'agit-il de l\'année de renouvellement du mandat ?',
       required: false,
-      description: 'Validation du budget par le responsable hiérarchique'
-    },
-    {
-      id: 'contract_terms',
-      label: 'Conditions contractuelles acceptées',
-      required: false,
-      description: 'Acceptation des termes et conditions du contrat'
+      description: 'Vérification si la mission correspond à une année de renouvellement de mandat'
     }
   ];
 
