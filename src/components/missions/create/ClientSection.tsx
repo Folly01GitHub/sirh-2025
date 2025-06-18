@@ -31,7 +31,7 @@ const ClientSection = ({ data, onChange }: ClientSectionProps) => {
             </Label>
             <Input
               id="client"
-              placeholder="Rechercher un client..."
+              placeholder="Nom du client..."
               value={data.client || ''}
               onChange={(e) => onChange({ ...data, client: e.target.value })}
             />
