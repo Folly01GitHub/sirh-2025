@@ -93,12 +93,11 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
               <TableCell>
                 <div className="flex gap-2">
                   <Button
-                    variant="back"
+                    variant="outline"
                     size="sm"
                     onClick={() => onActionClick(mission.id, 'view')}
                   >
-                    <Eye className="h-4 w-4 mr-1" />
-                    Voir les détails
+                    <Eye className="h-4 w-4" />
                   </Button>
                   {activeFilter === 'team' && mission.status === 'en_attente' && (
                     <>
