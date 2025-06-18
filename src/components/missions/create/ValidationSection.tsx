@@ -63,9 +63,10 @@ const ValidationSection = ({ validations, onChange }: ValidationSectionProps) =>
             <div className="flex-1 space-y-1">
               <Label
                 htmlFor={item.id}
-                className={`text-sm font-medium ${item.required ? 'after:content-["*"] after:text-red-500 after:ml-1' : ''}`}
+                className="text-sm font-medium"
               >
                 {item.label}
+                {item.required && <span className="text-red-500 ml-1">*</span>}
               </Label>
               <p className="text-xs text-gray-600">{item.description}</p>
             </div>
@@ -74,7 +75,7 @@ const ValidationSection = ({ validations, onChange }: ValidationSectionProps) =>
         
         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-800">
-            <strong>Note :</strong> Les éléments marqués d'un astérisque (*) sont obligatoires 
+            <strong>Note :</strong> Les éléments marqués d'un astérisque <span className="text-red-500">(*)</span> sont obligatoires 
             pour soumettre la demande de création de mission.
           </p>
         </div>

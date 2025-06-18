@@ -26,7 +26,9 @@ const ClientSection = ({ data, onChange }: ClientSectionProps) => {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="client">Client *</Label>
+            <Label htmlFor="client">
+              Client <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="client"
               placeholder="Rechercher un client..."
@@ -36,7 +38,9 @@ const ClientSection = ({ data, onChange }: ClientSectionProps) => {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="country">Pays *</Label>
+            <Label htmlFor="country">
+              Pays <span className="text-red-500">*</span>
+            </Label>
             <Select 
               value={data.country || ''} 
               onValueChange={(value) => onChange({ ...data, country: value })}

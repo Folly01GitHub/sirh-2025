@@ -74,7 +74,9 @@ const ContactsSection = ({ contacts, onChange }: ContactsSectionProps) => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <Label htmlFor={`contact-name-${index}`}>Nom complet *</Label>
+                <Label htmlFor={`contact-name-${index}`}>
+                  Nom complet <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id={`contact-name-${index}`}
                   placeholder="Nom et prénom"
@@ -84,7 +86,9 @@ const ContactsSection = ({ contacts, onChange }: ContactsSectionProps) => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor={`contact-function-${index}`}>Fonction *</Label>
+                <Label htmlFor={`contact-function-${index}`}>
+                  Fonction <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id={`contact-function-${index}`}
                   placeholder="Titre du poste"
@@ -94,7 +98,9 @@ const ContactsSection = ({ contacts, onChange }: ContactsSectionProps) => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor={`contact-email-${index}`}>Email *</Label>
+                <Label htmlFor={`contact-email-${index}`}>
+                  Email <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id={`contact-email-${index}`}
                   type="email"
