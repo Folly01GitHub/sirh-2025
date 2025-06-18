@@ -209,7 +209,7 @@ const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) =
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="clientManager">Responsable client [Directeur de mission]</Label>
+          <Label htmlFor="clientManager">Responsable client (Directeur de mission)</Label>
           <SearchableSelect
             placeholder="Sélectionner un directeur de mission..."
             value={data.clientManager || ''}

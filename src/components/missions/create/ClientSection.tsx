@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -281,7 +282,7 @@ const ClientSection = ({ data, onChange }: ClientSectionProps) => {
 
           <div className="space-y-2">
             <Label htmlFor="referred">
-              Référé [entité Mazars qui nous réfère la mission]
+              Référé (entité Mazars qui nous réfère la mission)
             </Label>
             <Select 
               value={data.referred || ''} 
