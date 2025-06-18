@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -141,6 +142,13 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
                 <TableCell>{getStatusBadge(mission.status)}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onActionClick(mission.id, 'view')}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
                     {activeFilter === 'team' && isMissionPending(mission.status) && (
                       <>
                         <Button
@@ -163,13 +171,6 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
                         </Button>
                       </>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onActionClick(mission.id, 'view')}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
