@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,7 +15,9 @@ interface MissionDetailsSectionProps {
 
 const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) => {
   const [departements, setDepartements] = useState<{ label: string; value: string }[]>([]);
+  const [employees, setEmployees] = useState<{ label: string; value: string }[]>([]);
   const [loadingDepartements, setLoadingDepartements] = useState(false);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
 
   const currencies = ['FCFA', 'EUR', 'USD'];
   const missionSuggestions = ['Audit', 'Diagnostic', 'Consulting', 'Formation', 'Accompagnement'];
@@ -24,7 +27,6 @@ const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) =
       setLoadingDepartements(true);
       try {
         const response = await apiClient.get('/departements');
-        // The API returns an array of strings, so we map each string to an object
         const departementsData = response.data.map((dept: string) => ({
           label: dept,
           value: dept
@@ -38,7 +40,26 @@ const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) =
       }
     };
 
+    const fetchEmployees = async () => {
+      setLoadingEmployees(true);
+      try {
+        const response = await apiClient.get('/employees_list');
+        // Assuming the API returns an array of employee objects with name/id properties
+        const employeesData = response.data.map((employee: any) => ({
+          label: employee.name || employee.full_name || `${employee.first_name} ${employee.last_name}`,
+          value: employee.id || employee.employee_id
+        }));
+        setEmployees(employeesData);
+      } catch (error) {
+        console.error('Erreur lors du chargement des employés:', error);
+        setEmployees([]);
+      } finally {
+        setLoadingEmployees(false);
+      }
+    };
+
     fetchDepartements();
+    fetchEmployees();
   }, []);
 
   return (
@@ -166,6 +187,49 @@ const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) =
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="disbursements">Estimation des débours</Label>
+          <Input
+            id="disbursements"
+            placeholder="Estimation des débours"
+            value={data.disbursements || ''}
+            onChange={(e) => onChange({ ...data, disbursements: e.target.value })}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="signatoryPartner">Associé signataire</Label>
+          <SearchableSelect
+            placeholder="Sélectionner un associé signataire..."
+            value={data.signatoryPartner || ''}
+            onChange={(value) => onChange({ ...data, signatoryPartner: value })}
+            options={employees}
+            loading={loadingEmployees}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="clientManager">Responsable client [Directeur de mission]</Label>
+          <SearchableSelect
+            placeholder="Sélectionner un directeur de mission..."
+            value={data.clientManager || ''}
+            onChange={(value) => onChange({ ...data, clientManager: value })}
+            options={employees}
+            loading={loadingEmployees}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="missionChief">Intervenant (Chef de mission)</Label>
+          <SearchableSelect
+            placeholder="Sélectionner un chef de mission..."
+            value={data.missionChief || ''}
+            onChange={(value) => onChange({ ...data, missionChief: value })}
+            options={employees}
+            loading={loadingEmployees}
+          />
         </div>
 
         <div className="space-y-2">

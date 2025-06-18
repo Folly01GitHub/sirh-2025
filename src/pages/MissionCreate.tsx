@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HRISNavbar from '@/components/hris/HRISNavbar';
@@ -25,6 +24,10 @@ const MissionCreate = () => {
     currency: 'FCFA',
     subcontractingBudget: '',
     subcontractingCurrency: 'FCFA',
+    disbursements: '',
+    signatoryPartner: '',
+    clientManager: '',
+    missionChief: '',
     description: '',
     validations: []
   });
