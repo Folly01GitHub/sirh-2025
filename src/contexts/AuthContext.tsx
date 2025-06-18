@@ -7,7 +7,7 @@ interface User {
   email: string;
   firstName?: string;
   lastName?: string;
-  role?: 'user' | 'admin';
+  role?: 'user' | 'admin' | 'comptable' | 'collaborateur';
   [key: string]: any; // Allow for other user properties
 }
 
