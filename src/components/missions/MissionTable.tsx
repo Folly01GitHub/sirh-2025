@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -140,29 +141,31 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
                 {activeFilter === 'team' && <TableCell>{mission.requester}</TableCell>}
                 <TableCell>{getStatusBadge(mission.status)}</TableCell>
                 <TableCell>
-                  <div className="flex gap-2">
-                    {activeFilter === 'team' && isMissionPending(mission.status) && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-green-600 hover:text-green-800 hover:bg-green-50"
-                          onClick={() => handleActionClick(mission.id, 'approve', mission.title)}
-                          title="Valider"
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                          onClick={() => handleActionClick(mission.id, 'reject', mission.title)}
-                          title="Refuser"
-                        >
-                          <XCircle className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
+                  <div className="flex justify-between items-center">
+                    <div className="flex gap-2">
+                      {activeFilter === 'team' && isMissionPending(mission.status) && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-green-600 hover:text-green-800 hover:bg-green-50"
+                            onClick={() => handleActionClick(mission.id, 'approve', mission.title)}
+                            title="Valider"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                            onClick={() => handleActionClick(mission.id, 'reject', mission.title)}
+                            title="Refuser"
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
                     <Button
                       variant="ghost"
                       size="icon"
