@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -107,7 +106,7 @@ const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) =
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="budget">Budget total</Label>
+            <Label htmlFor="budget">Budget HT</Label>
             <Input
               id="budget"
               type="number"
