@@ -75,8 +75,8 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
             <TableHead>Client</TableHead>
             <TableHead>Date de début</TableHead>
             <TableHead>Date de fin</TableHead>
-            <TableHead>Statut</TableHead>
             {activeFilter === 'team' && <TableHead>Demandeur</TableHead>}
+            <TableHead>Statut</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -88,8 +88,8 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
               <TableCell>{mission.client}</TableCell>
               <TableCell>{formatDate(mission.startDate)}</TableCell>
               <TableCell>{formatDate(mission.endDate)}</TableCell>
-              <TableCell>{getStatusBadge(mission.status)}</TableCell>
               {activeFilter === 'team' && <TableCell>{mission.requester}</TableCell>}
+              <TableCell>{getStatusBadge(mission.status)}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Button
@@ -97,8 +97,7 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
                     size="sm"
                     onClick={() => onActionClick(mission.id, 'view')}
                   >
-                    <Eye className="h-4 w-4 mr-1" />
-                    Voir les détails
+                    <Eye className="h-4 w-4" />
                   </Button>
                   {activeFilter === 'team' && mission.status === 'en_attente' && (
                     <>
