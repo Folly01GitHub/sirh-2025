@@ -23,6 +23,8 @@ const MissionCreate = () => {
     endDate: '',
     budget: '',
     currency: 'FCFA',
+    subcontractingBudget: '',
+    subcontractingCurrency: 'FCFA',
     description: '',
     validations: []
   });

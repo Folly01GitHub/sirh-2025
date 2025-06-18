@@ -137,6 +137,38 @@ const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) =
           </div>
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="subcontractingBudget">Budget sous-traitance HT</Label>
+            <Input
+              id="subcontractingBudget"
+              type="number"
+              placeholder="Montant du budget sous-traitance"
+              value={data.subcontractingBudget || ''}
+              onChange={(e) => onChange({ ...data, subcontractingBudget: e.target.value })}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="subcontractingCurrency">Devise</Label>
+            <Select 
+              value={data.subcontractingCurrency || 'FCFA'} 
+              onValueChange={(value) => onChange({ ...data, subcontractingCurrency: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {currencies.map((currency) => (
+                  <SelectItem key={currency} value={currency}>
+                    {currency}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="description">Description détaillée</Label>
           <Textarea
