@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Save, Send } from 'lucide-react';
+import { ArrowLeft, Send } from 'lucide-react';
 import MissionFormHeader from '@/components/missions/create/MissionFormHeader';
 import ClientSection from '@/components/missions/create/ClientSection';
 import ContactsSection from '@/components/missions/create/ContactsSection';
@@ -34,11 +33,6 @@ const MissionCreate = () => {
 
   const handleBack = () => {
     navigate('/missions');
-  };
-
-  const handleSaveDraft = () => {
-    console.log('Sauvegarder en brouillon:', formData);
-    // TODO: Implémenter la sauvegarde en brouillon
   };
 
   const handleSubmit = () => {
@@ -108,14 +102,6 @@ const MissionCreate = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="flex flex-col sm:flex-row gap-4 justify-end">
-                <Button
-                  variant="outline"
-                  onClick={handleSaveDraft}
-                  className="flex items-center gap-2"
-                >
-                  <Save className="h-4 w-4" />
-                  Sauvegarder en brouillon
-                </Button>
                 <Button
                   onClick={handleSubmit}
                   className="flex items-center gap-2"
