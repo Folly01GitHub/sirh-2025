@@ -30,15 +30,15 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
       case 'validated':
       case 'validee':
       case 'Approuvée':
-        return <Badge variant="default" className="bg-green-500 text-white border-green-500 hover:bg-green-600">Approuvée</Badge>;
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Approuvée</Badge>;
       case 'pending':
       case 'en_attente':
       case 'En attente':
-        return <Badge variant="default" className="bg-amber-500 text-white border-amber-500 hover:bg-amber-600">En attente</Badge>;
+        return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">En attente</Badge>;
       case 'rejected':
       case 'refusee':
       case 'Refusée':
-        return <Badge variant="default" className="bg-red-500 text-white border-red-500 hover:bg-red-600">Refusée</Badge>;
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Refusée</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
