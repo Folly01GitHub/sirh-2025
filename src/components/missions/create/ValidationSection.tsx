@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 
 interface ValidationSectionProps {
@@ -22,12 +23,6 @@ const ValidationSection = ({ validations, onChange }: ValidationSectionProps) =>
       label: 'QAM/KYC/LBC-FT à jour',
       required: true,
       description: 'Quality Assurance Management, Know Your Customer et Lutte contre le Blanchiment et le Financement du Terrorisme'
-    },
-    {
-      id: 'mandate_renewal',
-      label: 'S\'agit-il de l\'année de renouvellement du mandat ?',
-      required: false,
-      description: 'Vérification si la mission correspond à une année de renouvellement de mandat'
     }
   ];
 
@@ -37,6 +32,23 @@ const ValidationSection = ({ validations, onChange }: ValidationSectionProps) =>
     } else {
       onChange(validations.filter(id => id !== itemId));
     }
+  };
+
+  const handleMandateRenewalChange = (value: string) => {
+    const newValidations = validations.filter(id => !id.startsWith('mandate_renewal_'));
+    if (value === 'yes') {
+      onChange([...newValidations, 'mandate_renewal_yes']);
+    } else if (value === 'no') {
+      onChange([...newValidations, 'mandate_renewal_no']);
+    } else {
+      onChange(newValidations);
+    }
+  };
+
+  const getMandateRenewalValue = () => {
+    if (validations.includes('mandate_renewal_yes')) return 'yes';
+    if (validations.includes('mandate_renewal_no')) return 'no';
+    return '';
   };
 
   return (
@@ -66,6 +78,32 @@ const ValidationSection = ({ validations, onChange }: ValidationSectionProps) =>
             </div>
           </div>
         ))}
+
+        {/* Mandate Renewal Question */}
+        <div className="p-3 border rounded-lg">
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">
+              S'agit-il de l'année de renouvellement du mandat ?
+            </Label>
+            <p className="text-xs text-gray-600">
+              Vérification si la mission correspond à une année de renouvellement de mandat
+            </p>
+            <RadioGroup
+              value={getMandateRenewalValue()}
+              onValueChange={handleMandateRenewalChange}
+              className="flex space-x-6"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="yes" id="mandate-yes" />
+                <Label htmlFor="mandate-yes" className="text-sm">Oui</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="no" id="mandate-no" />
+                <Label htmlFor="mandate-no" className="text-sm">Non</Label>
+              </div>
+            </RadioGroup>
+          </div>
+        </div>
         
         <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-800">
