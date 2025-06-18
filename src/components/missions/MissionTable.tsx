@@ -88,6 +88,11 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
     setConfirmDialog(prev => ({ ...prev, isOpen: false }));
   };
 
+  // Function to check if mission is pending
+  const isMissionPending = (status: string) => {
+    return status === 'en_attente' || status === 'En attente' || status === 'pending';
+  };
+
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow-md p-6">
@@ -144,7 +149,7 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
-                    {activeFilter === 'team' && mission.status === 'en_attente' && (
+                    {activeFilter === 'team' && isMissionPending(mission.status) && (
                       <>
                         <Button
                           variant="outline"
