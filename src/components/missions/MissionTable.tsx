@@ -1,10 +1,11 @@
 
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, Check, X } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import MissionConfirmationDialog from './MissionConfirmationDialog';
 
 interface MissionItem {
   id: string;
@@ -25,6 +26,20 @@ interface MissionTableProps {
 }
 
 const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: MissionTableProps) => {
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    action: 'approve' | 'reject';
+    missionId: string;
+    missionTitle: string;
+  }>({
+    isOpen: false,
+    action: 'approve',
+    missionId: '',
+    missionTitle: ''
+  });
+  
+  const { toast } = useToast();
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'validated':
@@ -46,6 +61,31 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR');
+  };
+
+  const handleActionClick = (missionId: string, action: 'approve' | 'reject', missionTitle: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      action,
+      missionId,
+      missionTitle
+    });
+  };
+
+  const handleConfirmAction = () => {
+    const { action, missionId } = confirmDialog;
+    
+    // Call the parent handler
+    onActionClick(missionId, action);
+    
+    // Show success toast
+    toast({
+      title: action === 'approve' ? 'Mission validée' : 'Mission refusée',
+      description: `La mission a été ${action === 'approve' ? 'validée' : 'refusée'} avec succès.`,
+    });
+    
+    // Close dialog
+    setConfirmDialog(prev => ({ ...prev, isOpen: false }));
   };
 
   if (isLoading) {
@@ -70,68 +110,78 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Code mission</TableHead>
-            <TableHead>Libellé mission</TableHead>
-            <TableHead>Client</TableHead>
-            <TableHead>Date de début</TableHead>
-            <TableHead>Date de fin</TableHead>
-            {activeFilter === 'team' && <TableHead>Demandeur</TableHead>}
-            <TableHead>Statut</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {missions.map((mission) => (
-            <TableRow key={mission.id}>
-              <TableCell className="font-medium">{mission.code}</TableCell>
-              <TableCell>{mission.title}</TableCell>
-              <TableCell>{mission.client}</TableCell>
-              <TableCell>{formatDate(mission.startDate)}</TableCell>
-              <TableCell>{formatDate(mission.endDate)}</TableCell>
-              {activeFilter === 'team' && <TableCell>{mission.requester}</TableCell>}
-              <TableCell>{getStatusBadge(mission.status)}</TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onActionClick(mission.id, 'view')}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  {activeFilter === 'team' && mission.status === 'en_attente' && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-green-600 border-green-200 hover:bg-green-50"
-                        onClick={() => onActionClick(mission.id, 'approve')}
-                      >
-                        <Check className="h-4 w-4 mr-1" />
-                        Valider
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 border-red-200 hover:bg-red-50"
-                        onClick={() => onActionClick(mission.id, 'reject')}
-                      >
-                        <X className="h-4 w-4 mr-1" />
-                        Refuser
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </TableCell>
+    <>
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Code mission</TableHead>
+              <TableHead>Libellé mission</TableHead>
+              <TableHead>Client</TableHead>
+              <TableHead>Date de début</TableHead>
+              <TableHead>Date de fin</TableHead>
+              {activeFilter === 'team' && <TableHead>Demandeur</TableHead>}
+              <TableHead>Statut</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </TableHeader>
+          <TableBody>
+            {missions.map((mission) => (
+              <TableRow key={mission.id}>
+                <TableCell className="font-medium">{mission.code}</TableCell>
+                <TableCell>{mission.title}</TableCell>
+                <TableCell>{mission.client}</TableCell>
+                <TableCell>{formatDate(mission.startDate)}</TableCell>
+                <TableCell>{formatDate(mission.endDate)}</TableCell>
+                {activeFilter === 'team' && <TableCell>{mission.requester}</TableCell>}
+                <TableCell>{getStatusBadge(mission.status)}</TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onActionClick(mission.id, 'view')}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    {activeFilter === 'team' && mission.status === 'en_attente' && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-green-600 border-green-200 hover:bg-green-50"
+                          onClick={() => handleActionClick(mission.id, 'approve', mission.title)}
+                        >
+                          <Check className="h-4 w-4 mr-1" />
+                          Valider
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 border-red-200 hover:bg-red-50"
+                          onClick={() => handleActionClick(mission.id, 'reject', mission.title)}
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Refuser
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <MissionConfirmationDialog
+        isOpen={confirmDialog.isOpen}
+        onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, isOpen: open }))}
+        onConfirm={handleConfirmAction}
+        action={confirmDialog.action}
+        missionTitle={confirmDialog.missionTitle}
+      />
+    </>
   );
 };
 
