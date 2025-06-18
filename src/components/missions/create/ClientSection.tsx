@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
 
@@ -214,6 +213,18 @@ const ClientSection = ({ data, onChange }: ClientSectionProps) => {
     { label: 'Zimbabwe', value: 'Zimbabwe' }
   ];
 
+  const handlePublicEntityChange = (value: string) => {
+    onChange({ ...data, publicEntity: value });
+  };
+
+  const handleReferredChange = (value: string) => {
+    onChange({ ...data, referred: value });
+  };
+
+  const handleConfidentialityContractChange = (value: string) => {
+    onChange({ ...data, confidentialityContract: value });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -262,58 +273,70 @@ const ClientSection = ({ data, onChange }: ClientSectionProps) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="publicEntity">
-              Entité d'Intérêt Public
-            </Label>
-            <Select 
-              value={data.publicEntity || ''} 
-              onValueChange={(value) => onChange({ ...data, publicEntity: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionner..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="oui">Oui</SelectItem>
-                <SelectItem value="non">Non</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="p-3 border rounded-lg">
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">
+                Entité d'Intérêt Public
+              </Label>
+              <RadioGroup
+                value={data.publicEntity || ''}
+                onValueChange={handlePublicEntityChange}
+                className="flex space-x-6"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="oui" id="public-entity-yes" />
+                  <Label htmlFor="public-entity-yes" className="text-sm">Oui</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="non" id="public-entity-no" />
+                  <Label htmlFor="public-entity-no" className="text-sm">Non</Label>
+                </div>
+              </RadioGroup>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="referred">
-              Référé (entité Mazars qui nous réfère la mission)
-            </Label>
-            <Select 
-              value={data.referred || ''} 
-              onValueChange={(value) => onChange({ ...data, referred: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionner..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="oui">Oui</SelectItem>
-                <SelectItem value="non">Non</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="p-3 border rounded-lg">
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">
+                Référé (entité Mazars qui nous réfère la mission)
+              </Label>
+              <RadioGroup
+                value={data.referred || ''}
+                onValueChange={handleReferredChange}
+                className="flex space-x-6"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="oui" id="referred-yes" />
+                  <Label htmlFor="referred-yes" className="text-sm">Oui</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="non" id="referred-no" />
+                  <Label htmlFor="referred-no" className="text-sm">Non</Label>
+                </div>
+              </RadioGroup>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="confidentialityContract">
-              Client sous contrat de confidentialité
-            </Label>
-            <Select 
-              value={data.confidentialityContract || ''} 
-              onValueChange={(value) => onChange({ ...data, confidentialityContract: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionner..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="oui">Oui</SelectItem>
-                <SelectItem value="non">Non</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="p-3 border rounded-lg">
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">
+                Client sous contrat de confidentialité
+              </Label>
+              <RadioGroup
+                value={data.confidentialityContract || ''}
+                onValueChange={handleConfidentialityContractChange}
+                className="flex space-x-6"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="oui" id="confidentiality-yes" />
+                  <Label htmlFor="confidentiality-yes" className="text-sm">Oui</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="non" id="confidentiality-no" />
+                  <Label htmlFor="confidentiality-no" className="text-sm">Non</Label>
+                </div>
+              </RadioGroup>
+            </div>
           </div>
         </div>
 
