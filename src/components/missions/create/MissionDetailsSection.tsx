@@ -24,7 +24,9 @@ const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) =
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="mission-title">Intitulé de la mission *</Label>
+          <Label htmlFor="mission-title">
+            Intitulé de la mission <span className="text-red-500">*</span>
+          </Label>
           <Input
             id="mission-title"
             placeholder="Saisir l'intitulé de la mission (max 120 caractères)"
@@ -39,7 +41,9 @@ const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) =
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="start-date">Date de début *</Label>
+            <Label htmlFor="start-date">
+              Date de début <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="start-date"
               type="date"
@@ -49,7 +53,9 @@ const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) =
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="end-date">Date de fin *</Label>
+            <Label htmlFor="end-date">
+              Date de fin <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="end-date"
               type="date"
