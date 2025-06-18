@@ -1,10 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import apiClient from '@/utils/apiClient';
 
@@ -229,17 +227,6 @@ const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) =
             onChange={(value) => onChange({ ...data, missionChief: value })}
             options={employees}
             loading={loadingEmployees}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="description">Description détaillée</Label>
-          <Textarea
-            id="description"
-            placeholder="Décrire les objectifs et le périmètre de la mission..."
-            rows={4}
-            value={data.description || ''}
-            onChange={(e) => onChange({ ...data, description: e.target.value })}
           />
         </div>
       </CardContent>

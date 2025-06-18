@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HRISNavbar from '@/components/hris/HRISNavbar';
@@ -28,7 +29,6 @@ const MissionCreate = () => {
     signatoryPartner: '',
     clientManager: '',
     missionChief: '',
-    description: '',
     validations: []
   });
 
