@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -28,12 +29,15 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
     switch (status) {
       case 'validated':
       case 'validee':
-        return <Badge variant="default" className="bg-green-500 text-white border-green-500 hover:bg-green-600">Validée</Badge>;
+      case 'Approuvée':
+        return <Badge variant="default" className="bg-green-500 text-white border-green-500 hover:bg-green-600">Approuvée</Badge>;
       case 'pending':
       case 'en_attente':
+      case 'En attente':
         return <Badge variant="default" className="bg-amber-500 text-white border-amber-500 hover:bg-amber-600">En attente</Badge>;
       case 'rejected':
       case 'refusee':
+      case 'Refusée':
         return <Badge variant="default" className="bg-red-500 text-white border-red-500 hover:bg-red-600">Refusée</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
