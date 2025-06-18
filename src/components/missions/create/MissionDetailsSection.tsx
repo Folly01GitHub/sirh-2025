@@ -1,10 +1,12 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
+import apiClient from '@/utils/apiClient';
 
 interface MissionDetailsSectionProps {
   data: any;
@@ -12,8 +14,32 @@ interface MissionDetailsSectionProps {
 }
 
 const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) => {
+  const [departements, setDepartements] = useState<{ label: string; value: string }[]>([]);
+  const [loadingDepartements, setLoadingDepartements] = useState(false);
+
   const currencies = ['FCFA', 'EUR', 'USD'];
   const missionSuggestions = ['Audit', 'Diagnostic', 'Consulting', 'Formation', 'Accompagnement'];
+
+  useEffect(() => {
+    const fetchDepartements = async () => {
+      setLoadingDepartements(true);
+      try {
+        const response = await apiClient.get('/departements');
+        const departementsData = response.data.map((dept: any) => ({
+          label: dept.name || dept.nom || dept.libelle,
+          value: dept.id || dept.code || dept.name || dept.nom || dept.libelle
+        }));
+        setDepartements(departementsData);
+      } catch (error) {
+        console.error('Erreur lors du chargement des départements:', error);
+        setDepartements([]);
+      } finally {
+        setLoadingDepartements(false);
+      }
+    };
+
+    fetchDepartements();
+  }, []);
 
   return (
     <Card>
@@ -23,6 +49,19 @@ const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) =
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="departement">
+            Département
+          </Label>
+          <SearchableSelect
+            placeholder="Sélectionner un département..."
+            value={data.departement || ''}
+            onChange={(value) => onChange({ ...data, departement: value })}
+            options={departements}
+            loading={loadingDepartements}
+          />
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="mission-title">
             Intitulé de la mission <span className="text-red-500">*</span>

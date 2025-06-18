@@ -17,6 +17,7 @@ const MissionCreate = () => {
     client: '',
     country: '',
     contacts: [{}, {}, {}], // 3 contacts vides minimum
+    departement: '',
     title: '',
     startDate: '',
     endDate: '',
