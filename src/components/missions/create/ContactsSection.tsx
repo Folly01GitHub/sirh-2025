@@ -114,7 +114,7 @@ const ContactsSection = ({ contacts, onChange }: ContactsSectionProps) => {
                 <Label htmlFor={`contact-phone-${index}`}>Téléphone</Label>
                 <Input
                   id={`contact-phone-${index}`}
-                  placeholder="+225 XX XX XX XX"
+                  placeholder="+225 XX XX XX XX XX"
                   value={contact.phone || ''}
                   onChange={(e) => updateContact(index, 'phone', e.target.value)}
                 />
