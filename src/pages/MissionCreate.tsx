@@ -22,6 +22,7 @@ const MissionCreate = () => {
     endDate: '',
     budget: '',
     currency: 'FCFA',
+    description: '',
     validations: []
   });
 
@@ -40,10 +41,15 @@ const MissionCreate = () => {
   };
 
   const updateFormData = (section: string, data: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [section]: data
-    }));
+    if (section === 'client') {
+      setFormData(prev => ({ ...prev, ...data }));
+    } else if (section === 'contacts') {
+      setFormData(prev => ({ ...prev, contacts: data }));
+    } else if (section === 'mission') {
+      setFormData(prev => ({ ...prev, ...data }));
+    } else if (section === 'validations') {
+      setFormData(prev => ({ ...prev, validations: data }));
+    }
   };
 
   return (
