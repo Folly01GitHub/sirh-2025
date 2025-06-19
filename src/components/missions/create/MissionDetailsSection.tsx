@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -42,10 +43,10 @@ const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) =
       setLoadingEmployees(true);
       try {
         const response = await apiClient.get('/employees_list');
-        // Assuming the API returns an array of employee objects with name/id properties
+        // Convert employee IDs to strings to ensure compatibility with SearchableSelect
         const employeesData = response.data.map((employee: any) => ({
           label: employee.name || employee.full_name || `${employee.first_name} ${employee.last_name}`,
-          value: employee.id || employee.employee_id
+          value: String(employee.id || employee.employee_id)
         }));
         setEmployees(employeesData);
       } catch (error) {

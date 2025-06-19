@@ -20,7 +20,11 @@ const MissionCreate = () => {
   const [formData, setFormData] = useState({
     client: '',
     country: '',
-    contacts: [{}, {}, {}], // 3 contacts vides minimum
+    contacts: [
+      { name: '', function: '', email: '' },
+      { name: '', function: '', email: '' },
+      { name: '', function: '', email: '' }
+    ], // 3 contacts vides minimum avec propriétés définies
     departement: '',
     title: '',
     startDate: '',
