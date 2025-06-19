@@ -61,6 +61,7 @@ const App = () => (
               <Route path="/permissions" element={<Permissions />} />
               <Route path="/missions" element={<Missions />} />
               <Route path="/missions/create" element={<MissionCreate />} />
+              <Route path="/missions/:id" element={<MissionDetails />} />
               <Route path="/evaluations" element={<EvaluationDashboard />} />
               <Route path="/evaluation" element={<Evaluation />} />
               <Route path="/evaluation-view" element={<EvaluationView />} />

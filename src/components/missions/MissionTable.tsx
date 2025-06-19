@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,8 @@ interface MissionTableProps {
 }
 
 const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: MissionTableProps) => {
+  const navigate = useNavigate();
+  
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     action: 'approve' | 'reject';
@@ -140,6 +143,10 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
     setConfirmDialog(prev => ({ ...prev, isOpen: false }));
   };
 
+  const handleViewDetails = (missionId: string) => {
+    navigate(`/missions/${missionId}`);
+  };
+
   // Function to check if mission is pending
   const isMissionPending = (status: string) => {
     return status === 'en_attente' || status === 'En attente' || status === 'pending';
@@ -223,7 +230,8 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => onActionClick(mission.id, 'view')}
+                      onClick={() => handleViewDetails(mission.id)}
+                      title="Voir les détails"
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
