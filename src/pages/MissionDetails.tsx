@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -123,7 +124,7 @@ const MissionDetails = () => {
       
       <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-fade-in">
         <div className="flex items-center gap-4 mb-6">
-          <Button onClick={handleGoBack} variant="outline">
+          <Button onClick={handleGoBack} variant="back">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour
           </Button>
