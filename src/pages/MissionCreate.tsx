@@ -20,10 +20,17 @@ const MissionCreate = () => {
   const [formData, setFormData] = useState({
     client: '',
     country: '',
+    clientAddress: '',
+    publicEntity: '',
+    referred: '',
+    confidentialityContract: '',
+    activitySectors: '',
+    taxationRegime: '',
+    taxpayerAccount: '',
     contacts: [
-      { name: '', function: '', email: '' },
-      { name: '', function: '', email: '' },
-      { name: '', function: '', email: '' }
+      { name: '', function: '', email: '', phone: '' },
+      { name: '', function: '', email: '', phone: '' },
+      { name: '', function: '', email: '', phone: '' }
     ], // 3 contacts vides minimum avec propriétés définies
     departement: '',
     title: '',
@@ -92,15 +99,25 @@ const MissionCreate = () => {
     setIsSubmitting(true);
 
     try {
-      // Préparer les données pour l'API
+      // Préparer les données pour l'API - TOUS les champs
       const missionData = {
+        // Informations client
         client: formData.client,
         country: formData.country,
+        client_address: formData.clientAddress,
+        public_entity: formData.publicEntity,
+        referred: formData.referred,
+        confidentiality_contract: formData.confidentialityContract,
+        activity_sectors: formData.activitySectors,
+        taxation_regime: formData.taxationRegime,
+        taxpayer_account: formData.taxpayerAccount,
+        
+        // Détails de la mission
         department: formData.departement,
         title: formData.title,
         start_date: formData.startDate,
         end_date: formData.endDate,
-        budget: parseFloat(formData.budget),
+        budget: formData.budget ? parseFloat(formData.budget) : null,
         currency: formData.currency,
         subcontracting_budget: formData.subcontractingBudget ? parseFloat(formData.subcontractingBudget) : null,
         subcontracting_currency: formData.subcontractingCurrency,
@@ -108,11 +125,15 @@ const MissionCreate = () => {
         signatory_partner: formData.signatoryPartner,
         client_manager: formData.clientManager,
         mission_chief: formData.missionChief,
+        
+        // Contacts (tous les contacts remplis)
         contacts: formData.contacts.filter(contact => contact.name && contact.email),
+        
+        // Validations
         validations: formData.validations
       };
 
-      console.log('Soumission de la mission:', missionData);
+      console.log('Soumission de la mission avec toutes les données:', missionData);
       
       const response = await apiClient.post('/missions', missionData);
       
