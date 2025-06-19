@@ -1,10 +1,11 @@
-
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import apiClient from '@/utils/apiClient';
 import MissionConfirmationDialog from './MissionConfirmationDialog';
 
 interface MissionItem {
@@ -39,6 +40,59 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
   });
   
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Mutation pour valider une mission
+  const validateMissionMutation = useMutation({
+    mutationFn: async (missionId: string) => {
+      const response = await apiClient.post(`/missions/${missionId}/valider`);
+      return response.data;
+    },
+    onSuccess: () => {
+      // Rafraîchir les données
+      queryClient.invalidateQueries({ queryKey: ['missions', activeFilter] });
+      queryClient.invalidateQueries({ queryKey: ['missionStats', activeFilter] });
+      
+      toast({
+        title: 'Mission validée',
+        description: 'La mission a été validée avec succès.',
+      });
+    },
+    onError: (error: any) => {
+      console.error('Erreur lors de la validation:', error);
+      toast({
+        title: 'Erreur',
+        description: error.response?.data?.message || 'Erreur lors de la validation de la mission.',
+        variant: 'destructive',
+      });
+    }
+  });
+
+  // Mutation pour refuser une mission
+  const rejectMissionMutation = useMutation({
+    mutationFn: async (missionId: string) => {
+      const response = await apiClient.post(`/missions/${missionId}/refuser`);
+      return response.data;
+    },
+    onSuccess: () => {
+      // Rafraîchir les données
+      queryClient.invalidateQueries({ queryKey: ['missions', activeFilter] });
+      queryClient.invalidateQueries({ queryKey: ['missionStats', activeFilter] });
+      
+      toast({
+        title: 'Mission refusée',
+        description: 'La mission a été refusée avec succès.',
+      });
+    },
+    onError: (error: any) => {
+      console.error('Erreur lors du refus:', error);
+      toast({
+        title: 'Erreur',
+        description: error.response?.data?.message || 'Erreur lors du refus de la mission.',
+        variant: 'destructive',
+      });
+    }
+  });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -75,16 +129,14 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
   const handleConfirmAction = () => {
     const { action, missionId } = confirmDialog;
     
-    // Call the parent handler
-    onActionClick(missionId, action);
+    // Appeler la mutation appropriée
+    if (action === 'approve') {
+      validateMissionMutation.mutate(missionId);
+    } else {
+      rejectMissionMutation.mutate(missionId);
+    }
     
-    // Show success toast
-    toast({
-      title: action === 'approve' ? 'Mission validée' : 'Mission refusée',
-      description: `La mission a été ${action === 'approve' ? 'validée' : 'refusée'} avec succès.`,
-    });
-    
-    // Close dialog
+    // Fermer la dialog
     setConfirmDialog(prev => ({ ...prev, isOpen: false }));
   };
 
@@ -150,6 +202,7 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
                             size="icon"
                             className="text-green-600 hover:text-green-800 hover:bg-green-50"
                             onClick={() => handleActionClick(mission.id, 'approve', mission.title)}
+                            disabled={validateMissionMutation.isPending || rejectMissionMutation.isPending}
                             title="Valider"
                           >
                             <CheckCircle className="h-4 w-4" />
@@ -159,6 +212,7 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
                             size="icon"
                             className="text-red-600 hover:text-red-800 hover:bg-red-50"
                             onClick={() => handleActionClick(mission.id, 'reject', mission.title)}
+                            disabled={validateMissionMutation.isPending || rejectMissionMutation.isPending}
                             title="Refuser"
                           >
                             <XCircle className="h-4 w-4" />

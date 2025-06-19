@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -195,6 +194,7 @@ const Missions = () => {
   const handleActionClick = (id: string, action: string) => {
     console.log(`Action ${action} on mission ${id}`);
     // Handle different actions based on the action type
+    // Note: validation and rejection are now handled directly in MissionTable
   };
   
   const handleNewMission = () => {
