@@ -188,14 +188,36 @@ const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) =
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="disbursements">Estimation des débours</Label>
-          <Input
-            id="disbursements"
-            placeholder="Estimation des débours"
-            value={data.disbursements || ''}
-            onChange={(e) => onChange({ ...data, disbursements: e.target.value })}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="disbursements">Estimation des débours</Label>
+            <Input
+              id="disbursements"
+              type="number"
+              placeholder="Montant des débours"
+              value={data.disbursements || ''}
+              onChange={(e) => onChange({ ...data, disbursements: e.target.value })}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="disbursementsCurrency">Devise</Label>
+            <Select 
+              value={data.disbursementsCurrency || 'FCFA'} 
+              onValueChange={(value) => onChange({ ...data, disbursementsCurrency: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {currencies.map((currency) => (
+                  <SelectItem key={currency} value={currency}>
+                    {currency}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="space-y-2">
