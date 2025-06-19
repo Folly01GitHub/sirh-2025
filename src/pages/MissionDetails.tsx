@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -24,6 +23,7 @@ interface Validations {
 
 interface MissionDetails {
   id: string;
+  code_mission: string;
   title: string;
   client: string;
   country: string;
@@ -129,7 +129,7 @@ const MissionDetails = () => {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-800">{mission.title}</h1>
-            <p className="text-gray-500">Mission ID: {mission.id}</p>
+            <p className="text-gray-500">Code mission : {mission.code_mission}</p>
           </div>
         </div>
 
