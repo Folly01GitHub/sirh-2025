@@ -25,6 +25,7 @@ import LeaveRequest from "./pages/LeaveRequest";
 import LeaveDetails from "./pages/LeaveDetails";
 import Missions from "./pages/Missions";
 import MissionCreate from "./pages/MissionCreate";
+import MissionDetails from "./pages/MissionDetails";
 import Evaluation from "./pages/Evaluation";
 import EvaluationDashboard from "./pages/EvaluationDashboard";
 import EvaluationView from "./pages/EvaluationView";
