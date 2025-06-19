@@ -274,13 +274,13 @@ const MissionDetails = () => {
             </CardContent>
           </Card>
 
-          {/* Contacts */}
+          {/* Contacts - Display variable number of contacts */}
           {mission.contacts && mission.contacts.length > 0 && (
             <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Phone className="h-5 w-5" />
-                  Contacts
+                  Contacts ({mission.contacts.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
