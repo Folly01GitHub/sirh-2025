@@ -72,10 +72,10 @@ const MissionStatsSection = ({ stats, isLoading, activeFilter }: MissionStatsSec
         description="Missions déjà validées"
       />
       <StatsCard
-        title="Missions à traiter"
+        title="Missions en attente"
         value={stats?.toValidate?.toString() || '0'}
-        icon={<AlertCircle className="h-5 w-5 text-red-600" />}
-        color="red"
+        icon={<Clock className="h-5 w-5 text-amber-600" />}
+        color="amber"
         description="En attente de traitement"
       />
     </div>
