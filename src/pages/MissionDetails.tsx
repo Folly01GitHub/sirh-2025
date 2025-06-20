@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -59,6 +59,11 @@ const fetchMissionDetails = async (id: string): Promise<MissionDetails> => {
 const MissionDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const { 
     data: mission, 
