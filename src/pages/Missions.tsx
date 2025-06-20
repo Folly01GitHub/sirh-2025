@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -84,14 +83,10 @@ const fetchMissionStats = async (filter: string): Promise<MissionStats> => {
       
       const apiTeamStats: ApiTeamMissionStatsResponse = response.data;
       
-      // For team missions, calculate validated missions as total - toValidate - pending
-      const validated = Math.max(0, apiTeamStats.total - apiTeamStats.a_valider - apiTeamStats.en_attente);
-      
       return {
         total: apiTeamStats.total,
-        validated: validated,
-        toValidate: apiTeamStats.a_valider,
-        pending: apiTeamStats.en_attente
+        validated: apiTeamStats.a_valider, // a_valider représente les missions validées
+        toValidate: apiTeamStats.en_attente // en_attente représente les missions à traiter
       };
     } catch (error) {
       console.error('Error fetching team mission stats:', error);
