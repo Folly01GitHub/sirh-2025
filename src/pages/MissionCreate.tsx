@@ -41,7 +41,7 @@ const MissionCreate = () => {
     subcontractingBudget: '',
     subcontractingCurrency: 'FCFA',
     disbursements: '',
-    disbursementsCurrency: 'FCFA',
+    disbursementsCurrency: '',
     signatoryPartner: '',
     clientManager: '',
     missionChief: '',

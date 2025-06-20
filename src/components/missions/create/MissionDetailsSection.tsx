@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -203,11 +202,11 @@ const MissionDetailsSection = ({ data, onChange }: MissionDetailsSectionProps) =
           <div className="space-y-2">
             <Label htmlFor="disbursementsCurrency">Devise</Label>
             <Select 
-              value={data.disbursementsCurrency || 'FCFA'} 
+              value={data.disbursementsCurrency || ''} 
               onValueChange={(value) => onChange({ ...data, disbursementsCurrency: value })}
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Sélectionner une devise" />
               </SelectTrigger>
               <SelectContent>
                 {currencies.map((currency) => (
