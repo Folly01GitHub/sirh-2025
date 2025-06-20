@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -43,6 +42,7 @@ interface MissionDetails {
   subcontracting_budget: number;
   subcontracting_currency: string;
   disbursements: number;
+  disbursements_currency: string;
   signatory_partner: string;
   client_manager: string;
   mission_chief: string;
@@ -237,7 +237,7 @@ const MissionDetails = () => {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600">Estimation des débours</label>
-                <p className="text-gray-800">{mission.disbursements?.toLocaleString('fr-FR')} €</p>
+                <p className="text-gray-800">{formatCurrency(mission.disbursements, mission.disbursements_currency)}</p>
               </div>
             </CardContent>
           </Card>
