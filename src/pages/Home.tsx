@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,22 +9,46 @@ import { ChevronRight, Calendar as CalendarIcon, Award, Clock } from 'lucide-rea
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import StatsCard from '@/components/hris/StatsCard';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
+import apiClient from '@/utils/apiClient';
+
+interface GlobalStats {
+  solde_conges_legaux: number;
+  evaluations_terminees: number;
+  total_evaluations: number;
+  total_evenements: number;
+}
+
+const fetchGlobalStats = async (): Promise<GlobalStats> => {
+  try {
+    const response = await apiClient.get('/global-stats');
+    console.log('API Response for global stats:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching global stats:', error);
+    // Return default values in case of error
+    return {
+      solde_conges_legaux: 0,
+      evaluations_terminees: 0,
+      total_evaluations: 0,
+      total_evenements: 0
+    };
+  }
+};
 
 const Home = () => {
   const today = new Date();
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(today);
   const { user } = useAuth();
   
-  // Sample data - would typically come from API
-  const leaveData = {
-    remainingDays: 12
-  };
-  
-  const evaluationData = {
-    completed: 3,
-    total: 5
-  };
+  const { 
+    data: globalStats,
+    isLoading: statsLoading 
+  } = useQuery({
+    queryKey: ['globalStats'],
+    queryFn: fetchGlobalStats
+  });
   
   const events = [
     { date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2), type: 'meeting' },
@@ -41,7 +66,47 @@ const Home = () => {
 
   const dashboardUrl = user?.role === 'admin' ? '/admin/dashboard' : '/dashboard';
 
-  const upcomingEventsCount = events.length;
+  const renderStatsCards = () => {
+    if (statsLoading) {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="animate-pulse">
+              <div className="bg-gray-200 rounded-lg h-32"></div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <StatsCard 
+          title="Congés restants" 
+          value={`${globalStats?.solde_conges_legaux || 0} jours`} 
+          icon={<CalendarIcon className="h-6 w-6 text-blue-600" />}
+          color="blue"
+          description="Solde annuel disponible"
+        />
+        
+        <StatsCard 
+          title="Évaluations" 
+          value={`${globalStats?.evaluations_terminees || 0}/${globalStats?.total_evaluations || 0}`} 
+          icon={<Award className="h-6 w-6 text-amber-600" />}
+          color="amber"
+          description="Évaluations terminées / totales"
+        />
+        
+        <StatsCard 
+          title="Événements à venir" 
+          value={`${globalStats?.total_evenements || 0} événements`} 
+          icon={<Clock className="h-6 w-6 text-green-600" />}
+          color="green"
+          description="Prochains jours à noter"
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8f9fc]">
@@ -66,31 +131,7 @@ const Home = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-3">
             <h2 className="text-2xl font-semibold text-[#172b4d] mb-4">Votre aperçu</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              <StatsCard 
-                title="Congés restants" 
-                value={`${leaveData.remainingDays} jours`} 
-                icon={<CalendarIcon className="h-6 w-6 text-blue-600" />}
-                color="blue"
-                description="Solde annuel disponible"
-              />
-              
-              <StatsCard 
-                title="Évaluations" 
-                value={`${evaluationData.completed}/${evaluationData.total}`} 
-                icon={<Award className="h-6 w-6 text-amber-600" />}
-                color="amber"
-                description="Évaluations terminées / totales"
-              />
-              
-              <StatsCard 
-                title="Événements à venir" 
-                value={`${upcomingEventsCount} événements`} 
-                icon={<Clock className="h-6 w-6 text-green-600" />}
-                color="green"
-                description="Prochains jours à noter"
-              />
-            </div>
+            {renderStatsCards()}
           </div>
 
           <div className="lg:col-span-3">
