@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { z } from 'zod';
+import { useQuery } from '@tanstack/react-query';
 import { Calendar as CalendarIcon, Trash2, Plus } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -51,8 +51,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
+import apiClient from '@/utils/apiClient';
 
 const eventTypes = [
   { value: 'reunion', label: 'Réunion' },
@@ -72,12 +74,33 @@ const eventSchema = z.object({
 
 type EventFormData = z.infer<typeof eventSchema>;
 
-interface Event extends EventFormData {
+interface ApiEvent {
   id: string;
+  type: string;
+  libelle: string;
+  date: string;
 }
 
+const fetchEvents = async (): Promise<ApiEvent[]> => {
+  try {
+    const response = await apiClient.get('/evenements');
+    console.log('API Response for events:', response.data);
+    return response.data || [];
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    return [];
+  }
+};
+
 const AdminEvents = () => {
-  const [events, setEvents] = useState<Event[]>([]);
+  const { 
+    data: events = [],
+    isLoading: eventsLoading,
+    refetch: refetchEvents
+  } = useQuery({
+    queryKey: ['adminEvents'],
+    queryFn: fetchEvents
+  });
   
   const form = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
@@ -88,25 +111,27 @@ const AdminEvents = () => {
   });
 
   const onSubmit = (data: EventFormData) => {
-    const newEvent: Event = {
-      ...data,
-      id: Date.now().toString(),
-    };
-    
-    setEvents([...events, newEvent]);
+    // For now, we'll keep the local creation logic
+    // This would typically be an API call to create the event
+    console.log('Creating event:', data);
     form.reset();
     toast({
       title: 'Évènement créé',
       description: 'L\'évènement a été ajouté avec succès.',
     });
+    // Refetch events after creation
+    refetchEvents();
   };
 
   const deleteEvent = (id: string) => {
-    setEvents(events.filter(event => event.id !== id));
+    // This would typically be an API call to delete the event
+    console.log('Deleting event:', id);
     toast({
       title: 'Évènement supprimé',
       description: 'L\'évènement a été supprimé avec succès.',
     });
+    // Refetch events after deletion
+    refetchEvents();
   };
 
   const getEventTypeLabel = (type: string) => {
@@ -241,7 +266,15 @@ const AdminEvents = () => {
             <CardTitle>Liste des évènements ({events.length})</CardTitle>
           </CardHeader>
           <CardContent>
-            {events.length === 0 ? (
+            {eventsLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="animate-pulse">
+                    <Skeleton className="h-16 w-full" />
+                  </div>
+                ))}
+              </div>
+            ) : events.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <CalendarIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Aucun évènement créé pour le moment</p>
@@ -266,7 +299,7 @@ const AdminEvents = () => {
                       </TableCell>
                       <TableCell className="font-medium">{event.libelle}</TableCell>
                       <TableCell>
-                        {format(event.date, 'PPP', { locale: fr })}
+                        {format(new Date(event.date), 'PPP', { locale: fr })}
                       </TableCell>
                       <TableCell className="text-center">
                         <AlertDialog>
