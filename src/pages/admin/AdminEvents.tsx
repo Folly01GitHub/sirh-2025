@@ -110,17 +110,34 @@ const AdminEvents = () => {
     },
   });
 
-  const onSubmit = (data: EventFormData) => {
-    // For now, we'll keep the local creation logic
-    // This would typically be an API call to create the event
-    console.log('Creating event:', data);
-    form.reset();
-    toast({
-      title: 'Évènement créé',
-      description: 'L\'évènement a été ajouté avec succès.',
-    });
-    // Refetch events after creation
-    refetchEvents();
+  const onSubmit = async (data: EventFormData) => {
+    try {
+      const payload = {
+        date: data.date.toISOString(),
+        libelle: data.libelle,
+        type: data.type
+      };
+      
+      console.log('Creating event with payload:', payload);
+      const response = await apiClient.post('/evenements', payload);
+      console.log('Event created successfully:', response.data);
+      
+      form.reset();
+      toast({
+        title: 'Évènement créé',
+        description: 'L\'évènement a été ajouté avec succès.',
+      });
+      
+      // Refetch events after creation
+      refetchEvents();
+    } catch (error) {
+      console.error('Error creating event:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Une erreur est survenue lors de la création de l\'évènement.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const deleteEvent = (id: string) => {
