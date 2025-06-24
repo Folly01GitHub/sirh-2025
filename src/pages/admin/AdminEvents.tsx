@@ -140,15 +140,27 @@ const AdminEvents = () => {
     }
   };
 
-  const deleteEvent = (id: string) => {
-    // This would typically be an API call to delete the event
-    console.log('Deleting event:', id);
-    toast({
-      title: 'Évènement supprimé',
-      description: 'L\'évènement a été supprimé avec succès.',
-    });
-    // Refetch events after deletion
-    refetchEvents();
+  const deleteEvent = async (id: string) => {
+    try {
+      console.log('Deleting event with ID:', id);
+      await apiClient.delete(`/evenements/${id}`);
+      console.log('Event deleted successfully');
+      
+      toast({
+        title: 'Évènement supprimé',
+        description: 'L\'évènement a été supprimé avec succès.',
+      });
+      
+      // Refetch events after deletion
+      refetchEvents();
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Une erreur est survenue lors de la suppression de l\'évènement.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const getEventTypeLabel = (type: string) => {
