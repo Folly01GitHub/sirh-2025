@@ -20,6 +20,12 @@ interface GlobalStats {
   total_evenements: number;
 }
 
+interface ApiEvent {
+  date: string;
+  libelle: string;
+  type: string;
+}
+
 const fetchGlobalStats = async (): Promise<GlobalStats> => {
   try {
     const response = await apiClient.get('/global-stats');
@@ -37,6 +43,17 @@ const fetchGlobalStats = async (): Promise<GlobalStats> => {
   }
 };
 
+const fetchUpcomingEvents = async (): Promise<ApiEvent[]> => {
+  try {
+    const response = await apiClient.get('/evenement/proche');
+    console.log('API Response for upcoming events:', response.data);
+    return response.data || [];
+  } catch (error) {
+    console.error('Error fetching upcoming events:', error);
+    return [];
+  }
+};
+
 const Home = () => {
   const today = new Date();
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(today);
@@ -49,19 +66,22 @@ const Home = () => {
     queryKey: ['globalStats'],
     queryFn: fetchGlobalStats
   });
-  
-  const events = [
-    { date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2), type: 'meeting' },
-    { date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 5), type: 'appraisal' },
-    { date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 8), type: 'leave' },
-  ];
+
+  const { 
+    data: apiEvents = [],
+    isLoading: eventsLoading 
+  } = useQuery({
+    queryKey: ['upcomingEvents'],
+    queryFn: fetchUpcomingEvents
+  });
   
   const isDayWithEvent = (date: Date) => {
-    return events.some(event => 
-      event.date.getDate() === date.getDate() && 
-      event.date.getMonth() === date.getMonth() && 
-      event.date.getFullYear() === date.getFullYear()
-    );
+    return apiEvents.some(event => {
+      const eventDate = new Date(event.date);
+      return eventDate.getDate() === date.getDate() && 
+             eventDate.getMonth() === date.getMonth() && 
+             eventDate.getFullYear() === date.getFullYear();
+    });
   };
 
   const dashboardUrl = user?.role === 'admin' ? '/admin/dashboard' : '/dashboard';
@@ -106,6 +126,57 @@ const Home = () => {
         />
       </div>
     );
+  };
+
+  const getEventIcon = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'reunion':
+        return <Clock className="h-5 w-5" />;
+      case 'evaluation':
+        return <Award className="h-5 w-5" />;
+      case 'conge':
+        return <CalendarIcon className="h-5 w-5" />;
+      case 'entretien':
+        return <Award className="h-5 w-5" />;
+      case 'ferie':
+        return <CalendarIcon className="h-5 w-5" />;
+      default:
+        return <Clock className="h-5 w-5" />;
+    }
+  };
+
+  const getEventBadgeVariant = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'reunion':
+        return 'default';
+      case 'evaluation':
+        return 'secondary';
+      case 'conge':
+        return 'outline';
+      case 'entretien':
+        return 'destructive';
+      case 'ferie':
+        return 'secondary';
+      default:
+        return 'default';
+    }
+  };
+
+  const getEventTypeLabel = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'reunion':
+        return 'Réunion';
+      case 'evaluation':
+        return 'Évaluation';
+      case 'conge':
+        return 'Congé';
+      case 'entretien':
+        return 'Entretien';
+      case 'ferie':
+        return 'Férié';
+      default:
+        return type;
+    }
   };
 
   return (
@@ -156,39 +227,43 @@ const Home = () => {
                 <div className="border-t md:border-t-0 md:border-l border-gray-100 p-6">
                   <h3 className="font-medium text-lg mb-4">Événements à venir</h3>
                   <div className="space-y-4">
-                    {events.map((event, index) => (
-                      <div key={index} className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-md transition-colors">
-                        <div className="h-10 w-10 flex items-center justify-center rounded-full bg-primary/10 text-primary">
-                          {event.type === 'meeting' && <Clock className="h-5 w-5" />}
-                          {event.type === 'appraisal' && <Award className="h-5 w-5" />}
-                          {event.type === 'leave' && <CalendarIcon className="h-5 w-5" />}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-medium">
-                              {event.type === 'meeting' && 'Réunion d\'équipe'}
-                              {event.type === 'appraisal' && 'Entretien d\'évaluation'}
-                              {event.type === 'leave' && 'Jours de congés'}
-                            </h4>
-                            <Badge variant={
-                              event.type === 'meeting' ? 'default' : 
-                              event.type === 'appraisal' ? 'secondary' : 'outline'
-                            }>
-                              {event.type === 'meeting' && 'réunion'}
-                              {event.type === 'appraisal' && 'évaluation'}
-                              {event.type === 'leave' && 'congé'}
-                            </Badge>
+                    {eventsLoading ? (
+                      <div className="space-y-4">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="animate-pulse">
+                            <div className="bg-gray-200 rounded-md h-16"></div>
                           </div>
-                          <p className="text-sm text-gray-500">
-                            {event.date.toLocaleDateString('fr-FR', { 
-                              day: 'numeric',
-                              month: 'long', 
-                              year: 'numeric' 
-                            })}
-                          </p>
-                        </div>
+                        ))}
                       </div>
-                    ))}
+                    ) : apiEvents.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <CalendarIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>Aucun événement à venir</p>
+                      </div>
+                    ) : (
+                      apiEvents.map((event, index) => (
+                        <div key={index} className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-md transition-colors">
+                          <div className="h-10 w-10 flex items-center justify-center rounded-full bg-primary/10 text-primary">
+                            {getEventIcon(event.type)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-medium">{event.libelle}</h4>
+                              <Badge variant={getEventBadgeVariant(event.type)}>
+                                {getEventTypeLabel(event.type)}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-gray-500">
+                              {new Date(event.date).toLocaleDateString('fr-FR', { 
+                                day: 'numeric',
+                                month: 'long', 
+                                year: 'numeric' 
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
