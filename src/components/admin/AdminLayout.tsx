@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -18,7 +19,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { 
   LayoutDashboard, 
-  Settings, 
   LogOut, 
   User,
   ArrowLeft,
@@ -54,8 +54,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { path: '/admin/dashboard', label: 'Tableau de Bord', icon: LayoutDashboard },
     { path: '/admin/leaves', label: 'Congés', icon: CalendarDays },
     { path: '/admin/evaluations', label: 'Evaluations', icon: Award },
-    { path: '/admin/events', label: 'Évènements', icon: Calendar },
-    { path: '/admin/settings', label: 'Paramètres', icon: Settings }
+    { path: '/admin/events', label: 'Évènements', icon: Calendar }
   ];
 
   return (
