@@ -13,7 +13,6 @@ import Dashboard from "./pages/admin/Dashboard";
 import AdminLeaves from "./pages/admin/AdminLeaves";
 import AdminEvaluations from "./pages/admin/AdminEvaluations";
 import AdminEvents from "./pages/admin/AdminEvents";
-import Settings from "./pages/admin/Settings";
 import UserStats from "./pages/admin/UserStats";
 import UserStatsConges from "./pages/admin/UserStatsConges";
 import UserStatsEvals from "./pages/admin/UserStatsEvals";
@@ -53,7 +52,6 @@ const App = () => (
               <Route path="/admin/leaves" element={<AdminLeaves />} />
               <Route path="/admin/evaluations" element={<AdminEvaluations />} />
               <Route path="/admin/events" element={<AdminEvents />} />
-              <Route path="/admin/settings" element={<Settings />} />
               <Route path="/admin/user-stats/:userId" element={<UserStats />} />
               <Route path="/admin/user-stats-conges/:userId" element={<UserStatsConges />} />
               <Route path="/admin/user-stats-evals/:userId" element={<UserStatsEvals />} />
