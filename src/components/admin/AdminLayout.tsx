@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -24,7 +23,8 @@ import {
   User,
   ArrowLeft,
   CalendarDays,
-  Award
+  Award,
+  Calendar
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -54,6 +54,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { path: '/admin/dashboard', label: 'Tableau de Bord', icon: LayoutDashboard },
     { path: '/admin/leaves', label: 'Congés', icon: CalendarDays },
     { path: '/admin/evaluations', label: 'Evaluations', icon: Award },
+    { path: '/admin/events', label: 'Évènements', icon: Calendar },
     { path: '/admin/settings', label: 'Paramètres', icon: Settings }
   ];
 
