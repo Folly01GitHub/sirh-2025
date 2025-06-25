@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +12,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Search, Award, Users, Eye, TrendingUp } from 'lucide-react';
+import { Search, Award, Users, Eye, TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '@/utils/apiClient';
 
@@ -26,26 +27,81 @@ interface Employee {
   moyenne_evaluations: number;
 }
 
+type SortField = 'name' | 'position' | 'department' | 'evaluations_terminees' | 'evaluations_en_cours' | 'moyenne_evaluations';
+type SortDirection = 'asc' | 'desc' | null;
+
+interface SortConfig {
+  field: SortField | null;
+  direction: SortDirection;
+}
+
 const AdminEvaluations = () => {
   const navigate = useNavigate();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ field: null, direction: null });
 
   useEffect(() => {
     fetchEmployees();
   }, []);
 
   useEffect(() => {
-    const filtered = employees.filter(employee =>
+    let filtered = employees.filter(employee =>
       (employee.firstName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (employee.lastName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (employee.position?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (employee.department?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     );
+
+    // Apply sorting
+    if (sortConfig.field && sortConfig.direction) {
+      filtered = [...filtered].sort((a, b) => {
+        let aValue: any;
+        let bValue: any;
+
+        switch (sortConfig.field) {
+          case 'name':
+            aValue = `${a.firstName || ''} ${a.lastName || ''}`.trim().toLowerCase();
+            bValue = `${b.firstName || ''} ${b.lastName || ''}`.trim().toLowerCase();
+            break;
+          case 'position':
+            aValue = (a.position || '').toLowerCase();
+            bValue = (b.position || '').toLowerCase();
+            break;
+          case 'department':
+            aValue = (a.department || '').toLowerCase();
+            bValue = (b.department || '').toLowerCase();
+            break;
+          case 'evaluations_terminees':
+            aValue = a.evaluations_terminees || 0;
+            bValue = b.evaluations_terminees || 0;
+            break;
+          case 'evaluations_en_cours':
+            aValue = a.evaluations_en_cours || 0;
+            bValue = b.evaluations_en_cours || 0;
+            break;
+          case 'moyenne_evaluations':
+            aValue = a.moyenne_evaluations || 0;
+            bValue = b.moyenne_evaluations || 0;
+            break;
+          default:
+            return 0;
+        }
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
     setFilteredEmployees(filtered);
-  }, [employees, searchTerm]);
+  }, [employees, searchTerm, sortConfig]);
 
   const fetchEmployees = async () => {
     try {
@@ -59,6 +115,32 @@ const AdminEvaluations = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSort = (field: SortField) => {
+    let direction: SortDirection = 'asc';
+    
+    if (sortConfig.field === field && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    } else if (sortConfig.field === field && sortConfig.direction === 'desc') {
+      direction = null;
+    }
+
+    setSortConfig({ field: direction ? field : null, direction });
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortConfig.field !== field) {
+      return <ArrowUpDown className="h-4 w-4 text-gray-400" />;
+    }
+    
+    if (sortConfig.direction === 'asc') {
+      return <ArrowUp className="h-4 w-4 text-blue-600" />;
+    } else if (sortConfig.direction === 'desc') {
+      return <ArrowDown className="h-4 w-4 text-blue-600" />;
+    }
+    
+    return <ArrowUpDown className="h-4 w-4 text-gray-400" />;
   };
 
   const handleViewDetails = (employee: Employee) => {
@@ -112,12 +194,60 @@ const AdminEvaluations = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nom</TableHead>
-                    <TableHead>Poste</TableHead>
-                    <TableHead>Département</TableHead>
-                    <TableHead className="text-center">Évaluations validées</TableHead>
-                    <TableHead className="text-center">Évaluations en cours</TableHead>
-                    <TableHead className="text-center">Note globale</TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      onClick={() => handleSort('name')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Nom
+                        {getSortIcon('name')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      onClick={() => handleSort('position')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Poste
+                        {getSortIcon('position')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      onClick={() => handleSort('department')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Département
+                        {getSortIcon('department')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-center cursor-pointer hover:bg-gray-50 select-none"
+                      onClick={() => handleSort('evaluations_terminees')}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        Évaluations validées
+                        {getSortIcon('evaluations_terminees')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-center cursor-pointer hover:bg-gray-50 select-none"
+                      onClick={() => handleSort('evaluations_en_cours')}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        Évaluations en cours
+                        {getSortIcon('evaluations_en_cours')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-center cursor-pointer hover:bg-gray-50 select-none"
+                      onClick={() => handleSort('moyenne_evaluations')}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        Note globale
+                        {getSortIcon('moyenne_evaluations')}
+                      </div>
+                    </TableHead>
                     <TableHead className="text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
