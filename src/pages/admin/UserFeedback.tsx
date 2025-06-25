@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/admin/AdminLayout';
@@ -20,11 +21,16 @@ interface PointsFortResponse {
   points_forts: PointFortItem[];
 }
 
-interface FeedbackItem {
-  mission: string;
-  client: string;
-  date: string;
-  axes_amelioration: string[];
+interface AxeAmeliorationItem {
+  evaluation_id: number;
+  code_mission: string;
+  nom_client: string;
+  date_approbation: string;
+  axe_amelioration: string;
+}
+
+interface AxeAmeliorationResponse {
+  axe_amelioration: AxeAmeliorationItem[];
 }
 
 const UserFeedback = () => {
@@ -32,7 +38,7 @@ const UserFeedback = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [pointsFortData, setPointsFortData] = useState<PointsFortResponse | null>(null);
-  const [feedbackData, setFeedbackData] = useState<FeedbackItem[]>([]);
+  const [axeAmeliorationData, setAxeAmeliorationData] = useState<AxeAmeliorationResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -92,36 +98,47 @@ const UserFeedback = () => {
       }
     };
 
-    const fetchFeedbackData = async () => {
+    const fetchAxeAmelioration = async () => {
       if (!userId) return;
       
       try {
-        // Appel API pour récupérer les axes d'amélioration (garder l'ancien système pour cette section)
-        const response = await apiClient.get(`/admin/user-feedback/${userId}`);
-        setFeedbackData(response.data || []);
+        const response = await apiClient.get(`/evaluations/axe-amelioration/${userId}`);
+        setAxeAmeliorationData(response.data);
       } catch (error) {
-        console.error('Error fetching feedback data:', error);
+        console.error('Error fetching axes amélioration:', error);
         // Données de fallback pour la démonstration
-        setFeedbackData([
-          {
-            mission: "Développement Application Mobile",
-            client: "TechCorp",
-            date: "2024-03-15",
-            axes_amelioration: [
-              "Améliorer la documentation du code",
-              "Renforcer les tests unitaires"
-            ]
-          },
-          {
-            mission: "Refonte Site Web E-commerce",
-            client: "ShopPlus",
-            date: "2024-02-20",
-            axes_amelioration: [
-              "Optimiser les performances front-end",
-              "Approfondir les connaissances en SEO"
-            ]
-          }
-        ]);
+        setAxeAmeliorationData({
+          axe_amelioration: [
+            {
+              evaluation_id: 1,
+              code_mission: "DEV-2024-001",
+              nom_client: "TechCorp",
+              date_approbation: "2024-03-15",
+              axe_amelioration: "Améliorer la documentation du code"
+            },
+            {
+              evaluation_id: 1,
+              code_mission: "DEV-2024-001",
+              nom_client: "TechCorp",
+              date_approbation: "2024-03-15",
+              axe_amelioration: "Renforcer les tests unitaires"
+            },
+            {
+              evaluation_id: 2,
+              code_mission: "WEB-2024-002",
+              nom_client: "ShopPlus",
+              date_approbation: "2024-02-20",
+              axe_amelioration: "Optimiser les performances front-end"
+            },
+            {
+              evaluation_id: 2,
+              code_mission: "WEB-2024-002",
+              nom_client: "ShopPlus",
+              date_approbation: "2024-02-20",
+              axe_amelioration: "Approfondir les connaissances en SEO"
+            }
+          ]
+        });
       } finally {
         setLoading(false);
       }
@@ -129,7 +146,7 @@ const UserFeedback = () => {
 
     fetchUserFromLocalStorage();
     fetchPointsForts();
-    fetchFeedbackData();
+    fetchAxeAmelioration();
   }, [userId]);
 
   const handleBack = () => {
@@ -148,11 +165,6 @@ const UserFeedback = () => {
       </AdminLayout>
     );
   }
-
-  // Agrégation des axes d'amélioration
-  const allAxesAmelioration = feedbackData.flatMap(item => 
-    item.axes_amelioration.map(axe => ({ axe, mission: item.mission, client: item.client, date: item.date }))
-  );
 
   return (
     <AdminLayout>
@@ -238,22 +250,22 @@ const UserFeedback = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              {allAxesAmelioration.length === 0 ? (
+              {!axeAmeliorationData?.axe_amelioration || axeAmeliorationData.axe_amelioration.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>Aucun axe d'amélioration enregistré pour le moment</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {allAxesAmelioration.map((item, index) => (
+                  {axeAmeliorationData.axe_amelioration.map((item, index) => (
                     <div key={index} className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                       <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-semibold text-orange-800">{item.mission}</h4>
+                        <h4 className="font-semibold text-orange-800">{item.code_mission}</h4>
                         <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
-                          {item.client} - {new Date(item.date).toLocaleDateString('fr-FR')}
+                          {item.nom_client} - {new Date(item.date_approbation).toLocaleDateString('fr-FR')}
                         </span>
                       </div>
-                      <p className="text-orange-700 leading-relaxed">{item.axe}</p>
+                      <p className="text-orange-700 leading-relaxed">{item.axe_amelioration}</p>
                     </div>
                   ))}
                 </div>
