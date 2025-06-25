@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Table, 
@@ -10,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Filter, Download, Search } from 'lucide-react';
+import { Filter, Download, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { User, FilterFormData } from '@/types/user.types';
@@ -19,6 +20,14 @@ import UserTableRow from './UserTableRow';
 import UserDeleteDialog from './UserDeleteDialog';
 import UserFilterDialog from './UserFilterDialog';
 import apiClient from '@/utils/apiClient';
+
+type SortField = 'name' | 'email' | 'position' | 'department' | 'dateCreated';
+type SortDirection = 'asc' | 'desc' | null;
+
+interface SortConfig {
+  field: SortField | null;
+  direction: SortDirection;
+}
 
 const UserTable: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -30,6 +39,7 @@ const UserTable: React.FC = () => {
   const [filters, setFilters] = useState<FilterFormData>({});
   const [error, setError] = useState<string | null>(null);
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ field: null, direction: null });
 
   // Extract unique departments from users
   const uniqueDepartments = useMemo(() => {
@@ -135,25 +145,98 @@ const UserTable: React.FC = () => {
     setIsFilterDialogOpen(false);
   };
 
+  // Handle sorting
+  const handleSort = (field: SortField) => {
+    let direction: SortDirection = 'asc';
+    
+    if (sortConfig.field === field && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    } else if (sortConfig.field === field && sortConfig.direction === 'desc') {
+      direction = null;
+    }
+
+    setSortConfig({ field: direction ? field : null, direction });
+  };
+
+  // Get sort icon
+  const getSortIcon = (field: SortField) => {
+    if (sortConfig.field !== field) {
+      return <ArrowUpDown className="h-4 w-4 text-gray-400" />;
+    }
+    
+    if (sortConfig.direction === 'asc') {
+      return <ArrowUp className="h-4 w-4 text-blue-600" />;
+    } else if (sortConfig.direction === 'desc') {
+      return <ArrowDown className="h-4 w-4 text-blue-600" />;
+    }
+    
+    return <ArrowUpDown className="h-4 w-4 text-gray-400" />;
+  };
+
   // Filter and search the users
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = 
-      searchTerm === '' || 
-      user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    // Update filter logic to handle "all" value
-    const matchesStatus = !filters.status || filters.status === "all" || user.status === filters.status;
-    const matchesPosition = !filters.position || filters.position === "all" || user.position === filters.position;
-    const matchesDepartment = !filters.department || filters.department === "all" || user.department === filters.department;
-    
-    const userDate = user.dateCreated ? new Date(user.dateCreated) : null;
-    const matchesDateFrom = !filters.dateFrom || (userDate && userDate >= filters.dateFrom);
-    const matchesDateTo = !filters.dateTo || (userDate && userDate <= filters.dateTo);
-    
-    return matchesSearch && matchesStatus && matchesPosition && matchesDepartment && matchesDateFrom && matchesDateTo;
-  });
+  const filteredUsers = useMemo(() => {
+    let filtered = users.filter(user => {
+      const matchesSearch = 
+        searchTerm === '' || 
+        user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      // Update filter logic to handle "all" value
+      const matchesStatus = !filters.status || filters.status === "all" || user.status === filters.status;
+      const matchesPosition = !filters.position || filters.position === "all" || user.position === filters.position;
+      const matchesDepartment = !filters.department || filters.department === "all" || user.department === filters.department;
+      
+      const userDate = user.dateCreated ? new Date(user.dateCreated) : null;
+      const matchesDateFrom = !filters.dateFrom || (userDate && userDate >= filters.dateFrom);
+      const matchesDateTo = !filters.dateTo || (userDate && userDate <= filters.dateTo);
+      
+      return matchesSearch && matchesStatus && matchesPosition && matchesDepartment && matchesDateFrom && matchesDateTo;
+    });
+
+    // Apply sorting
+    if (sortConfig.field && sortConfig.direction) {
+      filtered = [...filtered].sort((a, b) => {
+        let aValue: any;
+        let bValue: any;
+
+        switch (sortConfig.field) {
+          case 'name':
+            aValue = `${a.firstName || ''} ${a.lastName || ''}`.trim().toLowerCase();
+            bValue = `${b.firstName || ''} ${b.lastName || ''}`.trim().toLowerCase();
+            break;
+          case 'email':
+            aValue = (a.email || '').toLowerCase();
+            bValue = (b.email || '').toLowerCase();
+            break;
+          case 'position':
+            aValue = (a.position || '').toLowerCase();
+            bValue = (b.position || '').toLowerCase();
+            break;
+          case 'department':
+            aValue = (a.department || '').toLowerCase();
+            bValue = (b.department || '').toLowerCase();
+            break;
+          case 'dateCreated':
+            aValue = a.dateCreated ? new Date(a.dateCreated).getTime() : 0;
+            bValue = b.dateCreated ? new Date(b.dateCreated).getTime() : 0;
+            break;
+          default:
+            return 0;
+        }
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    return filtered;
+  }, [users, searchTerm, filters, sortConfig]);
 
   return (
     <div className="glass-card rounded-lg p-4">
@@ -197,12 +280,52 @@ const UserTable: React.FC = () => {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[30px]">#</TableHead>
-              <TableHead>Nom</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Poste</TableHead>
-              <TableHead>Département</TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-50 select-none"
+                onClick={() => handleSort('name')}
+              >
+                <div className="flex items-center gap-2">
+                  Nom
+                  {getSortIcon('name')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-50 select-none"
+                onClick={() => handleSort('email')}
+              >
+                <div className="flex items-center gap-2">
+                  Email
+                  {getSortIcon('email')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-50 select-none"
+                onClick={() => handleSort('position')}
+              >
+                <div className="flex items-center gap-2">
+                  Poste
+                  {getSortIcon('position')}
+                </div>
+              </TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-50 select-none"
+                onClick={() => handleSort('department')}
+              >
+                <div className="flex items-center gap-2">
+                  Département
+                  {getSortIcon('department')}
+                </div>
+              </TableHead>
               <TableHead>Statut</TableHead>
-              <TableHead>Date de Création</TableHead>
+              <TableHead 
+                className="cursor-pointer hover:bg-gray-50 select-none"
+                onClick={() => handleSort('dateCreated')}
+              >
+                <div className="flex items-center gap-2">
+                  Date de Création
+                  {getSortIcon('dateCreated')}
+                </div>
+              </TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
