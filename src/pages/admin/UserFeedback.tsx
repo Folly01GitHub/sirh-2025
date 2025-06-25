@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, User as UserIcon, TrendingUp, Target } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ArrowLeft, User as UserIcon, TrendingUp, Target, ChevronDown, ChevronUp } from 'lucide-react';
 import { User } from '@/types/user.types';
 import apiClient from '@/utils/apiClient';
 
@@ -40,6 +40,8 @@ const UserFeedback = () => {
   const [pointsFortData, setPointsFortData] = useState<PointsFortResponse | null>(null);
   const [axeAmeliorationData, setAxeAmeliorationData] = useState<AxeAmeliorationResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPointsFortOpen, setIsPointsFortOpen] = useState(true);
+  const [isAxeAmeliorationOpen, setIsAxeAmeliorationOpen] = useState(true);
 
   useEffect(() => {
     const fetchUserFromLocalStorage = () => {
@@ -197,81 +199,107 @@ const UserFeedback = () => {
         </div>
 
         <div className="max-w-7xl mx-auto space-y-8">
-          {/* Section Points Forts */}
-          <Card className="shadow-lg">
-            <CardHeader className="bg-green-50 border-b">
-              <CardTitle className="flex items-center gap-3 text-green-800">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <TrendingUp className="h-6 w-6 text-green-600" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">Principaux points forts du collaborateur</h2>
-                  <p className="text-sm text-green-600 font-normal">
-                    Basé sur {pointsFortData?.nb_evaluations || 0} évaluation(s) complétée(s)
-                  </p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              {!pointsFortData?.points_forts || pointsFortData.points_forts.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Aucun point fort enregistré pour le moment</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {pointsFortData.points_forts.map((item, index) => (
-                    <div key={index} className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-semibold text-green-800">{item.code_mission}</h4>
-                        <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-                          {item.nom_client} - {new Date(item.date_approbation).toLocaleDateString('fr-FR')}
-                        </span>
+          {/* Section Points Forts - Collapsible */}
+          <Collapsible open={isPointsFortOpen} onOpenChange={setIsPointsFortOpen}>
+            <Card className="shadow-lg">
+              <CollapsibleTrigger asChild>
+                <CardHeader className="bg-green-50 border-b cursor-pointer hover:bg-green-100 transition-colors">
+                  <CardTitle className="flex items-center justify-between text-green-800">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <TrendingUp className="h-6 w-6 text-green-600" />
                       </div>
-                      <p className="text-green-700 leading-relaxed">{item.point_fort}</p>
+                      <div>
+                        <h2 className="text-xl font-bold">Principaux points forts du collaborateur</h2>
+                        <p className="text-sm text-green-600 font-normal">
+                          Basé sur {pointsFortData?.nb_evaluations || 0} évaluation(s) complétée(s)
+                        </p>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    {isPointsFortOpen ? (
+                      <ChevronUp className="h-5 w-5 text-green-600" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-green-600" />
+                    )}
+                  </CardTitle>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="p-6">
+                  {!pointsFortData?.points_forts || pointsFortData.points_forts.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>Aucun point fort enregistré pour le moment</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {pointsFortData.points_forts.map((item, index) => (
+                        <div key={index} className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-semibold text-green-800">{item.code_mission}</h4>
+                            <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                              {item.nom_client} - {new Date(item.date_approbation).toLocaleDateString('fr-FR')}
+                            </span>
+                          </div>
+                          <p className="text-green-700 leading-relaxed">{item.point_fort}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
 
-          {/* Section Axes d'Amélioration */}
-          <Card className="shadow-lg">
-            <CardHeader className="bg-orange-50 border-b">
-              <CardTitle className="flex items-center gap-3 text-orange-800">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <Target className="h-6 w-6 text-orange-600" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">Principaux axes d'amélioration du collaborateur</h2>
-                  <p className="text-sm text-orange-600 font-normal">Opportunités de développement identifiées</p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              {!axeAmeliorationData?.axe_amelioration || axeAmeliorationData.axe_amelioration.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Aucun axe d'amélioration enregistré pour le moment</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {axeAmeliorationData.axe_amelioration.map((item, index) => (
-                    <div key={index} className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-semibold text-orange-800">{item.code_mission}</h4>
-                        <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
-                          {item.nom_client} - {new Date(item.date_approbation).toLocaleDateString('fr-FR')}
-                        </span>
+          {/* Section Axes d'Amélioration - Collapsible */}
+          <Collapsible open={isAxeAmeliorationOpen} onOpenChange={setIsAxeAmeliorationOpen}>
+            <Card className="shadow-lg">
+              <CollapsibleTrigger asChild>
+                <CardHeader className="bg-orange-50 border-b cursor-pointer hover:bg-orange-100 transition-colors">
+                  <CardTitle className="flex items-center justify-between text-orange-800">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-orange-100 rounded-lg">
+                        <Target className="h-6 w-6 text-orange-600" />
                       </div>
-                      <p className="text-orange-700 leading-relaxed">{item.axe_amelioration}</p>
+                      <div>
+                        <h2 className="text-xl font-bold">Principaux axes d'amélioration du collaborateur</h2>
+                        <p className="text-sm text-orange-600 font-normal">Opportunités de développement identifiées</p>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    {isAxeAmeliorationOpen ? (
+                      <ChevronUp className="h-5 w-5 text-orange-600" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-orange-600" />
+                    )}
+                  </CardTitle>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="p-6">
+                  {!axeAmeliorationData?.axe_amelioration || axeAmeliorationData.axe_amelioration.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>Aucun axe d'amélioration enregistré pour le moment</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {axeAmeliorationData.axe_amelioration.map((item, index) => (
+                        <div key={index} className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-semibold text-orange-800">{item.code_mission}</h4>
+                            <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
+                              {item.nom_client} - {new Date(item.date_approbation).toLocaleDateString('fr-FR')}
+                            </span>
+                          </div>
+                          <p className="text-orange-700 leading-relaxed">{item.axe_amelioration}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
         </div>
       </div>
     </AdminLayout>
