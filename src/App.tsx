@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,6 +28,7 @@ import MissionDetails from "./pages/MissionDetails";
 import Evaluation from "./pages/Evaluation";
 import EvaluationDashboard from "./pages/EvaluationDashboard";
 import EvaluationView from "./pages/EvaluationView";
+import UserFeedback from "./pages/admin/UserFeedback";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +55,7 @@ const App = () => (
               <Route path="/admin/user-stats/:userId" element={<UserStats />} />
               <Route path="/admin/user-stats-conges/:userId" element={<UserStatsConges />} />
               <Route path="/admin/user-stats-evals/:userId" element={<UserStatsEvals />} />
+              <Route path="/admin/user-feedback/:userId" element={<UserFeedback />} />
               <Route path="/admin/evaluation-view" element={<AdminEvaluationView />} />
               <Route path="/leave" element={<Leaves />} />
               <Route path="/leave/request" element={<LeaveRequest />} />

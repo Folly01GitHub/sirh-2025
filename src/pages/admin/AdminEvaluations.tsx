@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +11,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Search, Award, Users, Eye } from 'lucide-react';
+import { Search, Award, Users, Eye, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '@/utils/apiClient';
 
@@ -66,6 +65,12 @@ const AdminEvaluations = () => {
     // Stocker les données de l'employé dans localStorage pour la page de détails
     localStorage.setItem('adminUsers', JSON.stringify(employees));
     navigate(`/admin/user-stats-evals/${employee.id}`);
+  };
+
+  const handleViewFeedback = (employee: Employee) => {
+    // Stocker les données de l'employé dans localStorage pour la page de feedback
+    localStorage.setItem('adminUsers', JSON.stringify(employees));
+    navigate(`/admin/user-feedback/${employee.id}`);
   };
 
   const formatGlobalScore = (score: any): string => {
@@ -167,6 +172,14 @@ const AdminEvaluations = () => {
                               onClick={() => handleViewDetails(employee)}
                             >
                               <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              title="Points forts et axes d'amélioration"
+                              onClick={() => handleViewFeedback(employee)}
+                            >
+                              <TrendingUp className="h-4 w-4" />
                             </Button>
                           </div>
                         </TableCell>
