@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -75,16 +74,19 @@ const AdminLeaves = () => {
             bValue = (b.department || '').toLowerCase();
             break;
           case 'solde_conges_legaux':
-            aValue = a.solde_conges_legaux || 0;
-            bValue = b.solde_conges_legaux || 0;
+            // Conversion explicite en nombre pour le tri numérique
+            aValue = Number(a.solde_conges_legaux) || 0;
+            bValue = Number(b.solde_conges_legaux) || 0;
             break;
           case 'jours_legaux_pris_annee':
-            aValue = a.jours_legaux_pris_annee || 0;
-            bValue = b.jours_legaux_pris_annee || 0;
+            // Conversion explicite en nombre pour le tri numérique
+            aValue = Number(a.jours_legaux_pris_annee) || 0;
+            bValue = Number(b.jours_legaux_pris_annee) || 0;
             break;
           case 'nombre_demandes_en_attente':
-            aValue = a.nombre_demandes_en_attente || 0;
-            bValue = b.nombre_demandes_en_attente || 0;
+            // Conversion explicite en nombre pour le tri numérique
+            aValue = Number(a.nombre_demandes_en_attente) || 0;
+            bValue = Number(b.nombre_demandes_en_attente) || 0;
             break;
           default:
             return 0;
