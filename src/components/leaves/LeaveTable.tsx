@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
@@ -260,7 +259,7 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
           <TableRow>
             {activeFilter === 'team' && <TableHead>Demandeur</TableHead>}
             <TableHead>Date de début</TableHead>
-            <TableHead>Date de fin</TableHead>
+            <TableHead>Date de reprise</TableHead>
             <TableHead>Jours pris</TableHead>
             {activeFilter === 'self' && <TableHead>Statut</TableHead>}
             {activeFilter === 'team' && <TableHead>Statut</TableHead>}
