@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 interface LeaveDetailsData {
   id: string;
   demandeur?: string;
+  approbateur?: string;
   type: string;
   date_debut: string;
   date_fin: string;
@@ -175,6 +176,11 @@ const LeaveDetails = () => {
                   {leaveDetails.demandeur && (
                     <p className="text-gray-600 mt-1">
                       Demandeur: {leaveDetails.demandeur}
+                    </p>
+                  )}
+                  {leaveDetails.approbateur && (
+                    <p className="text-gray-600 mt-1">
+                      Responsable: {leaveDetails.approbateur}
                     </p>
                   )}
                 </div>
