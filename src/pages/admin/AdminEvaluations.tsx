@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,9 +11,10 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Search, Award, Users, Eye, TrendingUp, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, Award, Users, Eye, TrendingUp, ArrowUpDown, ArrowUp, ArrowDown, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '@/utils/apiClient';
+import { exportEvaluationsToCsv } from '@/utils/evaluationExportUtils';
 
 interface Employee {
   id: string;
@@ -211,14 +211,24 @@ const AdminEvaluations = () => {
               <Users className="h-5 w-5" />
               Liste des Collaborateurs
             </CardTitle>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Rechercher par nom, poste ou département..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div className="relative w-full md:w-auto">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Rechercher par nom, poste ou département..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-full md:w-64"
+                />
+              </div>
+              <Button 
+                variant="outline" 
+                className="gap-2 w-full md:w-auto" 
+                onClick={() => exportEvaluationsToCsv(filteredEmployees)}
+              >
+                <Download className="h-4 w-4" />
+                Exporter CSV
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
