@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/admin/AdminLayout';
@@ -59,7 +58,7 @@ const UserFeedback = () => {
       if (!userId) return;
       
       try {
-        const response = await apiClient.get(`/evaluations/points-forts?user_id=${userId}`);
+        const response = await apiClient.get(`/evaluations/points-forts/${userId}`);
         setPointsFortData(response.data);
       } catch (error) {
         console.error('Error fetching points forts:', error);
