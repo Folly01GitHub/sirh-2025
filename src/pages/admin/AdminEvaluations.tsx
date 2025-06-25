@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,7 +24,7 @@ interface Employee {
   department: string;
   evaluations_terminees: number;
   evaluations_en_cours: number;
-  moyenne_evaluations: number;
+  moyenne_evaluations: number | string;
 }
 
 type SortField = 'name' | 'position' | 'department' | 'evaluations_terminees' | 'evaluations_en_cours' | 'moyenne_evaluations';
@@ -83,8 +84,14 @@ const AdminEvaluations = () => {
             break;
           case 'moyenne_evaluations':
             // Traitement spécial pour les valeurs N/A
-            const aIsNA = a.moyenne_evaluations == null || a.moyenne_evaluations === '' || isNaN(Number(a.moyenne_evaluations));
-            const bIsNA = b.moyenne_evaluations == null || b.moyenne_evaluations === '' || isNaN(Number(b.moyenne_evaluations));
+            const aIsNA = a.moyenne_evaluations == null || 
+                         a.moyenne_evaluations === '' || 
+                         a.moyenne_evaluations === '-' || 
+                         (typeof a.moyenne_evaluations === 'string' && isNaN(Number(a.moyenne_evaluations)));
+            const bIsNA = b.moyenne_evaluations == null || 
+                         b.moyenne_evaluations === '' || 
+                         b.moyenne_evaluations === '-' || 
+                         (typeof b.moyenne_evaluations === 'string' && isNaN(Number(b.moyenne_evaluations)));
             
             // Si les deux sont N/A, les considérer comme égales
             if (aIsNA && bIsNA) return 0;
@@ -181,7 +188,7 @@ const AdminEvaluations = () => {
   };
 
   const formatGlobalScore = (score: any): string => {
-    if (score == null || score === '') return 'N/A';
+    if (score == null || score === '' || score === '-') return 'N/A';
     
     const numericScore = typeof score === 'string' ? parseFloat(score) : Number(score);
     
