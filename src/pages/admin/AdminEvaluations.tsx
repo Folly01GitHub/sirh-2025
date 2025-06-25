@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -83,13 +82,39 @@ const AdminEvaluations = () => {
             bValue = b.evaluations_en_cours || 0;
             break;
           case 'moyenne_evaluations':
-            aValue = a.moyenne_evaluations || 0;
-            bValue = b.moyenne_evaluations || 0;
+            // Traitement spécial pour les valeurs N/A
+            const aIsNA = a.moyenne_evaluations == null || a.moyenne_evaluations === '' || isNaN(Number(a.moyenne_evaluations));
+            const bIsNA = b.moyenne_evaluations == null || b.moyenne_evaluations === '' || isNaN(Number(b.moyenne_evaluations));
+            
+            // Si les deux sont N/A, les considérer comme égales
+            if (aIsNA && bIsNA) return 0;
+            
+            // Si seulement a est N/A, le mettre en bas
+            if (aIsNA) return 1;
+            
+            // Si seulement b est N/A, le mettre en bas
+            if (bIsNA) return -1;
+            
+            // Si aucun n'est N/A, comparer normalement
+            aValue = Number(a.moyenne_evaluations);
+            bValue = Number(b.moyenne_evaluations);
             break;
           default:
             return 0;
         }
 
+        // Pour moyenne_evaluations, on a déjà géré le cas dans le switch
+        if (sortConfig.field === 'moyenne_evaluations') {
+          if (aValue < bValue) {
+            return sortConfig.direction === 'asc' ? -1 : 1;
+          }
+          if (aValue > bValue) {
+            return sortConfig.direction === 'asc' ? 1 : -1;
+          }
+          return 0;
+        }
+
+        // Pour les autres champs
         if (aValue < bValue) {
           return sortConfig.direction === 'asc' ? -1 : 1;
         }
