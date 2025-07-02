@@ -151,7 +151,7 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
 
   // Function to check if mission is pending
   const isMissionPending = (status: string) => {
-    return status === 'en_attente' || status === 'En attente' || status === 'pending';
+    return status === 'en_attente' || status === 'En attente' || status === 'pending' || status === 'Niveau QRM' || status === 'Niveau comptable';
   };
 
   if (isLoading) {
