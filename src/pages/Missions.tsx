@@ -146,7 +146,7 @@ const Missions = () => {
   
   // Determine available tabs based on user role
   const getAvailableTabs = () => {
-    if (user?.role === 'comptable') {
+    if (user?.role === 'comptable' || user?.role === 'qrm') {
       return ['team']; // Only "Missions à valider"
     } else if (user?.role === 'collaborateur') {
       return ['self']; // Only "Mes missions"
@@ -160,7 +160,7 @@ const Missions = () => {
   
   // Set initial filter based on available tabs
   const getInitialFilter = () => {
-    if (user?.role === 'comptable') {
+    if (user?.role === 'comptable' || user?.role === 'qrm') {
       return 'team';
     } else {
       return 'self';
