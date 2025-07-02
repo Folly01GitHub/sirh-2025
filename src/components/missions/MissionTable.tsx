@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
 import MissionConfirmationDialog from './MissionConfirmationDialog';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MissionItem {
   id: string;
@@ -29,6 +30,7 @@ interface MissionTableProps {
 
 const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: MissionTableProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -214,16 +216,18 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
                           >
                             <CheckCircle className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                            onClick={() => handleActionClick(mission.id, 'reject', mission.title)}
-                            disabled={validateMissionMutation.isPending || rejectMissionMutation.isPending}
-                            title="Refuser"
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
+                           {user?.role !== 'comptable' && (
+                             <Button
+                               variant="ghost"
+                               size="icon"
+                               className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                               onClick={() => handleActionClick(mission.id, 'reject', mission.title)}
+                               disabled={validateMissionMutation.isPending || rejectMissionMutation.isPending}
+                               title="Refuser"
+                             >
+                               <XCircle className="h-4 w-4" />
+                             </Button>
+                           )}
                         </>
                       )}
                     </div>
