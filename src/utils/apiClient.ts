@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create an axios instance with base configuration
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://10.172.225.11:8082/api'
+  baseURL: import.meta.env.VITE_API_BASE_URL
 });
 
 // Add a request interceptor to include the auth token
