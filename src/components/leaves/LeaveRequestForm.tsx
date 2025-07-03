@@ -64,7 +64,6 @@ type LeaveFormValues = z.infer<ReturnType<typeof createLeaveFormSchema>>;
 
 const leaveTypes = [
   { id: "legal", label: "Congés légaux" },
-  { id: "unpaid", label: "Congés sans solde" },
   { id: "exam", label: "Congés examen" },
   { id: "other", label: "Autres congés rémunérés" },
 ];
