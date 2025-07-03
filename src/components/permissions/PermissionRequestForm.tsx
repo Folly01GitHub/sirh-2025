@@ -263,15 +263,34 @@ const PermissionRequestForm = ({ onSubmitSuccess }: PermissionRequestFormProps) 
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="max-h-[200px]">
-                        {timeOptions.map((time) => (
-                          <SelectItem 
-                            key={`end-${time}`} 
-                            value={time}
-                            disabled={time <= form.watch('start_time')}
-                          >
-                            {time}
-                          </SelectItem>
-                        ))}
+                        {timeOptions.map((time) => {
+                          const startTime = form.watch('start_time');
+                          let isDisabled = time <= startTime;
+                          
+                          // Check if duration exceeds 4 hours
+                          if (startTime && !isDisabled) {
+                            const [startHour, startMinute] = startTime.split(':').map(Number);
+                            const [endHour, endMinute] = time.split(':').map(Number);
+                            const startMinutes = startHour * 60 + startMinute;
+                            const endMinutes = endHour * 60 + endMinute;
+                            const durationMinutes = endMinutes - startMinutes;
+                            
+                            // Disable if duration > 4 hours (240 minutes)
+                            if (durationMinutes > 240) {
+                              isDisabled = true;
+                            }
+                          }
+                          
+                          return (
+                            <SelectItem 
+                              key={`end-${time}`} 
+                              value={time}
+                              disabled={isDisabled}
+                            >
+                              {time}
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                     <FormMessage />
