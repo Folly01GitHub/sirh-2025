@@ -58,11 +58,11 @@ const LeaveStatsSection: React.FC<LeaveStatsSectionProps> = ({
           description="Jours de congés utilisés cette année"
         />
         <StatsCard
-          title="Bonus ancienneté"
+          title="Congés d'ancienneté"
           value={`${stats.seniority || 0} jours`}
           icon={<Trophy className="h-6 w-6 text-amber-600" />}
           color="amber"
-          description="Jours bonus pour votre ancienneté"
+          description="Jours en plus pour votre ancienneté"
         />
       </div>
     );
