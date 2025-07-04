@@ -188,9 +188,20 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ onSubmitSuccess }) 
       if (onSubmitSuccess) {
         onSubmitSuccess();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting leave request:", error);
-      toast.error("Erreur lors de la soumission de la demande");
+      
+      // Extract error message from API response
+      let errorMessage = "Erreur lors de la soumission de la demande";
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
