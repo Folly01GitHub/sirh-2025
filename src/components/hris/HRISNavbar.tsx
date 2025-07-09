@@ -17,7 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger 
 } from '@/components/ui/popover';
-import { Menu, X, Home, LayoutDashboard, CalendarDays, Award, LogOut, User, Settings, Lock, Wallet, FileCheck, Briefcase } from 'lucide-react';
+import { Menu, X, Home, LayoutDashboard, CalendarDays, Award, LogOut, User, Settings, Lock, Briefcase } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const HRISNavbar = () => {
@@ -93,22 +93,6 @@ const HRISNavbar = () => {
                     <Link to="/evaluations">
                       <Award className="h-4 w-4 mr-1" />
                       <span>Évaluations</span>
-                    </Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                    <Link to="/cashout">
-                      <Wallet className="h-4 w-4 mr-1" />
-                      <span>Sorties de caisse</span>
-                    </Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                    <Link to="/certificates">
-                      <FileCheck className="h-4 w-4 mr-1" />
-                      <span>Attestations</span>
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
@@ -236,22 +220,6 @@ const HRISNavbar = () => {
                 >
                   <Award className="h-5 w-5 mr-3" />
                   <span>Évaluations</span>
-                </Link>
-                <Link
-                  to="/cashout"
-                  className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
-                  onClick={toggleMobileMenu}
-                >
-                  <Wallet className="h-5 w-5 mr-3" />
-                  <span>Sorties de caisse</span>
-                </Link>
-                <Link
-                  to="/certificates"
-                  className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
-                  onClick={toggleMobileMenu}
-                >
-                  <FileCheck className="h-5 w-5 mr-3" />
-                  <span>Attestations</span>
                 </Link>
               </nav>
               <div className="border-t border-gray-200 pt-4 mt-4">
