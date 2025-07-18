@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -35,7 +34,35 @@ const HRISNavbar = () => {
 
   const userEmail = user?.email || 'user@example.com';
   const userName = user?.name || userEmail.split('@')[0];
-  const avatarFallback = `${user?.lastName?.charAt(0) || ''}${user?.firstName?.charAt(0) || ''}`.toUpperCase() || userName.substring(0, 2).toUpperCase();
+  
+  // Debug logging to understand the user object
+  console.log('User object:', user);
+  console.log('firstName:', user?.firstName);
+  console.log('lastName:', user?.lastName);
+  console.log('userName:', userName);
+  
+  // Improved initials generation logic
+  const getAvatarFallback = () => {
+    const firstInitial = user?.firstName?.charAt(0)?.toUpperCase() || '';
+    const lastInitial = user?.lastName?.charAt(0)?.toUpperCase() || '';
+    
+    console.log('firstInitial:', firstInitial);
+    console.log('lastInitial:', lastInitial);
+    
+    // If we have both initials, use them
+    if (firstInitial && lastInitial) {
+      const initials = firstInitial + lastInitial;
+      console.log('Using firstName + lastName initials:', initials);
+      return initials;
+    }
+    
+    // Otherwise, fall back to first 2 letters of userName
+    const fallback = userName.substring(0, 2).toUpperCase();
+    console.log('Using fallback initials:', fallback);
+    return fallback;
+  };
+  
+  const avatarFallback = getAvatarFallback();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md">
