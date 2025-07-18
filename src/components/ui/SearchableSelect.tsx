@@ -72,7 +72,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <span className={selectedOption ? "" : "text-muted-foreground"}>
+        <span className={`truncate ${selectedOption ? "" : "text-muted-foreground"}`} title={selectedOption ? selectedOption.label : undefined}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown className="w-4 h-4 ml-2 opacity-60" />
@@ -107,8 +107,11 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 }`}
                 role="option"
                 aria-selected={value === opt.value}
+                title={opt.label}
               >
-                {opt.label}
+                <div className="truncate">
+                  {opt.label}
+                </div>
               </div>
             ))
           )}
