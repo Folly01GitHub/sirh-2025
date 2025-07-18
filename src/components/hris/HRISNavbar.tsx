@@ -35,7 +35,7 @@ const HRISNavbar = () => {
 
   const userEmail = user?.email || 'user@example.com';
   const userName = user?.name || userEmail.split('@')[0];
-  const avatarFallback = userName.substring(0, 2).toUpperCase();
+  const avatarFallback = `${user?.lastname?.charAt(0) || ''}${user?.firstname?.charAt(0) || ''}`.toUpperCase() || userName.substring(0, 2).toUpperCase();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md">
