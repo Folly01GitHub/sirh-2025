@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -34,35 +35,7 @@ const HRISNavbar = () => {
 
   const userEmail = user?.email || 'user@example.com';
   const userName = user?.name || userEmail.split('@')[0];
-  
-  // Debug logging to understand the user object
-  console.log('User object:', user);
-  console.log('firstName:', user?.firstName);
-  console.log('lastName:', user?.lastName);
-  console.log('userName:', userName);
-  
-  // Improved initials generation logic
-  const getAvatarFallback = () => {
-    const firstInitial = user?.firstName?.charAt(0)?.toUpperCase() || '';
-    const lastInitial = user?.lastName?.charAt(0)?.toUpperCase() || '';
-    
-    console.log('firstInitial:', firstInitial);
-    console.log('lastInitial:', lastInitial);
-    
-    // If we have both initials, use them
-    if (firstInitial && lastInitial) {
-      const initials = firstInitial + lastInitial;
-      console.log('Using firstName + lastName initials:', initials);
-      return initials;
-    }
-    
-    // Otherwise, fall back to first 2 letters of userName
-    const fallback = userName.substring(0, 2).toUpperCase();
-    console.log('Using fallback initials:', fallback);
-    return fallback;
-  };
-  
-  const avatarFallback = getAvatarFallback();
+  const avatarFallback = userName.substring(0, 2).toUpperCase();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md">
@@ -130,6 +103,7 @@ const HRISNavbar = () => {
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Avatar className="h-8 w-8">
+                    <AvatarImage src="https://github.com/shadcn.png" alt="Avatar utilisateur" />
                     <AvatarFallback>{avatarFallback}</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -138,6 +112,7 @@ const HRISNavbar = () => {
                 <div className="grid gap-4">
                   <div className="flex items-center gap-4">
                     <Avatar>
+                      <AvatarImage src="https://github.com/shadcn.png" alt="Avatar utilisateur" />
                       <AvatarFallback>{avatarFallback}</AvatarFallback>
                     </Avatar>
                     <div className="grid gap-1">
@@ -197,6 +172,7 @@ const HRISNavbar = () => {
             <div className="flex flex-col space-y-6">
               <div className="flex items-center gap-4 mb-4">
                 <Avatar>
+                  <AvatarImage src="https://github.com/shadcn.png" alt="Avatar utilisateur" />
                   <AvatarFallback>{avatarFallback}</AvatarFallback>
                 </Avatar>
                 <div>
