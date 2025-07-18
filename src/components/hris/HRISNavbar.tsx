@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/popover';
 import { Menu, X, Home, LayoutDashboard, CalendarDays, Award, LogOut, User, Settings, Lock, Briefcase } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import professionalAvatar from '@/assets/professional-avatar.jpg';
+import professionalAvatar from '@/assets/professional-silhouette-avatar.png';
 
 const HRISNavbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
