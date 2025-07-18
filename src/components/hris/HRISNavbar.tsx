@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/popover';
 import { Menu, X, Home, LayoutDashboard, CalendarDays, Award, LogOut, User, Settings, Lock, Briefcase } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import professionalAvatar from '@/assets/professional-avatar.jpg';
 
 const HRISNavbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -103,7 +104,7 @@ const HRISNavbar = () => {
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="https://github.com/shadcn.png" alt="Avatar utilisateur" />
+                    <AvatarImage src={professionalAvatar} alt="Avatar utilisateur" />
                     <AvatarFallback>{avatarFallback}</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -112,7 +113,7 @@ const HRISNavbar = () => {
                 <div className="grid gap-4">
                   <div className="flex items-center gap-4">
                     <Avatar>
-                      <AvatarImage src="https://github.com/shadcn.png" alt="Avatar utilisateur" />
+                      <AvatarImage src={professionalAvatar} alt="Avatar utilisateur" />
                       <AvatarFallback>{avatarFallback}</AvatarFallback>
                     </Avatar>
                     <div className="grid gap-1">
@@ -172,7 +173,7 @@ const HRISNavbar = () => {
             <div className="flex flex-col space-y-6">
               <div className="flex items-center gap-4 mb-4">
                 <Avatar>
-                  <AvatarImage src="https://github.com/shadcn.png" alt="Avatar utilisateur" />
+                  <AvatarImage src={professionalAvatar} alt="Avatar utilisateur" />
                   <AvatarFallback>{avatarFallback}</AvatarFallback>
                 </Avatar>
                 <div>
