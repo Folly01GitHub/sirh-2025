@@ -107,11 +107,8 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 }`}
                 role="option"
                 aria-selected={value === opt.value}
-                title={opt.label}
               >
-                <div className="truncate">
-                  {opt.label}
-                </div>
+                {opt.label}
               </div>
             ))
           )}
