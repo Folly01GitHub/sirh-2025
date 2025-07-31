@@ -89,7 +89,8 @@ const EvaluationDashboard = () => {
   
   const handleNewEvaluation = () => {
     const managerGrades = ['Manager 1', 'Manager 2', 'Manager 3', 'Senior manager', 'Directeur'];
-    if (user?.grade && managerGrades.includes(user.grade)) {
+    const userGrade = typeof user?.grade === 'object' ? (user.grade as any)?.nom_grade : user?.grade;
+    if (userGrade && managerGrades.includes(userGrade)) {
       navigate('/evaluation/managers');
     } else {
       navigate('/evaluation');
