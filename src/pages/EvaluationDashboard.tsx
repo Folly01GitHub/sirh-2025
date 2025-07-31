@@ -88,7 +88,12 @@ const EvaluationDashboard = () => {
   };
   
   const handleNewEvaluation = () => {
-    navigate('/evaluation');
+    const managerGrades = ['Manager 1', 'Manager 2', 'Manager 3', 'Senior Manager', 'Directeur'];
+    if (user?.grade && managerGrades.includes(user.grade)) {
+      navigate('/evaluation/managers');
+    } else {
+      navigate('/evaluation');
+    }
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
