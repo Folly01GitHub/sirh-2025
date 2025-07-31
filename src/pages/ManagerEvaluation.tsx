@@ -252,12 +252,12 @@ const ManagerEvaluation = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button
-              variant="ghost"
+              variant="back"
               onClick={handleGoBack}
-              className="flex items-center space-x-2 text-muted-foreground hover:text-foreground"
+              className="mb-6"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Retour</span>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Retour aux évaluations
             </Button>
           </div>
         </div>
