@@ -259,9 +259,6 @@ const ManagerEvaluation = () => {
               <ArrowLeft className="w-4 h-4" />
               <span>Retour</span>
             </Button>
-            <h1 className="text-2xl font-bold text-foreground">
-              Évaluation de fin de saison - {typeof user?.grade === 'object' ? (user.grade as any)?.nom_grade : user?.grade}
-            </h1>
           </div>
         </div>
 
