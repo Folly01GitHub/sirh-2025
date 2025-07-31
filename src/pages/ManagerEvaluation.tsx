@@ -360,6 +360,52 @@ const ManagerEvaluation = () => {
               </div>
             )}
             
+            {/* Sélecteurs principaux - Visible uniquement à l'étape 1 */}
+            {currentStep === 1 && (
+              <div className="mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Évaluateur</label>
+                    <select 
+                      value={evaluatorId || ''} 
+                      onChange={(e) => setEvaluatorId(Number(e.target.value))}
+                      className="w-full p-2 border rounded-md"
+                    >
+                      <option value="">Sélectionner un évaluateur</option>
+                      <option value="1">Évaluateur 1</option>
+                      <option value="2">Évaluateur 2</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Approbateur</label>
+                    <select 
+                      value={approverId || ''} 
+                      onChange={(e) => setApproverId(Number(e.target.value))}
+                      className="w-full p-2 border rounded-md"
+                    >
+                      <option value="">Sélectionner un approbateur</option>
+                      <option value="1">Approbateur 1</option>
+                      <option value="2">Approbateur 2</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Mission</label>
+                    <select 
+                      value={selectedMissionId || ''} 
+                      onChange={(e) => setSelectedMissionId(Number(e.target.value))}
+                      className="w-full p-2 border rounded-md"
+                    >
+                      <option value="">Sélectionner une mission</option>
+                      <option value="1">Mission 1</option>
+                      <option value="2">Mission 2</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* Affichage des onglets de groupes */}
             {criteriaGroups && criteriaGroups.length > 0 ? (
               <div className="mb-4">
@@ -417,58 +463,14 @@ const ManagerEvaluation = () => {
                       Les critères d'évaluation seront ajoutés prochainement.
                     </p>
                     
-                    {/* Basic selection form */}
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Évaluateur</label>
-                          <select 
-                            value={evaluatorId || ''} 
-                            onChange={(e) => setEvaluatorId(Number(e.target.value))}
-                            className="w-full p-2 border rounded-md"
-                          >
-                            <option value="">Sélectionner un évaluateur</option>
-                            <option value="1">Évaluateur 1</option>
-                            <option value="2">Évaluateur 2</option>
-                          </select>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Approbateur</label>
-                          <select 
-                            value={approverId || ''} 
-                            onChange={(e) => setApproverId(Number(e.target.value))}
-                            className="w-full p-2 border rounded-md"
-                          >
-                            <option value="">Sélectionner un approbateur</option>
-                            <option value="1">Approbateur 1</option>
-                            <option value="2">Approbateur 2</option>
-                          </select>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Mission</label>
-                          <select 
-                            value={selectedMissionId || ''} 
-                            onChange={(e) => setSelectedMissionId(Number(e.target.value))}
-                            className="w-full p-2 border rounded-md"
-                          >
-                            <option value="">Sélectionner une mission</option>
-                            <option value="1">Mission 1</option>
-                            <option value="2">Mission 2</option>
-                          </select>
-                        </div>
-                      </div>
-                      
-                      <div className="pt-4">
-                        <Button 
-                          onClick={handleSubmitSelfAssessment}
-                          disabled={isSubmitting || !evaluatorId || !approverId || !selectedMissionId}
-                          className="w-full md:w-auto"
-                        >
-                          {isSubmitting ? 'Soumission...' : 'Soumettre l\'auto-évaluation'}
-                        </Button>
-                      </div>
+                    <div className="pt-4">
+                      <Button 
+                        onClick={handleSubmitSelfAssessment}
+                        disabled={isSubmitting || !evaluatorId || !approverId || !selectedMissionId}
+                        className="w-full md:w-auto"
+                      >
+                        {isSubmitting ? 'Soumission...' : 'Soumettre l\'auto-évaluation'}
+                      </Button>
                     </div>
                   </div>
                 )}
