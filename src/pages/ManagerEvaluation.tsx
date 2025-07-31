@@ -5,11 +5,13 @@ import apiClient from '@/utils/apiClient';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import HRISNavbar from '@/components/hris/HRISNavbar';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import EvaluationHeader from '@/components/evaluations/EvaluationHeader';
 import EvaluationStepOne from '@/components/evaluations/EvaluationStepOne';
 import EvaluationStepTwo from '@/components/evaluations/EvaluationStepTwo';
 import EvaluationStepThree from '@/components/evaluations/EvaluationStepThree';
+import GroupTabTrigger from '@/components/evaluations/GroupTabTrigger';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
@@ -39,6 +41,15 @@ export interface Employee {
   position: string;
 }
 
+// Mock data for manager evaluation groups
+const fetchManagerCriteriaGroups = async (): Promise<CriteriaGroup[]> => {
+  return [
+    { id: 1, name: 'Synthèse clients à évaluer' },
+    { id: 2, name: 'Récapitulatif feuille de temps' },
+    { id: 3, name: 'Évaluation' },
+  ];
+};
+
 const fetchEmployees = async (): Promise<Employee[]> => {
   return [
     { id: 1, name: 'John Doe', email: 'john.doe@example.com', position: 'Frontend Developer' },
@@ -57,12 +68,15 @@ const ManagerEvaluation = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(initialStep as 1 | 2 | 3);
+  const [currentGroupId, setCurrentGroupId] = useState<number>(1);
   const [employeeResponses, setEmployeeResponses] = useState<EvaluationResponse[]>([]);
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   const [evaluatorId, setEvaluatorId] = useState<number | null>(null);
   const [approverId, setApproverId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMissionId, setSelectedMissionId] = useState<number | null>(null);
+  const [showFullGroupName, setShowFullGroupName] = useState<number | null>(null);
+  const [groupValidationState, setGroupValidationState] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     if (stepParam) {
@@ -73,6 +87,14 @@ const ManagerEvaluation = () => {
     }
   }, [stepParam]);
   
+  const { 
+    data: criteriaGroups, 
+    isLoading: groupsLoading 
+  } = useQuery({
+    queryKey: ['managerCriteriaGroups'],
+    queryFn: fetchManagerCriteriaGroups
+  });
+
   const {
     data: employees,
     isLoading: employeesLoading
@@ -119,13 +141,20 @@ const ManagerEvaluation = () => {
       return 100;
     }
     
-    // Default: return 100% for step 3
-    return 100;
+    // Default: show group-based progress for step 3
+    if (!criteriaGroups || criteriaGroups.length === 0) return 0;
+    
+    const totalGroups = criteriaGroups.length;
+    const currentGroupIndex = criteriaGroups.findIndex(group => group.id === currentGroupId);
+    
+    return Math.round(((currentGroupIndex + 1) / totalGroups) * 100);
   }, [
     currentStep, 
     evaluatorId, 
     approverId, 
-    selectedMissionId
+    selectedMissionId,
+    criteriaGroups,
+    currentGroupId
   ]);
   
   const handleEmployeeResponseChange = useCallback((itemId: number, value: string | number) => {
@@ -180,6 +209,43 @@ const ManagerEvaluation = () => {
     }
   }, [evaluatorId, approverId, employeeResponses]);
   
+  const handleGroupChange = useCallback((groupId: string) => {
+    setCurrentGroupId(parseInt(groupId));
+    
+    // Scroll to top when changing groups
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Afficher le nom complet du groupe pendant 3 secondes
+    setShowFullGroupName(parseInt(groupId));
+    setTimeout(() => {
+      setShowFullGroupName(null);
+    }, 3000);
+  }, []);
+  
+  const handlePreviousGroup = useCallback(() => {
+    if (criteriaGroups && criteriaGroups.length > 0) {
+      const currentIndex = criteriaGroups.findIndex(group => group.id === currentGroupId);
+      if (currentIndex > 0) {
+        setCurrentGroupId(criteriaGroups[currentIndex - 1].id);
+        
+        // Scroll to top when navigating to previous group
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }, [criteriaGroups, currentGroupId]);
+  
+  const handleNextGroup = useCallback(() => {
+    if (criteriaGroups && criteriaGroups.length > 0) {
+      const currentIndex = criteriaGroups.findIndex(group => group.id === currentGroupId);
+      if (currentIndex < criteriaGroups.length - 1) {
+        setCurrentGroupId(criteriaGroups[currentIndex + 1].id);
+        
+        // Scroll to top when navigating to next group
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }, [criteriaGroups, currentGroupId]);
+
   const handleMissionChange = useCallback((id: number) => {
     setSelectedMissionId(id);
   }, []);
@@ -238,6 +304,18 @@ const ManagerEvaluation = () => {
     }
   }, []);
   
+  // Helper function to truncate long titles for tab display
+  const truncateGroupName = (name: string, maxLength = 20) => {
+    if (name.length <= maxLength) return name;
+    return `${name.substring(0, maxLength)}...`;
+  };
+
+  useEffect(() => {
+    if (criteriaGroups && criteriaGroups.length > 0) {
+      setCurrentGroupId(criteriaGroups[0].id);
+    }
+  }, [criteriaGroups]);
+
   const handleGoBack = () => {
     console.log('Navigating back to evaluation dashboard...');
     navigate('/evaluations');
@@ -270,78 +348,130 @@ const ManagerEvaluation = () => {
 
         {/* Main Content Container */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          {/* Progress Bar */}
-          <div className="flex flex-col space-y-2 mb-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium">Progression</h3>
-              <span className="text-sm text-gray-500">{calculateProgress()}%</span>
-            </div>
-            <Progress value={calculateProgress()} className="h-2" />
-          </div>
+          <div className="flex flex-col space-y-4">
+            {/* Barre de progression - Cachée à l'étape 3 */}
+            {currentStep !== 3 && (
+              <div className="flex flex-col space-y-2 mb-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-medium">Progression</h3>
+                  <span className="text-sm text-gray-500">{calculateProgress()}%</span>
+                </div>
+                <Progress value={calculateProgress()} className="h-2" />
+              </div>
+            )}
+            
+            {/* Affichage des onglets de groupes */}
+            {criteriaGroups && criteriaGroups.length > 0 ? (
+              <div className="mb-4">
+                <ScrollArea className="w-full">
+                  <div className="mb-4 flex-nowrap w-max">
+                    {criteriaGroups.map((group) => (
+                      <GroupTabTrigger
+                        key={group.id}
+                        value={String(group.id)}
+                        title={group.name}
+                        showFullName={showFullGroupName === group.id}
+                        hasErrors={false} // Pas d'erreurs pour l'instant
+                        truncatedName={truncateGroupName(group.name, 18)}
+                        fullName={group.name}
+                        onClick={() => handleGroupChange(String(group.id))}
+                        active={currentGroupId === group.id}
+                      />
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+            ) : (
+              <div className="text-center py-4 text-gray-500">
+                {groupsLoading ? "Chargement des groupes..." : "Aucun groupe disponible"}
+              </div>
+            )}
 
-          {/* Step Content */}
-          <div className="flex-1">
+            {/* Step Content */}
+            <div className="animate-fade-in">
             {currentStep === 1 && (
               <div>
+                {currentGroupId === 1 && (
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Synthèse clients à évaluer</h2>
+                    <p className="text-muted-foreground mb-6">
+                      Section dédiée à l'évaluation des clients. Contenu à définir.
+                    </p>
+                  </div>
+                )}
                 
-                <p className="text-muted-foreground mb-6">
-                  Formulaire d'évaluation pour les postes de management. 
-                  Les critères d'évaluation seront ajoutés prochainement.
-                </p>
+                {currentGroupId === 2 && (
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Récapitulatif feuille de temps</h2>
+                    <p className="text-muted-foreground mb-6">
+                      Section dédiée au récapitulatif des feuilles de temps. Contenu à définir.
+                    </p>
+                  </div>
+                )}
                 
-                {/* Basic selection form would go here */}
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Évaluateur</label>
-                      <select 
-                        value={evaluatorId || ''} 
-                        onChange={(e) => setEvaluatorId(Number(e.target.value))}
-                        className="w-full p-2 border rounded-md"
-                      >
-                        <option value="">Sélectionner un évaluateur</option>
-                        <option value="1">Évaluateur 1</option>
-                        <option value="2">Évaluateur 2</option>
-                      </select>
-                    </div>
+                {currentGroupId === 3 && (
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Évaluation</h2>
+                    <p className="text-muted-foreground mb-6">
+                      Formulaire d'évaluation pour les postes de management. 
+                      Les critères d'évaluation seront ajoutés prochainement.
+                    </p>
                     
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Approbateur</label>
-                      <select 
-                        value={approverId || ''} 
-                        onChange={(e) => setApproverId(Number(e.target.value))}
-                        className="w-full p-2 border rounded-md"
-                      >
-                        <option value="">Sélectionner un approbateur</option>
-                        <option value="1">Approbateur 1</option>
-                        <option value="2">Approbateur 2</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Mission</label>
-                      <select 
-                        value={selectedMissionId || ''} 
-                        onChange={(e) => setSelectedMissionId(Number(e.target.value))}
-                        className="w-full p-2 border rounded-md"
-                      >
-                        <option value="">Sélectionner une mission</option>
-                        <option value="1">Mission 1</option>
-                        <option value="2">Mission 2</option>
-                      </select>
+                    {/* Basic selection form */}
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Évaluateur</label>
+                          <select 
+                            value={evaluatorId || ''} 
+                            onChange={(e) => setEvaluatorId(Number(e.target.value))}
+                            className="w-full p-2 border rounded-md"
+                          >
+                            <option value="">Sélectionner un évaluateur</option>
+                            <option value="1">Évaluateur 1</option>
+                            <option value="2">Évaluateur 2</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Approbateur</label>
+                          <select 
+                            value={approverId || ''} 
+                            onChange={(e) => setApproverId(Number(e.target.value))}
+                            className="w-full p-2 border rounded-md"
+                          >
+                            <option value="">Sélectionner un approbateur</option>
+                            <option value="1">Approbateur 1</option>
+                            <option value="2">Approbateur 2</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Mission</label>
+                          <select 
+                            value={selectedMissionId || ''} 
+                            onChange={(e) => setSelectedMissionId(Number(e.target.value))}
+                            className="w-full p-2 border rounded-md"
+                          >
+                            <option value="">Sélectionner une mission</option>
+                            <option value="1">Mission 1</option>
+                            <option value="2">Mission 2</option>
+                          </select>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-4">
+                        <Button 
+                          onClick={handleSubmitSelfAssessment}
+                          disabled={isSubmitting || !evaluatorId || !approverId || !selectedMissionId}
+                          className="w-full md:w-auto"
+                        >
+                          {isSubmitting ? 'Soumission...' : 'Soumettre l\'auto-évaluation'}
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="pt-4">
-                    <Button 
-                      onClick={handleSubmitSelfAssessment}
-                      disabled={isSubmitting || !evaluatorId || !approverId || !selectedMissionId}
-                      className="w-full md:w-auto"
-                    >
-                      {isSubmitting ? 'Soumission...' : 'Soumettre l\'auto-évaluation'}
-                    </Button>
-                  </div>
-                </div>
+                )}
               </div>
             )}
             
@@ -385,6 +515,30 @@ const ManagerEvaluation = () => {
                     Rejeter
                   </Button>
                 </div>
+              </div>
+            )}
+            </div>
+            
+            {/* Boutons de navigation entre groupes - Masqués pour l'étape 3 */}
+            {currentStep !== 3 && (
+              <div className="flex justify-between mt-4">
+                <button
+                  onClick={handlePreviousGroup}
+                  disabled={!criteriaGroups || criteriaGroups.findIndex(g => g.id === currentGroupId) === 0}
+                  className="flex items-center px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="h-5 w-5 mr-2" />
+                  Précédent
+                </button>
+                
+                <button
+                  onClick={handleNextGroup}
+                  disabled={!criteriaGroups || criteriaGroups.findIndex(g => g.id === currentGroupId) === (criteriaGroups.length - 1)}
+                  className="flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Suivant
+                  <ChevronRight className="h-5 w-5 ml-2" />
+                </button>
               </div>
             )}
           </div>
