@@ -265,126 +265,129 @@ const ManagerEvaluation = () => {
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="w-full bg-background rounded-lg p-6 shadow-sm border">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-foreground">Progression</span>
-            <span className="text-sm text-muted-foreground">{calculateProgress()}%</span>
-          </div>
-          <Progress value={calculateProgress()} className="h-2" />
-        </div>
-
         {/* Evaluation Header */}
         <EvaluationHeader currentStep={currentStep} />
 
-        {/* Step Content */}
-        <div className="flex-1">
-          {currentStep === 1 && (
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-xl font-semibold mb-4">Auto-évaluation - Manager</h2>
-              <p className="text-muted-foreground mb-6">
-                Formulaire d'évaluation pour les postes de management. 
-                Les critères d'évaluation seront ajoutés prochainement.
-              </p>
-              
-              {/* Basic selection form would go here */}
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Évaluateur</label>
-                    <select 
-                      value={evaluatorId || ''} 
-                      onChange={(e) => setEvaluatorId(Number(e.target.value))}
-                      className="w-full p-2 border rounded-md"
-                    >
-                      <option value="">Sélectionner un évaluateur</option>
-                      <option value="1">Évaluateur 1</option>
-                      <option value="2">Évaluateur 2</option>
-                    </select>
+        {/* Main Content Container */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          {/* Progress Bar */}
+          <div className="flex flex-col space-y-2 mb-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium">Progression</h3>
+              <span className="text-sm text-gray-500">{calculateProgress()}%</span>
+            </div>
+            <Progress value={calculateProgress()} className="h-2" />
+          </div>
+
+          {/* Step Content */}
+          <div className="flex-1">
+            {currentStep === 1 && (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Auto-évaluation - Manager</h2>
+                <p className="text-muted-foreground mb-6">
+                  Formulaire d'évaluation pour les postes de management. 
+                  Les critères d'évaluation seront ajoutés prochainement.
+                </p>
+                
+                {/* Basic selection form would go here */}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Évaluateur</label>
+                      <select 
+                        value={evaluatorId || ''} 
+                        onChange={(e) => setEvaluatorId(Number(e.target.value))}
+                        className="w-full p-2 border rounded-md"
+                      >
+                        <option value="">Sélectionner un évaluateur</option>
+                        <option value="1">Évaluateur 1</option>
+                        <option value="2">Évaluateur 2</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Approbateur</label>
+                      <select 
+                        value={approverId || ''} 
+                        onChange={(e) => setApproverId(Number(e.target.value))}
+                        className="w-full p-2 border rounded-md"
+                      >
+                        <option value="">Sélectionner un approbateur</option>
+                        <option value="1">Approbateur 1</option>
+                        <option value="2">Approbateur 2</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Mission</label>
+                      <select 
+                        value={selectedMissionId || ''} 
+                        onChange={(e) => setSelectedMissionId(Number(e.target.value))}
+                        className="w-full p-2 border rounded-md"
+                      >
+                        <option value="">Sélectionner une mission</option>
+                        <option value="1">Mission 1</option>
+                        <option value="2">Mission 2</option>
+                      </select>
+                    </div>
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Approbateur</label>
-                    <select 
-                      value={approverId || ''} 
-                      onChange={(e) => setApproverId(Number(e.target.value))}
-                      className="w-full p-2 border rounded-md"
+                  <div className="pt-4">
+                    <Button 
+                      onClick={handleSubmitSelfAssessment}
+                      disabled={isSubmitting || !evaluatorId || !approverId || !selectedMissionId}
+                      className="w-full md:w-auto"
                     >
-                      <option value="">Sélectionner un approbateur</option>
-                      <option value="1">Approbateur 1</option>
-                      <option value="2">Approbateur 2</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Mission</label>
-                    <select 
-                      value={selectedMissionId || ''} 
-                      onChange={(e) => setSelectedMissionId(Number(e.target.value))}
-                      className="w-full p-2 border rounded-md"
-                    >
-                      <option value="">Sélectionner une mission</option>
-                      <option value="1">Mission 1</option>
-                      <option value="2">Mission 2</option>
-                    </select>
+                      {isSubmitting ? 'Soumission...' : 'Soumettre l\'auto-évaluation'}
+                    </Button>
                   </div>
                 </div>
+              </div>
+            )}
+            
+            {currentStep === 2 && (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Évaluation par le manager</h2>
+                <p className="text-muted-foreground mb-6">
+                  Étape d'évaluation par le manager. Les critères seront ajoutés prochainement.
+                </p>
                 
-                <div className="pt-4">
+                <Button 
+                  onClick={handleSubmitEvaluation}
+                  disabled={isSubmitting}
+                  className="w-full md:w-auto"
+                >
+                  {isSubmitting ? 'Soumission...' : 'Soumettre l\'évaluation'}
+                </Button>
+              </div>
+            )}
+            
+            {currentStep === 3 && (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Validation finale</h2>
+                <p className="text-muted-foreground mb-6">
+                  Étape de validation finale de l'évaluation manager.
+                </p>
+                
+                <div className="flex gap-4">
                   <Button 
-                    onClick={handleSubmitSelfAssessment}
-                    disabled={isSubmitting || !evaluatorId || !approverId || !selectedMissionId}
-                    className="w-full md:w-auto"
+                    onClick={() => handleApprove(true)}
+                    disabled={isSubmitting}
+                    className="bg-green-600 hover:bg-green-700"
                   >
-                    {isSubmitting ? 'Soumission...' : 'Soumettre l\'auto-évaluation'}
+                    Approuver
+                  </Button>
+                  <Button 
+                    onClick={() => handleApprove(false, 'Commentaire de rejet')}
+                    disabled={isSubmitting}
+                    variant="destructive"
+                  >
+                    Rejeter
                   </Button>
                 </div>
               </div>
-            </div>
-          )}
-          
-          {currentStep === 2 && (
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-xl font-semibold mb-4">Évaluation par le manager</h2>
-              <p className="text-muted-foreground mb-6">
-                Étape d'évaluation par le manager. Les critères seront ajoutés prochainement.
-              </p>
-              
-              <Button 
-                onClick={handleSubmitEvaluation}
-                disabled={isSubmitting}
-                className="w-full md:w-auto"
-              >
-                {isSubmitting ? 'Soumission...' : 'Soumettre l\'évaluation'}
-              </Button>
-            </div>
-          )}
-          
-          {currentStep === 3 && (
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-xl font-semibold mb-4">Validation finale</h2>
-              <p className="text-muted-foreground mb-6">
-                Étape de validation finale de l'évaluation manager.
-              </p>
-              
-              <div className="flex gap-4">
-                <Button 
-                  onClick={() => handleApprove(true)}
-                  disabled={isSubmitting}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  Approuver
-                </Button>
-                <Button 
-                  onClick={() => handleApprove(false, 'Commentaire de rejet')}
-                  disabled={isSubmitting}
-                  variant="destructive"
-                >
-                  Rejeter
-                </Button>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
