@@ -72,7 +72,6 @@ const ManagerEvaluation = () => {
   const [employeeResponses, setEmployeeResponses] = useState<EvaluationResponse[]>([]);
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   const [evaluatorId, setEvaluatorId] = useState<number | null>(null);
-  const [approverId, setApproverId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedAssociateId, setSelectedAssociateId] = useState<number | null>(null);
   const [showFullGroupName, setShowFullGroupName] = useState<number | null>(null);
@@ -127,12 +126,11 @@ const ManagerEvaluation = () => {
   // Calculate progress based on completed required fields
   const calculateProgress = useCallback(() => {
     if (currentStep === 1) {
-      // Check basic fields (evaluator, approver, associate)
+      // Check basic fields (evaluator, associate)
       let completedFields = 0;
-      const totalRequiredFields = 3; // evaluator, approver, associate fields only for now
+      const totalRequiredFields = 2; // evaluator, associate fields only
       
       if (evaluatorId) completedFields++;
-      if (approverId) completedFields++;
       if (selectedAssociateId) completedFields++;
       
       return Math.round((completedFields / totalRequiredFields) * 100);
@@ -151,7 +149,6 @@ const ManagerEvaluation = () => {
   }, [
     currentStep, 
     evaluatorId, 
-    approverId, 
     selectedAssociateId,
     criteriaGroups,
     currentGroupId
@@ -186,9 +183,9 @@ const ManagerEvaluation = () => {
   }, []);
   
   const handleSubmitSelfAssessment = useCallback(async () => {
-    if (!evaluatorId || !approverId) {
+    if (!evaluatorId) {
       toast.error("Sélection incomplète", {
-        description: "Veuillez sélectionner un évaluateur et un approbateur"
+        description: "Veuillez sélectionner un évaluateur"
       });
       return;
     }
@@ -207,7 +204,7 @@ const ManagerEvaluation = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [evaluatorId, approverId, employeeResponses]);
+  }, [evaluatorId, employeeResponses]);
   
   const handleGroupChange = useCallback((groupId: string) => {
     setCurrentGroupId(parseInt(groupId));
@@ -363,7 +360,7 @@ const ManagerEvaluation = () => {
             {/* Sélecteurs principaux - Visible uniquement à l'étape 1 */}
             {currentStep === 1 && (
               <div className="mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">Évaluateur</label>
                     <select 
@@ -374,19 +371,6 @@ const ManagerEvaluation = () => {
                       <option value="">Sélectionner un évaluateur</option>
                       <option value="1">Évaluateur 1</option>
                       <option value="2">Évaluateur 2</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Approbateur</label>
-                    <select 
-                      value={approverId || ''} 
-                      onChange={(e) => setApproverId(Number(e.target.value))}
-                      className="w-full p-2 border rounded-md bg-white"
-                    >
-                      <option value="">Sélectionner un approbateur</option>
-                      <option value="1">Approbateur 1</option>
-                      <option value="2">Approbateur 2</option>
                     </select>
                   </div>
                   
@@ -469,7 +453,7 @@ const ManagerEvaluation = () => {
                     <div className="pt-4">
                       <Button 
                         onClick={handleSubmitSelfAssessment}
-                        disabled={isSubmitting || !evaluatorId || !approverId || !selectedAssociateId}
+                        disabled={isSubmitting || !evaluatorId || !selectedAssociateId}
                         className="w-full md:w-auto"
                       >
                         {isSubmitting ? 'Soumission...' : 'Soumettre l\'auto-évaluation'}
