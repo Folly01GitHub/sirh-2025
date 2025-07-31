@@ -88,7 +88,8 @@ const Evaluation = () => {
   // Check if user should be redirected to manager evaluation
   useEffect(() => {
     const managerGrades = ['Manager 1', 'Manager 2', 'Manager 3', 'Senior Manager', 'Directeur'];
-    if (user?.grade && managerGrades.includes(user.grade)) {
+    const userGrade = typeof user?.grade === 'object' ? (user.grade as any)?.nom_grade : user?.grade;
+    if (userGrade && managerGrades.includes(userGrade)) {
       navigate('/manager-evaluation');
       return;
     }
