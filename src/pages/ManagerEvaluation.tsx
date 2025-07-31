@@ -263,7 +263,10 @@ const ManagerEvaluation = () => {
         </div>
 
         {/* Evaluation Header */}
-        <EvaluationHeader currentStep={currentStep} />
+        <EvaluationHeader 
+          currentStep={currentStep} 
+          title={`Évaluation de fin de saison - ${typeof user?.grade === 'object' ? (user.grade as any)?.nom_grade : user?.grade}`}
+        />
 
         {/* Main Content Container */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">

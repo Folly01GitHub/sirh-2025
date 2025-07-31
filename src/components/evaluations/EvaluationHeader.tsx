@@ -11,13 +11,14 @@ import {
 
 interface EvaluationHeaderProps {
   currentStep: 1 | 2 | 3;
+  title?: string;
 }
 
-const EvaluationHeader: React.FC<EvaluationHeaderProps> = ({ currentStep }) => {
+const EvaluationHeader: React.FC<EvaluationHeaderProps> = ({ currentStep, title = "Évaluation de mission" }) => {
   return (
     <div className="mb-8 text-center">
       <h1 className="text-3xl md:text-4xl font-bold text-[#172b4d] mb-3 animate-fade-in">
-        Évaluation de mission
+        {title}
       </h1>
       <p className="text-md text-[#5e6c84] max-w-2xl mx-auto mb-6 animate-fade-in">
         Processus d'évaluation des performances et du développement professionnel
