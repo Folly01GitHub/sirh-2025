@@ -8,6 +8,7 @@ interface User {
   firstName?: string;
   lastName?: string;
   role?: 'user' | 'admin' | 'comptable' | 'collaborateur' | 'qrm';
+  grade?: string;
   [key: string]: any; // Allow for other user properties
 }
 

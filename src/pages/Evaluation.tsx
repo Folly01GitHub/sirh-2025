@@ -84,6 +84,15 @@ const Evaluation = () => {
   
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Check if user should be redirected to manager evaluation
+  useEffect(() => {
+    const managerGrades = ['Manager 1', 'Manager 2', 'Manager 3', 'Senior Manager', 'Directeur'];
+    if (user?.grade && managerGrades.includes(user.grade)) {
+      navigate('/manager-evaluation');
+      return;
+    }
+  }, [user?.grade, navigate]);
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(initialStep as 1 | 2 | 3);
   const [currentGroupId, setCurrentGroupId] = useState<number>(1);
   const [employeeResponses, setEmployeeResponses] = useState<EvaluationResponse[]>([]);

@@ -26,6 +26,7 @@ import Missions from "./pages/Missions";
 import MissionCreate from "./pages/MissionCreate";
 import MissionDetails from "./pages/MissionDetails";
 import Evaluation from "./pages/Evaluation";
+import ManagerEvaluation from "./pages/ManagerEvaluation";
 import EvaluationDashboard from "./pages/EvaluationDashboard";
 import EvaluationView from "./pages/EvaluationView";
 import UserFeedback from "./pages/admin/UserFeedback";
@@ -66,6 +67,7 @@ const App = () => (
               <Route path="/missions/:id" element={<MissionDetails />} />
               <Route path="/evaluations" element={<EvaluationDashboard />} />
               <Route path="/evaluation" element={<Evaluation />} />
+              <Route path="/manager-evaluation" element={<ManagerEvaluation />} />
               <Route path="/evaluation-view" element={<EvaluationView />} />
               <Route path="/cashout" element={<Home />} />
               <Route path="/certificates" element={<Home />} />
