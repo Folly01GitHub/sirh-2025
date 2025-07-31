@@ -260,7 +260,7 @@ const ManagerEvaluation = () => {
               <span>Retour</span>
             </Button>
             <h1 className="text-2xl font-bold text-foreground">
-              Évaluation Manager - {typeof user?.grade === 'object' ? (user.grade as any)?.nom_grade : user?.grade}
+              Évaluation de fin de saison - {typeof user?.grade === 'object' ? (user.grade as any)?.nom_grade : user?.grade}
             </h1>
           </div>
         </div>
@@ -283,7 +283,7 @@ const ManagerEvaluation = () => {
           <div className="flex-1">
             {currentStep === 1 && (
               <div>
-                <h2 className="text-xl font-semibold mb-4">Auto-évaluation - Manager</h2>
+                
                 <p className="text-muted-foreground mb-6">
                   Formulaire d'évaluation pour les postes de management. 
                   Les critères d'évaluation seront ajoutés prochainement.
