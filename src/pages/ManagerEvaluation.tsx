@@ -405,7 +405,7 @@ const ManagerEvaluation = () => {
                         title={group.name}
                         showFullName={showFullGroupName === group.id}
                         hasErrors={false} // Pas d'erreurs pour l'instant
-                        truncatedName={truncateGroupName(group.name, 18)}
+                        truncatedName={group.name}
                         fullName={group.name}
                         onClick={() => handleGroupChange(String(group.id))}
                         active={currentGroupId === group.id}
