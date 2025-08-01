@@ -15,6 +15,7 @@ import GroupTabTrigger from '@/components/evaluations/GroupTabTrigger';
 import RepeaterField from '@/components/evaluations/RepeaterField';
 import ClientFields from '@/components/evaluations/ClientFields';
 import ActiviteFields from '@/components/evaluations/ActiviteFields';
+import EvaluationItems from '@/components/evaluations/EvaluationItems';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
@@ -461,24 +462,18 @@ const ManagerEvaluation = () => {
                 )}
                 
                 {currentGroupId === 3 && (
-                  <div>
-                    <h2 className="text-xl font-semibold mb-4">Évaluation</h2>
-                    <p className="text-muted-foreground mb-6">
-                      Formulaire d'évaluation pour les postes de management. 
-                      Les critères d'évaluation seront ajoutés prochainement.
-                    </p>
-                    
-                    <div className="pt-4">
-                      <Button 
-                        onClick={handleSubmitSelfAssessment}
-                        disabled={isSubmitting || !evaluatorId || !selectedAssociateId}
-                        className="w-full md:w-auto"
-                      >
-                        {isSubmitting ? 'Soumission...' : 'Soumettre l\'auto-évaluation'}
-                      </Button>
-                    </div>
-                  </div>
+                  <EvaluationItems />
                 )}
+                
+                <div className="pt-4">
+                  <Button
+                    onClick={handleSubmitSelfAssessment}
+                    disabled={isSubmitting || !evaluatorId || !selectedAssociateId}
+                    className="w-full md:w-auto"
+                  >
+                    {isSubmitting ? 'Soumission...' : 'Soumettre l\'auto-évaluation'}
+                  </Button>
+                </div>
               </div>
             )}
             
