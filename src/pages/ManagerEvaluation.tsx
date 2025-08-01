@@ -16,6 +16,7 @@ import RepeaterField from '@/components/evaluations/RepeaterField';
 import ClientFields from '@/components/evaluations/ClientFields';
 import ActiviteFields from '@/components/evaluations/ActiviteFields';
 import EvaluationItems from '@/components/evaluations/EvaluationItems';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
@@ -42,6 +43,12 @@ export interface Employee {
   id: number;
   name: string;
   email: string;
+  position: string;
+}
+
+export interface Evaluator {
+  id: number;
+  name: string;
   position: string;
 }
 
@@ -86,6 +93,8 @@ const ManagerEvaluation = () => {
   const [activiteInstances, setActiviteInstances] = useState<any[]>(
     Array(5).fill(null).map((_, index) => ({ id: index + 1 }))
   );
+  const [evaluators, setEvaluators] = useState<Evaluator[]>([]);
+  const [evaluatorsLoading, setEvaluatorsLoading] = useState(false);
 
   useEffect(() => {
     if (stepParam) {
@@ -111,6 +120,31 @@ const ManagerEvaluation = () => {
     queryKey: ['employees'],
     queryFn: fetchEmployees
   });
+
+  // Fetch evaluators from API
+  const fetchEvaluators = useCallback(async (search?: string) => {
+    setEvaluatorsLoading(true);
+    try {
+      const response = await apiClient.get('/evaluateurs-manager', {
+        params: search ? { search } : {}
+      });
+      const evaluatorsData = response.data.map((evaluator: any) => ({
+        id: evaluator.id,
+        name: evaluator.name,
+        position: evaluator.position
+      }));
+      setEvaluators(evaluatorsData);
+    } catch (error) {
+      console.error('Error fetching evaluators:', error);
+      toast.error('Erreur lors du chargement des évaluateurs');
+    } finally {
+      setEvaluatorsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchEvaluators();
+  }, [fetchEvaluators]);
   
   // Helper function to validate a response based on criteria type
   const isValidResponse = useCallback((response: EvaluationResponse | undefined, type: string): boolean => {
@@ -372,16 +406,18 @@ const ManagerEvaluation = () => {
               <div className="mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Évaluateur</label>
-                    <select 
-                      value={evaluatorId || ''} 
-                      onChange={(e) => setEvaluatorId(Number(e.target.value))}
-                      className="w-full p-2 border rounded-md bg-white"
-                    >
-                      <option value="">Sélectionner un évaluateur</option>
-                      <option value="1">Évaluateur 1</option>
-                      <option value="2">Évaluateur 2</option>
-                    </select>
+                    <SearchableSelect
+                      label="Évaluateur"
+                      placeholder="Sélectionner un évaluateur"
+                      value={evaluatorId?.toString() || ''}
+                      onChange={(value) => setEvaluatorId(Number(value))}
+                      onSearch={fetchEvaluators}
+                      options={evaluators.map(evaluator => ({
+                        value: evaluator.id.toString(),
+                        label: `${evaluator.name} - ${evaluator.position}`
+                      }))}
+                      loading={evaluatorsLoading}
+                    />
                   </div>
                   
                   <div>
