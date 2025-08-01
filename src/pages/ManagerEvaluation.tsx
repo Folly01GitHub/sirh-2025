@@ -456,17 +456,6 @@ const ManagerEvaluation = () => {
         {/* Main Content Container */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex flex-col space-y-4">
-            {/* Barre de progression - Cachée à l'étape 3 */}
-            {currentStep !== 3 && (
-              <div className="flex flex-col space-y-2 mb-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium">Progression</h3>
-                  <span className="text-sm text-gray-500">{calculateProgress()}%</span>
-                </div>
-                <Progress value={calculateProgress()} className="h-2" />
-              </div>
-            )}
-            
             {/* Sélecteurs principaux - Visible uniquement à l'étape 1 */}
             {currentStep === 1 && (
               <div className="mb-6">
