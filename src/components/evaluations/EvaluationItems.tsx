@@ -80,16 +80,11 @@ const EvaluationItems = () => {
             <CardDescription>{item.description}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <Label htmlFor={`observation-${item.id}`}>
-                Observation *
-              </Label>
-              <Textarea
-                id={`observation-${item.id}`}
-                placeholder="Saisissez vos observations..."
-                className="min-h-[100px] resize-none"
-              />
-            </div>
+            <Textarea
+              id={`observation-${item.id}`}
+              placeholder="Saisissez votre commentaire..."
+              className="min-h-[100px] resize-none"
+            />
           </CardContent>
         </Card>
       ))}
