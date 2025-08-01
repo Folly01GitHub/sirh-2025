@@ -70,7 +70,7 @@ const EvaluationItems = () => {
     <div className="space-y-4">
       <h2 className="text-xl font-semibold mb-4">Évaluation</h2>
       <p className="text-muted-foreground mb-6">
-        Veuillez remplir vos observations pour chaque critère d'évaluation.
+        Veuillez remplir vos commentaires pour chaque critère d'évaluation.
       </p>
       
       {items?.map((item) => (
