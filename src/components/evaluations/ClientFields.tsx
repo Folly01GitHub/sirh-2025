@@ -13,10 +13,16 @@ interface ClientFieldsProps {
   TempsEquipe?: string;
   Honoraires?: string;
   'Bonis/Malis'?: string;
+  formData?: any;
+  onFormDataChange?: (instanceIndex: number, field: string, value: string) => void;
 }
 
-const ClientFields: React.FC<ClientFieldsProps> = ({ instanceIndex = 0 }) => {
-  const [formData, setFormData] = useState({
+const ClientFields: React.FC<ClientFieldsProps> = ({ 
+  instanceIndex = 0, 
+  formData: propFormData = {},
+  onFormDataChange 
+}) => {
+  const formData = propFormData || {
     client: '',
     dateDebutIntervention: '',
     dateFinIntervention: '',
@@ -25,13 +31,12 @@ const ClientFields: React.FC<ClientFieldsProps> = ({ instanceIndex = 0 }) => {
     tempsEquipe: '',
     honoraires: '',
     bonisMalis: ''
-  });
+  };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    if (onFormDataChange) {
+      onFormDataChange(instanceIndex, field, value);
+    }
   };
 
   return (

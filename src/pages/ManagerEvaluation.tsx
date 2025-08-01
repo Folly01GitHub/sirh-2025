@@ -101,12 +101,28 @@ const ManagerEvaluation = () => {
   });
   const [showFullGroupName, setShowFullGroupName] = useState<number | null>(null);
   const [groupValidationState, setGroupValidationState] = useState<Record<number, boolean>>({});
-  const [clientInstances, setClientInstances] = useState<any[]>(
-    Array(7).fill(null).map((_, index) => ({ id: index + 1 }))
-  );
-  const [activiteInstances, setActiviteInstances] = useState<any[]>(
-    Array(5).fill(null).map((_, index) => ({ id: index + 1 }))
-  );
+  
+  // Group form data persistence
+  const [clientInstances, setClientInstances] = useState<any[]>(() => {
+    const saved = localStorage.getItem('managerEvaluation_clientInstances');
+    return saved ? JSON.parse(saved) : Array(7).fill(null).map((_, index) => ({ id: index + 1 }));
+  });
+  const [activiteInstances, setActiviteInstances] = useState<any[]>(() => {
+    const saved = localStorage.getItem('managerEvaluation_activiteInstances');
+    return saved ? JSON.parse(saved) : Array(5).fill(null).map((_, index) => ({ id: index + 1 }));
+  });
+  const [clientFormData, setClientFormData] = useState<Record<number, any>>(() => {
+    const saved = localStorage.getItem('managerEvaluation_clientFormData');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [activiteFormData, setActiviteFormData] = useState<Record<number, any>>(() => {
+    const saved = localStorage.getItem('managerEvaluation_activiteFormData');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [evaluationFormData, setEvaluationFormData] = useState<Record<number, string>>(() => {
+    const saved = localStorage.getItem('managerEvaluation_evaluationFormData');
+    return saved ? JSON.parse(saved) : {};
+  });
   const [evaluators, setEvaluators] = useState<Evaluator[]>([]);
   const [evaluatorsLoading, setEvaluatorsLoading] = useState(false);
   const [associates, setAssociates] = useState<Associate[]>([]);
@@ -204,6 +220,55 @@ const ManagerEvaluation = () => {
       localStorage.removeItem('managerEvaluation_selectedAssociateId');
     }
   }, [selectedAssociateId]);
+
+  // Save form data to localStorage
+  useEffect(() => {
+    localStorage.setItem('managerEvaluation_clientInstances', JSON.stringify(clientInstances));
+  }, [clientInstances]);
+
+  useEffect(() => {
+    localStorage.setItem('managerEvaluation_activiteInstances', JSON.stringify(activiteInstances));
+  }, [activiteInstances]);
+
+  useEffect(() => {
+    localStorage.setItem('managerEvaluation_clientFormData', JSON.stringify(clientFormData));
+  }, [clientFormData]);
+
+  useEffect(() => {
+    localStorage.setItem('managerEvaluation_activiteFormData', JSON.stringify(activiteFormData));
+  }, [activiteFormData]);
+
+  useEffect(() => {
+    localStorage.setItem('managerEvaluation_evaluationFormData', JSON.stringify(evaluationFormData));
+  }, [evaluationFormData]);
+
+  // Handlers for form data updates
+  const handleClientFormDataChange = useCallback((instanceIndex: number, field: string, value: string) => {
+    setClientFormData(prev => ({
+      ...prev,
+      [instanceIndex]: {
+        ...prev[instanceIndex],
+        [field]: value
+      }
+    }));
+  }, []);
+
+  const handleActiviteFormDataChange = useCallback((instanceIndex: number, field: string, value: string) => {
+    setActiviteFormData(prev => ({
+      ...prev,
+      [instanceIndex]: {
+        ...prev[instanceIndex],
+        [field]: value
+      }
+    }));
+  }, []);
+
+  const handleEvaluationFormDataChange = useCallback((itemId: number, value: string) => {
+    setEvaluationFormData(prev => ({
+      ...prev,
+      [itemId]: value
+    }));
+  }, []);
   
   // Helper function to validate a response based on criteria type
   const isValidResponse = useCallback((response: EvaluationResponse | undefined, type: string): boolean => {
@@ -533,9 +598,11 @@ const ManagerEvaluation = () => {
                     <RepeaterField
                       minInstances={7}
                       maxInstances={20}
-                      template={<ClientFields />}
+                      template={<ClientFields onFormDataChange={handleClientFormDataChange} formData={{}} />}
                       instances={clientInstances}
                       onInstancesChange={setClientInstances}
+                      formData={clientFormData}
+                      onFormDataChange={handleClientFormDataChange}
                     />
                   </div>
                 )}
@@ -545,18 +612,21 @@ const ManagerEvaluation = () => {
                     <RepeaterField 
                       minInstances={5}
                       maxInstances={50}
-                      template={
-                        <ActiviteFields />
-                      }
+                      template={<ActiviteFields onFormDataChange={handleActiviteFormDataChange} formData={{}} />}
                       instances={activiteInstances}
                       onInstancesChange={setActiviteInstances}
                       itemLabel="Activité"
+                      formData={activiteFormData}
+                      onFormDataChange={handleActiviteFormDataChange}
                     />
                   </div>
                 )}
                 
                 {currentGroupId === 3 && (
-                  <EvaluationItems />
+                  <EvaluationItems 
+                    formData={evaluationFormData}
+                    onFormDataChange={handleEvaluationFormDataChange}
+                  />
                 )}
                 
                 <div className="pt-4">

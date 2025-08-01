@@ -9,6 +9,8 @@ interface ActiviteFieldsProps {
   NombreHeuresPassees?: number;
   CommentairesEventuels?: string;
   instanceIndex?: number;
+  formData?: any;
+  onFormDataChange?: (instanceIndex: number, field: string, value: string) => void;
 }
 
 const activiteOptions = [
@@ -67,15 +69,31 @@ const ActiviteFields: React.FC<ActiviteFieldsProps> = ({
   LibelleActivite = '',
   NombreHeuresPassees = 0,
   CommentairesEventuels = '',
-  instanceIndex = 0
+  instanceIndex = 0,
+  formData: propFormData = {},
+  onFormDataChange
 }) => {
+  const formData = propFormData || {
+    libelleActivite: LibelleActivite,
+    nombreHeuresPassees: NombreHeuresPassees || 0,
+    commentairesEventuels: CommentairesEventuels
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    if (onFormDataChange) {
+      onFormDataChange(instanceIndex, field, value);
+    }
+  };
   return (
     <div className="grid gap-4">
       <div className="grid gap-2">
         <Label htmlFor={`libelle-activite-${instanceIndex}`}>
           Libellé activité
         </Label>
-        <Select defaultValue={LibelleActivite}>
+        <Select 
+          value={formData.libelleActivite || ''}
+          onValueChange={(value) => handleInputChange('libelleActivite', value)}
+        >
           <SelectTrigger id={`libelle-activite-${instanceIndex}`}>
             <SelectValue placeholder="Sélectionner une activité" />
           </SelectTrigger>
@@ -99,7 +117,8 @@ const ActiviteFields: React.FC<ActiviteFieldsProps> = ({
           min="0"
           step="0.5"
           placeholder="0"
-          defaultValue={NombreHeuresPassees}
+          value={formData.nombreHeuresPassees || ''}
+          onChange={(e) => handleInputChange('nombreHeuresPassees', e.target.value)}
         />
       </div>
       
@@ -110,7 +129,8 @@ const ActiviteFields: React.FC<ActiviteFieldsProps> = ({
         <Textarea
           id={`commentaires-${instanceIndex}`}
           placeholder="Commentaires ou observations sur cette activité"
-          defaultValue={CommentairesEventuels}
+          value={formData.commentairesEventuels || ''}
+          onChange={(e) => handleInputChange('commentairesEventuels', e.target.value)}
           rows={3}
         />
       </div>

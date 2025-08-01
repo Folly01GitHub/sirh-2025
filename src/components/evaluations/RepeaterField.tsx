@@ -10,6 +10,8 @@ interface RepeaterFieldProps {
   instances?: any[];
   onInstancesChange?: (instances: any[]) => void;
   itemLabel?: string;
+  formData?: Record<number, any>;
+  onFormDataChange?: (instanceIndex: number, field: string, value: string) => void;
 }
 
 const RepeaterField: React.FC<RepeaterFieldProps> = ({
@@ -18,7 +20,9 @@ const RepeaterField: React.FC<RepeaterFieldProps> = ({
   template,
   instances: propInstances,
   onInstancesChange,
-  itemLabel = "Client"
+  itemLabel = "Client",
+  formData,
+  onFormDataChange
 }) => {
   const [localInstances, setLocalInstances] = useState<any[]>(
     Array(minInstances).fill(null).map((_, index) => ({ id: index + 1 }))
@@ -68,7 +72,11 @@ const RepeaterField: React.FC<RepeaterFieldProps> = ({
                 </Button>
               )}
             </div>
-            {React.cloneElement(template, { instanceIndex: index })}
+            {React.cloneElement(template, { 
+              instanceIndex: index, 
+              formData: formData?.[index] || {},
+              onFormDataChange: onFormDataChange 
+            })}
           </CardContent>
         </Card>
       ))}

@@ -22,7 +22,15 @@ const fetchEvaluationItems = async (): Promise<EvaluationItem[]> => {
   return response.data.data;
 };
 
-const EvaluationItems = () => {
+interface EvaluationItemsProps {
+  formData?: Record<number, string>;
+  onFormDataChange?: (itemId: number, value: string) => void;
+}
+
+const EvaluationItems: React.FC<EvaluationItemsProps> = ({
+  formData = {},
+  onFormDataChange
+}) => {
   const { 
     data: items, 
     isLoading, 
@@ -84,6 +92,8 @@ const EvaluationItems = () => {
               id={`observation-${item.id}`}
               placeholder="Saisissez votre commentaire..."
               className="min-h-[100px] resize-none"
+              value={formData[item.id] || ''}
+              onChange={(e) => onFormDataChange?.(item.id, e.target.value)}
             />
           </CardContent>
         </Card>
