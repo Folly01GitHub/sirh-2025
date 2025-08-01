@@ -78,6 +78,9 @@ const ManagerEvaluation = () => {
   const [selectedAssociateId, setSelectedAssociateId] = useState<number | null>(null);
   const [showFullGroupName, setShowFullGroupName] = useState<number | null>(null);
   const [groupValidationState, setGroupValidationState] = useState<Record<number, boolean>>({});
+  const [clientInstances, setClientInstances] = useState<any[]>(
+    Array(7).fill(null).map((_, index) => ({ id: index + 1 }))
+  );
 
   useEffect(() => {
     if (stepParam) {
@@ -432,6 +435,8 @@ const ManagerEvaluation = () => {
                       minInstances={7}
                       maxInstances={20}
                       template={<ClientFields />}
+                      instances={clientInstances}
+                      onInstancesChange={setClientInstances}
                     />
                   </div>
                 )}

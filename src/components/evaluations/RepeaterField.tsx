@@ -7,6 +7,7 @@ interface RepeaterFieldProps {
   minInstances: number;
   maxInstances: number;
   template: ReactElement;
+  instances?: any[];
   onInstancesChange?: (instances: any[]) => void;
 }
 
@@ -14,25 +15,34 @@ const RepeaterField: React.FC<RepeaterFieldProps> = ({
   minInstances,
   maxInstances,
   template,
+  instances: propInstances,
   onInstancesChange
 }) => {
-  const [instances, setInstances] = useState<any[]>(
+  const [localInstances, setLocalInstances] = useState<any[]>(
     Array(minInstances).fill(null).map((_, index) => ({ id: index + 1 }))
   );
+  
+  const instances = propInstances || localInstances;
 
   const addInstance = () => {
     if (instances.length < maxInstances) {
       const newInstances = [...instances, { id: instances.length + 1 }];
-      setInstances(newInstances);
-      onInstancesChange?.(newInstances);
+      if (propInstances) {
+        onInstancesChange?.(newInstances);
+      } else {
+        setLocalInstances(newInstances);
+      }
     }
   };
 
   const removeInstance = (index: number) => {
     if (instances.length > minInstances) {
       const newInstances = instances.filter((_, i) => i !== index);
-      setInstances(newInstances);
-      onInstancesChange?.(newInstances);
+      if (propInstances) {
+        onInstancesChange?.(newInstances);
+      } else {
+        setLocalInstances(newInstances);
+      }
     }
   };
 
