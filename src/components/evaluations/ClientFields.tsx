@@ -47,7 +47,7 @@ const ClientFields: React.FC<ClientFieldsProps> = ({ instanceIndex = 0 }) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor={`date-debut-${instanceIndex}`}>Date début intervention</Label>
+        <Label htmlFor={`date-debut-${instanceIndex}`}>Date de début d'intervention</Label>
         <Input
           id={`date-debut-${instanceIndex}`}
           type="date"
@@ -57,7 +57,7 @@ const ClientFields: React.FC<ClientFieldsProps> = ({ instanceIndex = 0 }) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor={`date-fin-${instanceIndex}`}>Date fin intervention</Label>
+        <Label htmlFor={`date-fin-${instanceIndex}`}>Date de fin d'intervention</Label>
         <Input
           id={`date-fin-${instanceIndex}`}
           type="date"
@@ -85,7 +85,7 @@ const ClientFields: React.FC<ClientFieldsProps> = ({ instanceIndex = 0 }) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor={`temps-collaborateur-${instanceIndex}`}>Temps collaborateur (h)</Label>
+        <Label htmlFor={`temps-collaborateur-${instanceIndex}`}>Temps collaborateur (en heures)</Label>
         <Input
           id={`temps-collaborateur-${instanceIndex}`}
           type="number"
@@ -98,7 +98,7 @@ const ClientFields: React.FC<ClientFieldsProps> = ({ instanceIndex = 0 }) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor={`temps-equipe-${instanceIndex}`}>Temps équipe (h)</Label>
+        <Label htmlFor={`temps-equipe-${instanceIndex}`}>Temps équipe (en heures)</Label>
         <Input
           id={`temps-equipe-${instanceIndex}`}
           type="number"
@@ -111,7 +111,7 @@ const ClientFields: React.FC<ClientFieldsProps> = ({ instanceIndex = 0 }) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor={`honoraires-${instanceIndex}`}>Honoraires (€)</Label>
+        <Label htmlFor={`honoraires-${instanceIndex}`}>Honoraires (F CFA)</Label>
         <Input
           id={`honoraires-${instanceIndex}`}
           type="number"
@@ -124,7 +124,7 @@ const ClientFields: React.FC<ClientFieldsProps> = ({ instanceIndex = 0 }) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor={`bonis-malis-${instanceIndex}`}>Bonis/Malis (€)</Label>
+        <Label htmlFor={`bonis-malis-${instanceIndex}`}>Bonis/Malis (F CFA)</Label>
         <Input
           id={`bonis-malis-${instanceIndex}`}
           type="number"
