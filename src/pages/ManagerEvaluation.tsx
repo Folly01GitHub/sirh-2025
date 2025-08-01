@@ -455,6 +455,7 @@ const ManagerEvaluation = () => {
                       }
                       instances={activiteInstances}
                       onInstancesChange={setActiviteInstances}
+                      itemLabel="Activité"
                     />
                   </div>
                 )}

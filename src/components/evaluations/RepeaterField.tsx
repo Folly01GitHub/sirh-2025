@@ -9,6 +9,7 @@ interface RepeaterFieldProps {
   template: ReactElement;
   instances?: any[];
   onInstancesChange?: (instances: any[]) => void;
+  itemLabel?: string;
 }
 
 const RepeaterField: React.FC<RepeaterFieldProps> = ({
@@ -16,7 +17,8 @@ const RepeaterField: React.FC<RepeaterFieldProps> = ({
   maxInstances,
   template,
   instances: propInstances,
-  onInstancesChange
+  onInstancesChange,
+  itemLabel = "Client"
 }) => {
   const [localInstances, setLocalInstances] = useState<any[]>(
     Array(minInstances).fill(null).map((_, index) => ({ id: index + 1 }))
@@ -53,7 +55,7 @@ const RepeaterField: React.FC<RepeaterFieldProps> = ({
           <CardContent className="p-4">
             <div className="flex justify-between items-start mb-4">
               <h4 className="text-sm font-medium text-gray-700">
-                Client {index + 1}
+                {itemLabel} {index + 1}
               </h4>
               {instances.length > minInstances && (
                 <Button
@@ -78,7 +80,7 @@ const RepeaterField: React.FC<RepeaterFieldProps> = ({
           className="w-full border-dashed"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Ajouter un client
+          Ajouter un {itemLabel.toLowerCase()}
         </Button>
       )}
     </div>
