@@ -90,7 +90,7 @@ const Evaluation = () => {
     const managerGrades = ['Manager 1', 'Manager 2', 'Manager 3', 'Senior Manager', 'Directeur'];
     const userGrade = typeof user?.grade === 'object' ? (user.grade as any)?.nom_grade : user?.grade;
     if (userGrade && managerGrades.includes(userGrade)) {
-      navigate('/manager-evaluation');
+      navigate('/evaluation/managers');
       return;
     }
   }, [user?.grade, navigate]);
