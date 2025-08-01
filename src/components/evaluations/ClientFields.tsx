@@ -76,10 +76,10 @@ const ClientFields: React.FC<ClientFieldsProps> = ({ instanceIndex = 0 }) => {
             <SelectValue placeholder="Sélectionner l'état" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="en-cours">En cours</SelectItem>
+            <SelectItem value="cadrage">Cadrage</SelectItem>
+            <SelectItem value="execution">Exécution</SelectItem>
+            <SelectItem value="rapport-emis">Rapport émis</SelectItem>
             <SelectItem value="termine">Terminé</SelectItem>
-            <SelectItem value="suspendu">Suspendu</SelectItem>
-            <SelectItem value="annule">Annulé</SelectItem>
           </SelectContent>
         </Select>
       </div>
