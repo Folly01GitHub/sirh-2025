@@ -68,7 +68,7 @@ const RepeaterField: React.FC<RepeaterFieldProps> = ({
           className="w-full border-dashed"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Ajouter un client ({instances.length}/{maxInstances})
+          Ajouter un client
         </Button>
       )}
     </div>
