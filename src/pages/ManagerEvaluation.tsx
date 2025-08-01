@@ -52,6 +52,12 @@ export interface Evaluator {
   position: string;
 }
 
+export interface Associate {
+  id: number;
+  name: string;
+  position: string;
+}
+
 // Mock data for manager evaluation groups
 const fetchManagerCriteriaGroups = async (): Promise<CriteriaGroup[]> => {
   return [
@@ -95,6 +101,8 @@ const ManagerEvaluation = () => {
   );
   const [evaluators, setEvaluators] = useState<Evaluator[]>([]);
   const [evaluatorsLoading, setEvaluatorsLoading] = useState(false);
+  const [associates, setAssociates] = useState<Associate[]>([]);
+  const [associatesLoading, setAssociatesLoading] = useState(false);
 
   useEffect(() => {
     if (stepParam) {
@@ -145,6 +153,31 @@ const ManagerEvaluation = () => {
   useEffect(() => {
     fetchEvaluators();
   }, [fetchEvaluators]);
+
+  // Fetch associates from API
+  const fetchAssociates = useCallback(async (search?: string) => {
+    setAssociatesLoading(true);
+    try {
+      const response = await apiClient.get('/associe_list', {
+        params: search ? { search } : {}
+      });
+      const associatesData = response.data.map((associate: any) => ({
+        id: associate.id,
+        name: associate.name,
+        position: associate.position
+      }));
+      setAssociates(associatesData);
+    } catch (error) {
+      console.error('Error fetching associates:', error);
+      toast.error('Erreur lors du chargement des associés');
+    } finally {
+      setAssociatesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAssociates();
+  }, [fetchAssociates]);
   
   // Helper function to validate a response based on criteria type
   const isValidResponse = useCallback((response: EvaluationResponse | undefined, type: string): boolean => {
@@ -421,19 +454,18 @@ const ManagerEvaluation = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-2">Associé</label>
-                    <select 
-                      value={selectedAssociateId || ''} 
-                      onChange={(e) => setSelectedAssociateId(Number(e.target.value))}
-                      className="w-full p-2 border rounded-md bg-white"
-                    >
-                      <option value="">Sélectionner un associé</option>
-                      <option value="1">John Doe</option>
-                      <option value="2">Jane Smith</option>
-                      <option value="3">Robert Johnson</option>
-                      <option value="4">Emily Davis</option>
-                      <option value="5">Michael Wilson</option>
-                    </select>
+                    <SearchableSelect
+                      label="Associé"
+                      placeholder="Sélectionner un associé"
+                      value={selectedAssociateId?.toString() || ''}
+                      onChange={(value) => setSelectedAssociateId(Number(value))}
+                      onSearch={fetchAssociates}
+                      options={associates.map(associate => ({
+                        value: associate.id.toString(),
+                        label: `${associate.name} - ${associate.position}`
+                      }))}
+                      loading={associatesLoading}
+                    />
                   </div>
                 </div>
               </div>
