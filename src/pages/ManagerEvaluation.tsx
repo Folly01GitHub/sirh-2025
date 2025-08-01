@@ -12,6 +12,8 @@ import EvaluationStepOne from '@/components/evaluations/EvaluationStepOne';
 import EvaluationStepTwo from '@/components/evaluations/EvaluationStepTwo';
 import EvaluationStepThree from '@/components/evaluations/EvaluationStepThree';
 import GroupTabTrigger from '@/components/evaluations/GroupTabTrigger';
+import RepeaterField from '@/components/evaluations/RepeaterField';
+import ClientFields from '@/components/evaluations/ClientFields';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
@@ -428,8 +430,14 @@ const ManagerEvaluation = () => {
                   <div>
                     <h2 className="text-xl font-semibold mb-4">Synthèse clients à évaluer</h2>
                     <p className="text-muted-foreground mb-6">
-                      Section dédiée à l'évaluation des clients. Contenu à définir.
+                      Veuillez renseigner les informations pour chaque client évalué.
                     </p>
+                    
+                    <RepeaterField
+                      minInstances={7}
+                      maxInstances={20}
+                      template={<ClientFields />}
+                    />
                   </div>
                 )}
                 
