@@ -88,17 +88,9 @@ const ManagerEvaluation = () => {
   const [currentGroupId, setCurrentGroupId] = useState<number>(1);
   const [employeeResponses, setEmployeeResponses] = useState<EvaluationResponse[]>([]);
   const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
-  const [evaluatorId, setEvaluatorId] = useState<number | null>(() => {
-    // Restore from localStorage if available
-    const saved = localStorage.getItem('managerEvaluation_evaluatorId');
-    return saved ? parseInt(saved) : null;
-  });
+  const [evaluatorId, setEvaluatorId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedAssociateId, setSelectedAssociateId] = useState<number | null>(() => {
-    // Restore from localStorage if available
-    const saved = localStorage.getItem('managerEvaluation_selectedAssociateId');
-    return saved ? parseInt(saved) : null;
-  });
+  const [selectedAssociateId, setSelectedAssociateId] = useState<number | null>(null);
   const [showFullGroupName, setShowFullGroupName] = useState<number | null>(null);
   const [groupValidationState, setGroupValidationState] = useState<Record<number, boolean>>({});
   
@@ -191,24 +183,6 @@ const ManagerEvaluation = () => {
   useEffect(() => {
     fetchAssociates();
   }, [fetchAssociates]);
-
-  // Save evaluatorId to localStorage when it changes
-  useEffect(() => {
-    if (evaluatorId !== null) {
-      localStorage.setItem('managerEvaluation_evaluatorId', evaluatorId.toString());
-    } else {
-      localStorage.removeItem('managerEvaluation_evaluatorId');
-    }
-  }, [evaluatorId]);
-
-  // Save selectedAssociateId to localStorage when it changes
-  useEffect(() => {
-    if (selectedAssociateId !== null) {
-      localStorage.setItem('managerEvaluation_selectedAssociateId', selectedAssociateId.toString());
-    } else {
-      localStorage.removeItem('managerEvaluation_selectedAssociateId');
-    }
-  }, [selectedAssociateId]);
 
   // Handlers for form data updates (no localStorage - only in-memory)
   const handleClientFormDataChange = useCallback((instanceIndex: number, field: string, value: string) => {
