@@ -427,12 +427,7 @@ const ManagerEvaluation = () => {
             {currentStep === 1 && (
               <div>
                 {currentGroupId === 1 && (
-                  <div>
-                    <h2 className="text-xl font-semibold mb-4">Synthèse clients à évaluer</h2>
-                    <p className="text-muted-foreground mb-6">
-                      Veuillez renseigner les informations pour chaque client évalué.
-                    </p>
-                    
+                  <div>                    
                     <RepeaterField
                       minInstances={7}
                       maxInstances={20}
