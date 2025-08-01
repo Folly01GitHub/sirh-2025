@@ -86,16 +86,8 @@ const ManagerEvaluation = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(initialStep as 1 | 2 | 3);
   const [currentGroupId, setCurrentGroupId] = useState<number>(1);
-  const [employeeResponses, setEmployeeResponses] = useState<EvaluationResponse[]>(() => {
-    // Restore from localStorage if available
-    const saved = localStorage.getItem('managerEvaluation_employeeResponses');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>(() => {
-    // Restore from localStorage if available
-    const saved = localStorage.getItem('managerEvaluation_evaluatorResponses');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [employeeResponses, setEmployeeResponses] = useState<EvaluationResponse[]>([]);
+  const [evaluatorResponses, setEvaluatorResponses] = useState<EvaluationResponse[]>([]);
   const [evaluatorId, setEvaluatorId] = useState<number | null>(() => {
     // Restore from localStorage if available
     const saved = localStorage.getItem('managerEvaluation_evaluatorId');
@@ -212,16 +204,6 @@ const ManagerEvaluation = () => {
       localStorage.removeItem('managerEvaluation_selectedAssociateId');
     }
   }, [selectedAssociateId]);
-
-  // Save employeeResponses to localStorage when it changes
-  useEffect(() => {
-    localStorage.setItem('managerEvaluation_employeeResponses', JSON.stringify(employeeResponses));
-  }, [employeeResponses]);
-
-  // Save evaluatorResponses to localStorage when it changes
-  useEffect(() => {
-    localStorage.setItem('managerEvaluation_evaluatorResponses', JSON.stringify(evaluatorResponses));
-  }, [evaluatorResponses]);
   
   // Helper function to validate a response based on criteria type
   const isValidResponse = useCallback((response: EvaluationResponse | undefined, type: string): boolean => {
