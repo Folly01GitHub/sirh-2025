@@ -14,6 +14,7 @@ import EvaluationStepThree from '@/components/evaluations/EvaluationStepThree';
 import GroupTabTrigger from '@/components/evaluations/GroupTabTrigger';
 import RepeaterField from '@/components/evaluations/RepeaterField';
 import ClientFields from '@/components/evaluations/ClientFields';
+import ActiviteFields from '@/components/evaluations/ActiviteFields';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
@@ -80,6 +81,9 @@ const ManagerEvaluation = () => {
   const [groupValidationState, setGroupValidationState] = useState<Record<number, boolean>>({});
   const [clientInstances, setClientInstances] = useState<any[]>(
     Array(7).fill(null).map((_, index) => ({ id: index + 1 }))
+  );
+  const [activiteInstances, setActiviteInstances] = useState<any[]>(
+    Array(5).fill(null).map((_, index) => ({ id: index + 1 }))
   );
 
   useEffect(() => {
@@ -443,10 +447,15 @@ const ManagerEvaluation = () => {
                 
                 {currentGroupId === 2 && (
                   <div>
-                    <h2 className="text-xl font-semibold mb-4">Récapitulatif feuille de temps</h2>
-                    <p className="text-muted-foreground mb-6">
-                      Section dédiée au récapitulatif des feuilles de temps. Contenu à définir.
-                    </p>
+                    <RepeaterField 
+                      minInstances={5}
+                      maxInstances={50}
+                      template={
+                        <ActiviteFields />
+                      }
+                      instances={activiteInstances}
+                      onInstancesChange={setActiviteInstances}
+                    />
                   </div>
                 )}
                 
