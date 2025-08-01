@@ -102,27 +102,16 @@ const ManagerEvaluation = () => {
   const [showFullGroupName, setShowFullGroupName] = useState<number | null>(null);
   const [groupValidationState, setGroupValidationState] = useState<Record<number, boolean>>({});
   
-  // Group form data persistence
-  const [clientInstances, setClientInstances] = useState<any[]>(() => {
-    const saved = localStorage.getItem('managerEvaluation_clientInstances');
-    return saved ? JSON.parse(saved) : Array(7).fill(null).map((_, index) => ({ id: index + 1 }));
-  });
-  const [activiteInstances, setActiviteInstances] = useState<any[]>(() => {
-    const saved = localStorage.getItem('managerEvaluation_activiteInstances');
-    return saved ? JSON.parse(saved) : Array(5).fill(null).map((_, index) => ({ id: index + 1 }));
-  });
-  const [clientFormData, setClientFormData] = useState<Record<number, any>>(() => {
-    const saved = localStorage.getItem('managerEvaluation_clientFormData');
-    return saved ? JSON.parse(saved) : {};
-  });
-  const [activiteFormData, setActiviteFormData] = useState<Record<number, any>>(() => {
-    const saved = localStorage.getItem('managerEvaluation_activiteFormData');
-    return saved ? JSON.parse(saved) : {};
-  });
-  const [evaluationFormData, setEvaluationFormData] = useState<Record<number, string>>(() => {
-    const saved = localStorage.getItem('managerEvaluation_evaluationFormData');
-    return saved ? JSON.parse(saved) : {};
-  });
+  // Group form data (no localStorage persistence - only for group switching)
+  const [clientInstances, setClientInstances] = useState<any[]>(
+    Array(7).fill(null).map((_, index) => ({ id: index + 1 }))
+  );
+  const [activiteInstances, setActiviteInstances] = useState<any[]>(
+    Array(5).fill(null).map((_, index) => ({ id: index + 1 }))
+  );
+  const [clientFormData, setClientFormData] = useState<Record<number, any>>({});
+  const [activiteFormData, setActiviteFormData] = useState<Record<number, any>>({});
+  const [evaluationFormData, setEvaluationFormData] = useState<Record<number, string>>({});
   const [evaluators, setEvaluators] = useState<Evaluator[]>([]);
   const [evaluatorsLoading, setEvaluatorsLoading] = useState(false);
   const [associates, setAssociates] = useState<Associate[]>([]);
@@ -221,28 +210,7 @@ const ManagerEvaluation = () => {
     }
   }, [selectedAssociateId]);
 
-  // Save form data to localStorage
-  useEffect(() => {
-    localStorage.setItem('managerEvaluation_clientInstances', JSON.stringify(clientInstances));
-  }, [clientInstances]);
-
-  useEffect(() => {
-    localStorage.setItem('managerEvaluation_activiteInstances', JSON.stringify(activiteInstances));
-  }, [activiteInstances]);
-
-  useEffect(() => {
-    localStorage.setItem('managerEvaluation_clientFormData', JSON.stringify(clientFormData));
-  }, [clientFormData]);
-
-  useEffect(() => {
-    localStorage.setItem('managerEvaluation_activiteFormData', JSON.stringify(activiteFormData));
-  }, [activiteFormData]);
-
-  useEffect(() => {
-    localStorage.setItem('managerEvaluation_evaluationFormData', JSON.stringify(evaluationFormData));
-  }, [evaluationFormData]);
-
-  // Handlers for form data updates
+  // Handlers for form data updates (no localStorage - only in-memory)
   const handleClientFormDataChange = useCallback((instanceIndex: number, field: string, value: string) => {
     setClientFormData(prev => ({
       ...prev,
