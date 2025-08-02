@@ -11,6 +11,7 @@ interface ActiviteFieldsProps {
   instanceIndex?: number;
   formData?: any;
   onFormDataChange?: (instanceIndex: number, field: string, value: string) => void;
+  readonly?: boolean;
 }
 
 const activiteOptions = [
@@ -71,7 +72,8 @@ const ActiviteFields: React.FC<ActiviteFieldsProps> = ({
   CommentairesEventuels = '',
   instanceIndex = 0,
   formData: propFormData = {},
-  onFormDataChange
+  onFormDataChange,
+  readonly = false
 }) => {
   const formData = propFormData || {
     libelleActivite: LibelleActivite,
@@ -93,6 +95,7 @@ const ActiviteFields: React.FC<ActiviteFieldsProps> = ({
         <Select 
           value={formData.libelleActivite || ''}
           onValueChange={(value) => handleInputChange('libelleActivite', value)}
+          disabled={readonly}
         >
           <SelectTrigger id={`libelle-activite-${instanceIndex}`}>
             <SelectValue placeholder="Sélectionner une activité" />
@@ -119,6 +122,7 @@ const ActiviteFields: React.FC<ActiviteFieldsProps> = ({
           placeholder="0"
           value={formData.nombreHeuresPassees || ''}
           onChange={(e) => handleInputChange('nombreHeuresPassees', e.target.value)}
+          disabled={readonly}
         />
       </div>
       
@@ -132,6 +136,7 @@ const ActiviteFields: React.FC<ActiviteFieldsProps> = ({
           value={formData.commentairesEventuels || ''}
           onChange={(e) => handleInputChange('commentairesEventuels', e.target.value)}
           rows={3}
+          disabled={readonly}
         />
       </div>
     </div>

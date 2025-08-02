@@ -15,12 +15,14 @@ interface ClientFieldsProps {
   'Bonis/Malis'?: string;
   formData?: any;
   onFormDataChange?: (instanceIndex: number, field: string, value: string) => void;
+  readonly?: boolean;
 }
 
 const ClientFields: React.FC<ClientFieldsProps> = ({ 
   instanceIndex = 0, 
   formData: propFormData = {},
-  onFormDataChange 
+  onFormDataChange,
+  readonly = false
 }) => {
   const formData = propFormData || {
     client: '',
@@ -48,6 +50,7 @@ const ClientFields: React.FC<ClientFieldsProps> = ({
           value={formData.client}
           onChange={(e) => handleInputChange('client', e.target.value)}
           placeholder="Nom du client"
+          disabled={readonly}
         />
       </div>
 
@@ -58,6 +61,7 @@ const ClientFields: React.FC<ClientFieldsProps> = ({
           type="date"
           value={formData.dateDebutIntervention}
           onChange={(e) => handleInputChange('dateDebutIntervention', e.target.value)}
+          disabled={readonly}
         />
       </div>
 
@@ -68,6 +72,7 @@ const ClientFields: React.FC<ClientFieldsProps> = ({
           type="date"
           value={formData.dateFinIntervention}
           onChange={(e) => handleInputChange('dateFinIntervention', e.target.value)}
+          disabled={readonly}
         />
       </div>
 
@@ -76,6 +81,7 @@ const ClientFields: React.FC<ClientFieldsProps> = ({
         <Select
           value={formData.etatAvancement}
           onValueChange={(value) => handleInputChange('etatAvancement', value)}
+          disabled={readonly}
         >
           <SelectTrigger>
             <SelectValue placeholder="Sélectionner l'état" />
@@ -99,6 +105,7 @@ const ClientFields: React.FC<ClientFieldsProps> = ({
           value={formData.tempsCollaborateur}
           onChange={(e) => handleInputChange('tempsCollaborateur', e.target.value)}
           placeholder="0"
+          disabled={readonly}
         />
       </div>
 
@@ -112,6 +119,7 @@ const ClientFields: React.FC<ClientFieldsProps> = ({
           value={formData.tempsEquipe}
           onChange={(e) => handleInputChange('tempsEquipe', e.target.value)}
           placeholder="0"
+          disabled={readonly}
         />
       </div>
 
@@ -125,6 +133,7 @@ const ClientFields: React.FC<ClientFieldsProps> = ({
           value={formData.honoraires}
           onChange={(e) => handleInputChange('honoraires', e.target.value)}
           placeholder="0.00"
+          disabled={readonly}
         />
       </div>
 
@@ -137,6 +146,7 @@ const ClientFields: React.FC<ClientFieldsProps> = ({
           value={formData.bonisMalis}
           onChange={(e) => handleInputChange('bonisMalis', e.target.value)}
           placeholder="0.00"
+          disabled={readonly}
         />
       </div>
     </div>

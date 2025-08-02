@@ -108,6 +108,10 @@ const ManagerEvaluation = () => {
   const [evaluatorsLoading, setEvaluatorsLoading] = useState(false);
   const [associates, setAssociates] = useState<Associate[]>([]);
   const [associatesLoading, setAssociatesLoading] = useState(false);
+  
+  // Step 2 - Manager responses data
+  const [managerResponses, setManagerResponses] = useState<any>(null);
+  const [managerResponsesLoading, setManagerResponsesLoading] = useState(false);
 
   useEffect(() => {
     if (stepParam) {
@@ -183,6 +187,28 @@ const ManagerEvaluation = () => {
   useEffect(() => {
     fetchAssociates();
   }, [fetchAssociates]);
+
+  // Fetch manager responses for step 2
+  const fetchManagerResponses = useCallback(async () => {
+    if (!evaluatorId) return;
+    
+    setManagerResponsesLoading(true);
+    try {
+      const response = await apiClient.get(`/evaluations/${evaluatorId}/manager-reponses`);
+      setManagerResponses(response.data);
+    } catch (error) {
+      console.error('Error fetching manager responses:', error);
+      toast.error('Erreur lors du chargement des réponses du manager');
+    } finally {
+      setManagerResponsesLoading(false);
+    }
+  }, [evaluatorId]);
+
+  useEffect(() => {
+    if (currentStep === 2 && evaluatorId) {
+      fetchManagerResponses();
+    }
+  }, [currentStep, evaluatorId, fetchManagerResponses]);
 
   // Handlers for form data updates (no localStorage - only in-memory)
   const handleClientFormDataChange = useCallback((instanceIndex: number, field: string, value: string) => {
@@ -684,16 +710,124 @@ const ManagerEvaluation = () => {
               <div>
                 <h2 className="text-xl font-semibold mb-4">Évaluation par le manager</h2>
                 <p className="text-muted-foreground mb-6">
-                  Étape d'évaluation par le manager. Les critères seront ajoutés prochainement.
+                  Évaluez les réponses du manager et complétez votre évaluation.
                 </p>
                 
-                <Button 
-                  onClick={handleSubmitEvaluation}
-                  disabled={isSubmitting}
-                  className="w-full md:w-auto"
-                >
-                  {isSubmitting ? 'Soumission...' : 'Soumettre l\'évaluation'}
-                </Button>
+                {managerResponsesLoading ? (
+                  <div className="text-center py-8">
+                    <div className="text-muted-foreground">Chargement des réponses du manager...</div>
+                  </div>
+                ) : managerResponses ? (
+                  <div className="space-y-8">
+                    {/* Groupe 1: Synthèse clients à évaluer */}
+                    {currentGroupId === 1 && (
+                      <div>
+                        <h3 className="text-lg font-medium mb-4">Synthèse clients à évaluer (Réponses du manager)</h3>
+                        <RepeaterField
+                          minInstances={managerResponses.clients?.length || 1}
+                          maxInstances={managerResponses.clients?.length || 1}
+                          template={<ClientFields readonly={true} onFormDataChange={() => {}} formData={{}} />}
+                          instances={managerResponses.clients?.map((client: any, index: number) => ({ 
+                            id: index + 1,
+                            ...client 
+                          })) || []}
+                          onInstancesChange={() => {}}
+                          formData={managerResponses.clients?.reduce((acc: any, client: any, index: number) => {
+                            acc[index] = {
+                              client: client.nom_client,
+                              dateDebutIntervention: client.date_debut_intervention,
+                              dateFinIntervention: client.date_fin_intervention,
+                              etatAvancement: client.etat_avancement,
+                              tempsCollaborateur: client.temps_collaborateur?.toString(),
+                              tempsEquipe: client.temps_equipe?.toString(),
+                              honoraires: client.honoraires,
+                              bonisMalis: client.bonis_malis
+                            };
+                            return acc;
+                          }, {}) || {}}
+                          onFormDataChange={() => {}}
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Groupe 2: Récapitulatif feuille de temps */}
+                    {currentGroupId === 2 && (
+                      <div>
+                        <h3 className="text-lg font-medium mb-4">Récapitulatif feuille de temps (Réponses du manager)</h3>
+                        <RepeaterField 
+                          minInstances={managerResponses.activites?.length || 1}
+                          maxInstances={managerResponses.activites?.length || 1}
+                          template={<ActiviteFields readonly={true} onFormDataChange={() => {}} formData={{}} />}
+                          instances={managerResponses.activites?.map((activite: any, index: number) => ({ 
+                            id: index + 1,
+                            ...activite 
+                          })) || []}
+                          onInstancesChange={() => {}}
+                          itemLabel="Activité"
+                          formData={managerResponses.activites?.reduce((acc: any, activite: any, index: number) => {
+                            acc[index] = {
+                              libelleActivite: activite.libelle,
+                              nombreHeuresPassees: activite.nombre_heures?.toString(),
+                              commentaires: activite.commentaire
+                            };
+                            return acc;
+                          }, {}) || {}}
+                          onFormDataChange={() => {}}
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Groupe 3: Évaluation - Division en deux parties */}
+                    {currentGroupId === 3 && (
+                      <div>
+                        <h3 className="text-lg font-medium mb-4">Évaluation</h3>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          {/* Partie gauche: Réponses du manager (grisées) */}
+                          <div className="space-y-4">
+                            <h4 className="text-md font-medium text-muted-foreground">Réponses du manager</h4>
+                            <div className="space-y-3">
+                              {managerResponses.notes_collaborateur?.map((note: any, index: number) => (
+                                <div key={note.item_id} className="space-y-2">
+                                  <label className="text-sm font-medium text-gray-600">
+                                    Question {note.item_id}
+                                  </label>
+                                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
+                                    <div className="text-sm text-gray-700">
+                                      {note.reponse_collaborateur}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          {/* Partie droite: Formulaire de l'évaluateur */}
+                          <div className="space-y-4">
+                            <h4 className="text-md font-medium">Vos réponses d'évaluateur</h4>
+                            <EvaluationItems 
+                              formData={evaluationFormData}
+                              onFormDataChange={handleEvaluationFormDataChange}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Aucune réponse du manager trouvée
+                  </div>
+                )}
+                
+                <div className="pt-6">
+                  <Button 
+                    onClick={handleSubmitEvaluation}
+                    disabled={isSubmitting || !managerResponses}
+                    className="w-full md:w-auto"
+                  >
+                    {isSubmitting ? 'Soumission...' : 'Soumettre l\'évaluation'}
+                  </Button>
+                </div>
               </div>
             )}
             
