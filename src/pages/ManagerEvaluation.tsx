@@ -311,12 +311,14 @@ const ManagerEvaluation = () => {
     // Validation du groupe "Synthèse clients à évaluer" (groupId: 1)
     const hasValidClient = Object.values(clientFormData).some((client: any) => {
       return client && 
-             client.nomClient && client.nomClient.trim() !== '' &&
-             client.raisonSociale && client.raisonSociale.trim() !== '' &&
-             client.secteurActivite && client.secteurActivite.trim() !== '' &&
-             client.typologie && client.typologie.trim() !== '' &&
-             client.chiffreAffaires && client.chiffreAffaires.trim() !== '' &&
-             client.categorieClient && client.categorieClient.trim() !== '';
+             client.client && client.client.trim() !== '' &&
+             client.dateDebutIntervention && client.dateDebutIntervention.trim() !== '' &&
+             client.dateFinIntervention && client.dateFinIntervention.trim() !== '' &&
+             client.etatAvancement && client.etatAvancement.trim() !== '' &&
+             client.tempsCollaborateur && client.tempsCollaborateur.trim() !== '' &&
+             client.tempsEquipe && client.tempsEquipe.trim() !== '' &&
+             client.honoraires && client.honoraires.trim() !== '' &&
+             client.bonisMalis && client.bonisMalis.trim() !== '';
     });
 
     if (!hasValidClient) {
