@@ -293,9 +293,66 @@ const ManagerEvaluation = () => {
   }, []);
   
   const handleSubmitSelfAssessment = useCallback(async () => {
+    // Validation des champs de base
     if (!evaluatorId) {
       toast.error("Sélection incomplète", {
         description: "Veuillez sélectionner un évaluateur"
+      });
+      return;
+    }
+
+    if (!selectedAssociateId) {
+      toast.error("Sélection incomplète", {
+        description: "Veuillez sélectionner un associé"
+      });
+      return;
+    }
+
+    // Validation du groupe "Synthèse clients à évaluer" (groupId: 1)
+    const hasValidClient = Object.values(clientFormData).some((client: any) => {
+      return client && 
+             client.nomClient && client.nomClient.trim() !== '' &&
+             client.raisonSociale && client.raisonSociale.trim() !== '' &&
+             client.secteurActivite && client.secteurActivite.trim() !== '' &&
+             client.typologie && client.typologie.trim() !== '' &&
+             client.chiffreAffaires && client.chiffreAffaires.trim() !== '' &&
+             client.categorieClient && client.categorieClient.trim() !== '';
+    });
+
+    if (!hasValidClient) {
+      toast.error("Groupe Synthèse clients à évaluer incomplet", {
+        description: "Au moins un client doit être renseigné avec toutes ses informations obligatoires"
+      });
+      return;
+    }
+
+    // Validation du groupe "Récapitulatif feuille de temps" (groupId: 2)
+    const hasValidActivite = Object.values(activiteFormData).some((activite: any) => {
+      return activite && 
+             activite.nomActivite && activite.nomActivite.trim() !== '' &&
+             activite.typeActivite && activite.typeActivite.trim() !== '' &&
+             activite.nbreHeures && activite.nbreHeures.trim() !== '' &&
+             activite.periodicite && activite.periodicite.trim() !== '' &&
+             activite.complexite && activite.complexite.trim() !== '';
+    });
+
+    if (!hasValidActivite) {
+      toast.error("Groupe Récapitulatif feuille de temps incomplet", {
+        description: "Au moins une activité doit être renseignée avec toutes ses informations obligatoires"
+      });
+      return;
+    }
+
+    // Validation du groupe "Évaluation" (groupId: 3) - Tous les champs obligatoires
+    const evaluationFields = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // IDs des champs d'évaluation
+    const missingEvaluationFields = evaluationFields.filter(fieldId => {
+      const value = evaluationFormData[fieldId];
+      return !value || value.trim() === '';
+    });
+
+    if (missingEvaluationFields.length > 0) {
+      toast.error("Groupe Évaluation incomplet", {
+        description: "Tous les champs du groupe Évaluation sont obligatoires"
       });
       return;
     }
@@ -314,7 +371,7 @@ const ManagerEvaluation = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [evaluatorId, employeeResponses]);
+  }, [evaluatorId, selectedAssociateId, clientFormData, activiteFormData, evaluationFormData, employeeResponses]);
   
   const handleGroupChange = useCallback((groupId: string) => {
     setCurrentGroupId(parseInt(groupId));
