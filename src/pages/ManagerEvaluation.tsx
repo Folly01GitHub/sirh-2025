@@ -309,9 +309,7 @@ const ManagerEvaluation = () => {
     }
 
     // Validation du groupe "Synthèse clients à évaluer" (groupId: 1)
-    console.log('clientFormData:', clientFormData);
     const hasValidClient = Object.values(clientFormData).some((client: any) => {
-      console.log('Checking client:', client);
       return client && 
              client.nomClient && client.nomClient.trim() !== '' &&
              client.raisonSociale && client.raisonSociale.trim() !== '' &&
