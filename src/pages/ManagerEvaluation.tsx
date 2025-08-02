@@ -359,7 +359,59 @@ const ManagerEvaluation = () => {
     setIsSubmitting(true);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Préparer les données pour l'API
+      const responses: any[] = [];
+      
+       // Données des clients
+      Object.entries(clientFormData).forEach(([instanceIndex, client]: [string, any]) => {
+        if (client) {
+          Object.entries(client).forEach(([field, value]) => {
+            if (value && typeof value === 'string' && value.trim() !== '') {
+              responses.push({
+                item_id: `client_${instanceIndex}_${field}`,
+                value: value
+              });
+            }
+          });
+        }
+      });
+      
+      // Données des activités
+      Object.entries(activiteFormData).forEach(([instanceIndex, activite]: [string, any]) => {
+        if (activite) {
+          Object.entries(activite).forEach(([field, value]) => {
+            if (value && typeof value === 'string' && value.trim() !== '') {
+              responses.push({
+                item_id: `activite_${instanceIndex}_${field}`,
+                value: value
+              });
+            }
+          });
+        }
+      });
+      
+      // Données d'évaluation
+      Object.entries(evaluationFormData).forEach(([itemId, value]) => {
+        if (value && value.trim() !== '') {
+          responses.push({
+            item_id: parseInt(itemId),
+            value: value
+          });
+        }
+      });
+      
+      const submissionData = {
+        mission_id: "1", // À adapter selon votre logique
+        evaluator_id: evaluatorId.toString(),
+        approver_id: selectedAssociateId.toString(),
+        responses: responses
+      };
+      
+      await apiClient.post('/evaluation-manager', submissionData);
+      
+      toast.success("Auto-évaluation soumise", {
+        description: "Votre auto-évaluation a été soumise avec succès"
+      });
       
       setCurrentStep(2);
     } catch (error) {
@@ -370,7 +422,7 @@ const ManagerEvaluation = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [evaluatorId, selectedAssociateId, clientFormData, activiteFormData, evaluationFormData, employeeResponses]);
+  }, [evaluatorId, selectedAssociateId, clientFormData, activiteFormData, evaluationFormData]);
   
   const handleGroupChange = useCallback((groupId: string) => {
     setCurrentGroupId(parseInt(groupId));
