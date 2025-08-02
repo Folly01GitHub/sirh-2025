@@ -331,11 +331,8 @@ const ManagerEvaluation = () => {
     // Validation du groupe "Récapitulatif feuille de temps" (groupId: 2)
     const hasValidActivite = Object.values(activiteFormData).some((activite: any) => {
       return activite && 
-             activite.nomActivite && activite.nomActivite.trim() !== '' &&
-             activite.typeActivite && activite.typeActivite.trim() !== '' &&
-             activite.nbreHeures && activite.nbreHeures.trim() !== '' &&
-             activite.periodicite && activite.periodicite.trim() !== '' &&
-             activite.complexite && activite.complexite.trim() !== '';
+             activite.libelleActivite && activite.libelleActivite.trim() !== '' &&
+             activite.nombreHeuresPassees && parseFloat(activite.nombreHeuresPassees) > 0;
     });
 
     if (!hasValidActivite) {
