@@ -36,15 +36,15 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
   const [dialogEvaluationId, setDialogEvaluationId] = useState<number | null>(null);
 
   const handleEditClick = (evaluationId: number, niveau: string) => {
-    // Pour les collaborateurs: si mission = "N/A", rediriger vers le formulaire d'évaluation des managers
+    // Pour les collaborateurs: si mission différente de "N/A", rediriger vers le formulaire d'évaluation normal
     if (activeFilter === 'team') {
       const evaluation = evaluations.find(e => e.id === evaluationId);
-      if (evaluation && evaluation.mission === "N/A") {
+      if (evaluation && evaluation.mission !== "N/A") {
         if (evaluation.statut === "Evaluation en cours") {
-          navigate(`/evaluation/managers?id=${evaluationId}&step=2`);
+          navigate(`/evaluation?id=${evaluationId}&step=2`);
           return;
         } else if (evaluation.statut === "Approbation en cours") {
-          navigate(`/evaluation/managers?id=${evaluationId}&step=3`);
+          navigate(`/evaluation?id=${evaluationId}&step=3`);
           return;
         }
       }
