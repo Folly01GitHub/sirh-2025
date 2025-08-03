@@ -114,6 +114,11 @@ const ManagerEvaluation = () => {
   const [managerResponses, setManagerResponses] = useState<any>(null);
   const [managerResponsesLoading, setManagerResponsesLoading] = useState(false);
   
+  // Step 3 - All evaluation notes data
+  const [evaluationNotes, setEvaluationNotes] = useState<any>(null);
+  const [evaluationNotesLoading, setEvaluationNotesLoading] = useState(false);
+  const [associateFormData, setAssociateFormData] = useState<Record<number, string>>({});
+  
   // Fetch evaluation items for displaying proper titles
   const [evaluationItems, setEvaluationItems] = useState<any[]>([]);
   const [evaluationItemsLoading, setEvaluationItemsLoading] = useState(false);
@@ -132,7 +137,7 @@ const ManagerEvaluation = () => {
   }, []);
 
   useEffect(() => {
-    if (currentStep === 2) {
+    if (currentStep === 2 || currentStep === 3) {
       fetchEvaluationItems();
     }
   }, [currentStep, fetchEvaluationItems]);
@@ -235,6 +240,29 @@ const ManagerEvaluation = () => {
     }
   }, [currentStep, fetchManagerResponses]);
 
+  // Fetch evaluation notes for step 3
+  const fetchEvaluationNotes = useCallback(async () => {
+    const evaluationId = evaluationIdParam || evaluatorId;
+    if (!evaluationId) return;
+    
+    setEvaluationNotesLoading(true);
+    try {
+      const response = await apiClient.get(`/evaluations/${evaluationId}/notes`);
+      setEvaluationNotes(response.data);
+    } catch (error) {
+      console.error('Error fetching evaluation notes:', error);
+      toast.error('Erreur lors du chargement des notes d\'évaluation');
+    } finally {
+      setEvaluationNotesLoading(false);
+    }
+  }, [evaluationIdParam, evaluatorId]);
+
+  useEffect(() => {
+    if (currentStep === 3) {
+      fetchEvaluationNotes();
+    }
+  }, [currentStep, fetchEvaluationNotes]);
+
   // Handlers for form data updates (no localStorage - only in-memory)
   const handleClientFormDataChange = useCallback((instanceIndex: number, field: string, value: string) => {
     setClientFormData(prev => ({
@@ -258,6 +286,13 @@ const ManagerEvaluation = () => {
 
   const handleEvaluationFormDataChange = useCallback((itemId: number, value: string) => {
     setEvaluationFormData(prev => ({
+      ...prev,
+      [itemId]: value
+    }));
+  }, []);
+
+  const handleAssociateFormDataChange = useCallback((itemId: number, value: string) => {
+    setAssociateFormData(prev => ({
       ...prev,
       [itemId]: value
     }));
@@ -887,25 +922,173 @@ const ManagerEvaluation = () => {
               <div>
                 <h2 className="text-xl font-semibold mb-4">Validation finale</h2>
                 <p className="text-muted-foreground mb-6">
-                  Étape de validation finale de l'évaluation manager.
+                  Consultez les réponses du manager et de l'évaluateur, puis complétez vos propres réponses.
                 </p>
                 
-                <div className="flex gap-4">
-                  <Button 
-                    onClick={() => handleApprove(true)}
-                    disabled={isSubmitting}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    Approuver
-                  </Button>
-                  <Button 
-                    onClick={() => handleApprove(false, 'Commentaire de rejet')}
-                    disabled={isSubmitting}
-                    variant="destructive"
-                  >
-                    Rejeter
-                  </Button>
-                </div>
+                {evaluationNotesLoading ? (
+                  <div className="text-center py-8">
+                    <div className="text-muted-foreground">Chargement des notes d'évaluation...</div>
+                  </div>
+                ) : evaluationNotes ? (
+                  <div className="space-y-8">
+                    {/* Groupe 1: Synthèse clients à évaluer */}
+                    {currentGroupId === 1 && (
+                      <div>
+                        <h3 className="text-lg font-medium mb-4">Synthèse clients à évaluer</h3>
+                        <RepeaterField
+                          minInstances={evaluationNotes.clients?.length || 1}
+                          maxInstances={evaluationNotes.clients?.length || 1}
+                          template={<ClientFields readonly={true} onFormDataChange={() => {}} formData={{}} />}
+                          instances={evaluationNotes.clients?.map((client: any, index: number) => ({ 
+                            id: index + 1,
+                            ...client 
+                          })) || []}
+                          onInstancesChange={() => {}}
+                          formData={evaluationNotes.clients?.reduce((acc: any, client: any, index: number) => {
+                            acc[index] = {
+                              client: client.nom_client,
+                              dateDebutIntervention: client.date_debut_intervention,
+                              dateFinIntervention: client.date_fin_intervention,
+                              etatAvancement: client.etat_avancement,
+                              tempsCollaborateur: client.temps_collaborateur?.toString(),
+                              tempsEquipe: client.temps_equipe?.toString(),
+                              honoraires: client.honoraires,
+                              bonisMalis: client.bonis_malis
+                            };
+                            return acc;
+                          }, {}) || {}}
+                          onFormDataChange={() => {}}
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Groupe 2: Récapitulatif feuille de temps */}
+                    {currentGroupId === 2 && (
+                      <div>
+                        <h3 className="text-lg font-medium mb-4">Récapitulatif feuille de temps</h3>
+                        <RepeaterField 
+                          minInstances={evaluationNotes.activites?.length || 1}
+                          maxInstances={evaluationNotes.activites?.length || 1}
+                          template={<ActiviteFields readonly={true} onFormDataChange={() => {}} formData={{}} />}
+                          instances={evaluationNotes.activites?.map((activite: any, index: number) => ({ 
+                            id: index + 1,
+                            ...activite 
+                          })) || []}
+                          onInstancesChange={() => {}}
+                          itemLabel="Activité"
+                          formData={evaluationNotes.activites?.reduce((acc: any, activite: any, index: number) => {
+                            acc[index] = {
+                              libelleActivite: activite.libelle,
+                              nombreHeuresPassees: activite.nombre_heures?.toString(),
+                              commentaires: activite.commentaire
+                            };
+                            return acc;
+                          }, {}) || {}}
+                          onFormDataChange={() => {}}
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Groupe 3: Évaluation - Division en trois parties */}
+                    {currentGroupId === 3 && (
+                      <div>
+                        <h3 className="text-lg font-medium mb-6">Évaluation</h3>
+                        
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                          {/* Partie gauche: Réponses du manager (grisées) */}
+                          <div className="space-y-4">
+                            <h4 className="text-md font-medium text-muted-foreground">Réponses du manager à évaluer</h4>
+                            <div className="space-y-4">
+                              {evaluationNotes.notes_collaborateur?.map((note: any) => {
+                                const evaluationItem = evaluationItems.find(item => item.id === note.item_id);
+                                const itemTitle = evaluationItem ? evaluationItem.titre : `Question ${note.item_id}`;
+                                const itemDescription = evaluationItem ? evaluationItem.description : '';
+                                
+                                return (
+                                  <div key={note.item_id} className="border rounded-lg bg-muted/50">
+                                    <div className="p-4 border-b bg-muted/20">
+                                      <h5 className="text-sm font-medium">{itemTitle}</h5>
+                                      {itemDescription && (
+                                        <p className="text-xs text-muted-foreground mt-1">{itemDescription}</p>
+                                      )}
+                                    </div>
+                                    <div className="p-4">
+                                      <div className="min-h-[80px] p-3 bg-background border rounded-md text-sm text-foreground opacity-75">
+                                        {note.reponse}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                          
+                          {/* Partie droite: Réponses de l'évaluateur (grisées) */}
+                          <div className="space-y-4">
+                            <h4 className="text-md font-medium text-muted-foreground">Réponses de l'évaluateur</h4>
+                            <div className="space-y-4">
+                              {evaluationNotes.notes_evaluateur?.map((note: any) => {
+                                const evaluationItem = evaluationItems.find(item => item.id === note.item_id);
+                                const itemTitle = evaluationItem ? evaluationItem.titre : `Question ${note.item_id}`;
+                                const itemDescription = evaluationItem ? evaluationItem.description : '';
+                                
+                                return (
+                                  <div key={note.item_id} className="border rounded-lg bg-muted/50">
+                                    <div className="p-4 border-b bg-muted/20">
+                                      <h5 className="text-sm font-medium">{itemTitle}</h5>
+                                      {itemDescription && (
+                                        <p className="text-xs text-muted-foreground mt-1">{itemDescription}</p>
+                                      )}
+                                    </div>
+                                    <div className="p-4">
+                                      <div className="min-h-[80px] p-3 bg-background border rounded-md text-sm text-foreground opacity-75">
+                                        {note.reponse}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Partie bas: Formulaire pour l'associé */}
+                        <div className="space-y-4">
+                          <h4 className="text-md font-medium">Vos réponses d'associé</h4>
+                          <EvaluationItems 
+                            formData={associateFormData}
+                            onFormDataChange={handleAssociateFormDataChange}
+                            hideTitle={true}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Aucune note d'évaluation trouvée
+                  </div>
+                )}
+                
+                {/* Boutons d'action uniquement pour le groupe 3 */}
+                {currentGroupId === 3 && evaluationNotes && (
+                  <div className="pt-6 flex gap-4">
+                    <Button 
+                      onClick={() => handleApprove(true)}
+                      disabled={isSubmitting}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      Approuver
+                    </Button>
+                    <Button 
+                      onClick={() => handleApprove(false, 'Commentaire de rejet')}
+                      disabled={isSubmitting}
+                      variant="destructive"
+                    >
+                      Rejeter
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
             </div>
