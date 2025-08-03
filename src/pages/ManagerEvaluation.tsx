@@ -618,27 +618,25 @@ const ManagerEvaluation = () => {
     setIsSubmitting(true);
     
     try {
-      // Préparer les données de soumission
-      const responses: EvaluationResponse[] = [];
+      // Préparer la structure spécifique pour l'API notes/approbateur
+      const notes: any[] = [];
       
-      // Données d'évaluation de l'associé
+      // Ajouter seulement les données d'évaluation de l'associé (items 1-11)
       Object.entries(associateFormData).forEach(([itemId, value]) => {
-        if (value && value.trim() !== '') {
-          responses.push({
-            item_id: parseInt(itemId),
+        const id = parseInt(itemId);
+        if (id >= 1 && id <= 11 && value && value.trim() !== '') {
+          notes.push({
+            item_id: id,
             value: value
           });
         }
       });
       
       const submissionData = {
-        mission_id: "1", // À adapter selon votre logique
-        evaluator_id: evaluatorId.toString(),
-        approver_id: selectedAssociateId.toString(),
-        responses: responses
+        notes: notes
       };
       
-      await apiClient.post('/evaluation-manager/associate', submissionData);
+      await apiClient.post(`/evaluations/${evaluationIdParam}/notes/approbateur`, submissionData);
       
       toast.success("Évaluation soumise", {
         description: "Votre évaluation d'associé a été soumise avec succès"
