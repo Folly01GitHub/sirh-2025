@@ -871,14 +871,14 @@ const ManagerEvaluation = () => {
                           })) || []}
                           onInstancesChange={() => {}}
                           itemLabel="Activité"
-                          formData={managerResponses.activites?.reduce((acc: any, activite: any, index: number) => {
-                            acc[index] = {
-                              libelleActivite: activite.libelle,
-                              nombreHeuresPassees: activite.nombre_heures?.toString(),
-                              commentaires: activite.commentaire
-                            };
-                            return acc;
-                          }, {}) || {}}
+                           formData={managerResponses.activites?.reduce((acc: any, activite: any, index: number) => {
+                             acc[index] = {
+                               libelleActivite: activite.libelle,
+                               nombreHeuresPassees: activite.nombre_heures?.toString(),
+                               commentairesEventuels: activite.commentaire
+                             };
+                             return acc;
+                           }, {}) || {}}
                           onFormDataChange={() => {}}
                         />
                       </div>
@@ -1005,14 +1005,14 @@ const ManagerEvaluation = () => {
                           })) || []}
                           onInstancesChange={() => {}}
                           itemLabel="Activité"
-                          formData={evaluationNotes.activites?.reduce((acc: any, activite: any, index: number) => {
-                            acc[index] = {
-                              libelleActivite: activite.libelle,
-                              nombreHeuresPassees: activite.nombre_heures?.toString(),
-                              commentaires: activite.commentaire
-                            };
-                            return acc;
-                          }, {}) || {}}
+                           formData={evaluationNotes.activites?.reduce((acc: any, activite: any, index: number) => {
+                             acc[index] = {
+                               libelleActivite: activite.libelle,
+                               nombreHeuresPassees: activite.nombre_heures?.toString(),
+                               commentairesEventuels: activite.commentaire
+                             };
+                             return acc;
+                           }, {}) || {}}
                           onFormDataChange={() => {}}
                         />
                       </div>
