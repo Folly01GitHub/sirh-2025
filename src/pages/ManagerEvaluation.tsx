@@ -113,6 +113,29 @@ const ManagerEvaluation = () => {
   // Step 2 - Manager responses data
   const [managerResponses, setManagerResponses] = useState<any>(null);
   const [managerResponsesLoading, setManagerResponsesLoading] = useState(false);
+  
+  // Fetch evaluation items for displaying proper titles
+  const [evaluationItems, setEvaluationItems] = useState<any[]>([]);
+  const [evaluationItemsLoading, setEvaluationItemsLoading] = useState(false);
+
+  // Fetch evaluation items from API
+  const fetchEvaluationItems = useCallback(async () => {
+    setEvaluationItemsLoading(true);
+    try {
+      const response = await apiClient.get('/item-manager');
+      setEvaluationItems(response.data.data || []);
+    } catch (error) {
+      console.error('Error fetching evaluation items:', error);
+    } finally {
+      setEvaluationItemsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (currentStep === 2) {
+      fetchEvaluationItems();
+    }
+  }, [currentStep, fetchEvaluationItems]);
 
   useEffect(() => {
     if (stepParam) {
@@ -787,20 +810,25 @@ const ManagerEvaluation = () => {
                           {/* Partie gauche: Réponses du manager (grisées) */}
                           <div className="space-y-4">
                             <h4 className="text-md font-medium text-muted-foreground">Réponses du manager</h4>
-                            <div className="space-y-3">
-                              {managerResponses.notes_collaborateur?.map((note: any, index: number) => (
-                                <div key={note.item_id} className="space-y-2">
-                                  <label className="text-sm font-medium text-gray-600">
-                                    Question {note.item_id}
-                                  </label>
-                                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
-                                    <div className="text-sm text-gray-700">
-                                      {note.reponse_collaborateur}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
+                             <div className="space-y-3">
+                               {managerResponses.notes_collaborateur?.map((note: any, index: number) => {
+                                 const evaluationItem = evaluationItems.find(item => item.id === note.item_id);
+                                 const itemTitle = evaluationItem ? evaluationItem.titre : `Question ${note.item_id}`;
+                                 
+                                 return (
+                                   <div key={note.item_id} className="space-y-2">
+                                     <label className="text-sm font-medium text-gray-600">
+                                       {itemTitle}
+                                     </label>
+                                     <div className="p-3 bg-gray-50 border border-gray-200 rounded-md">
+                                       <div className="text-sm text-gray-700">
+                                         {note.reponse_collaborateur}
+                                       </div>
+                                     </div>
+                                   </div>
+                                 );
+                               })}
+                             </div>
                           </div>
                           
                           {/* Partie droite: Formulaire de l'évaluateur */}
