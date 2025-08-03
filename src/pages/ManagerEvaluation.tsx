@@ -593,38 +593,67 @@ const ManagerEvaluation = () => {
     }
   }, [evaluationFormData, evaluationItems]);
   
-  const handleApprove = useCallback(async (approved: boolean, comment?: string) => {
-    if (!approved && (!comment || comment.trim().length < 10)) {
-      toast.error("Commentaire requis", {
-        description: "Veuillez fournir un commentaire détaillé pour le rejet"
+  const handleSubmitAssociateEvaluation = useCallback(async () => {
+    // Validation : Vérifier que tous les champs de l'associé sont remplis
+    if (!evaluationItems || evaluationItems.length === 0) {
+      toast.error("Erreur de validation", {
+        description: "Les critères d'évaluation ne sont pas chargés"
       });
       return;
     }
-    
+
+    const missingFields = evaluationItems.filter(item => {
+      const value = associateFormData[item.id];
+      return !value || value.trim() === '';
+    });
+
+    if (missingFields.length > 0) {
+      toast.error("Champs obligatoires manquants", {
+        description: "Tous les champs d'évaluation doivent être remplis"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Préparer les données de soumission
+      const responses: EvaluationResponse[] = [];
       
-      if (approved) {
-        toast.success("Évaluation approuvée", {
-          description: "Le processus d'évaluation est maintenant terminé"
-        });
-      } else {
-        toast.success("Évaluation renvoyée pour révision", {
-          description: "L'évaluateur a été notifié"
-        });
-      }
+      // Données d'évaluation de l'associé
+      Object.entries(associateFormData).forEach(([itemId, value]) => {
+        if (value && value.trim() !== '') {
+          responses.push({
+            item_id: parseInt(itemId),
+            value: value
+          });
+        }
+      });
       
+      const submissionData = {
+        mission_id: "1", // À adapter selon votre logique
+        evaluator_id: evaluatorId.toString(),
+        approver_id: selectedAssociateId.toString(),
+        responses: responses
+      };
+      
+      await apiClient.post('/evaluation-manager/associate', submissionData);
+      
+      toast.success("Évaluation soumise", {
+        description: "Votre évaluation d'associé a été soumise avec succès"
+      });
+      
+      // Rediriger vers le dashboard des évaluations
+      navigate('/evaluations');
     } catch (error) {
-      console.error("Erreur lors de la finalisation de l'évaluation:", error);
-      toast.error("Échec de la finalisation de l'évaluation", {
+      console.error("Erreur lors de la soumission de l'évaluation d'associé:", error);
+      toast.error("Échec de la soumission de l'évaluation", {
         description: "Veuillez réessayer ultérieurement"
       });
     } finally {
       setIsSubmitting(false);
     }
-  }, []);
+  }, [evaluatorId, selectedAssociateId, associateFormData, evaluationItems, navigate]);
   
   // Helper function to truncate long titles for tab display
   const truncateGroupName = (name: string, maxLength = 20) => {
@@ -1070,22 +1099,15 @@ const ManagerEvaluation = () => {
                   </div>
                 )}
                 
-                {/* Boutons d'action uniquement pour le groupe 3 */}
+                {/* Bouton de soumission uniquement pour le groupe 3 */}
                 {currentGroupId === 3 && evaluationNotes && (
-                  <div className="pt-6 flex gap-4">
+                  <div className="pt-6">
                     <Button 
-                      onClick={() => handleApprove(true)}
-                      disabled={isSubmitting}
-                      className="bg-green-600 hover:bg-green-700"
+                      onClick={handleSubmitAssociateEvaluation}
+                      disabled={isSubmitting || !evaluationNotes}
+                      className="w-full md:w-auto"
                     >
-                      Approuver
-                    </Button>
-                    <Button 
-                      onClick={() => handleApprove(false, 'Commentaire de rejet')}
-                      disabled={isSubmitting}
-                      variant="destructive"
-                    >
-                      Rejeter
+                      {isSubmitting ? 'Soumission...' : 'Soumettre l\'évaluation'}
                     </Button>
                   </div>
                 )}
