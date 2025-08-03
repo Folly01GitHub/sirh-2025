@@ -891,7 +891,7 @@ const ManagerEvaluation = () => {
                           <div className="space-y-4">
                             <h4 className="text-md font-medium text-muted-foreground">Réponses du manager</h4>
                             <div className="space-y-4">
-                              {managerResponses.notes_collaborateur?.map((note: any, index: number) => {
+                              {(managerResponses.notes_manager || managerResponses.reponses_manager || managerResponses.manager_responses)?.map((note: any, index: number) => {
                                 const evaluationItem = evaluationItems.find(item => item.id === note.item_id);
                                 const itemTitle = evaluationItem ? evaluationItem.titre : `Question ${note.item_id}`;
                                 const itemDescription = evaluationItem ? evaluationItem.description : '';
@@ -906,12 +906,16 @@ const ManagerEvaluation = () => {
                                     </div>
                                     <div className="p-4">
                                       <div className="min-h-[100px] p-3 bg-background border rounded-md text-sm text-foreground opacity-75">
-                                        {note.reponse_collaborateur}
+                                        {note.reponse || note.reponse_manager || note.value || note.response}
                                       </div>
                                     </div>
                                   </div>
                                 );
-                              })}
+                              }) || (
+                                <div className="text-center py-4 text-muted-foreground">
+                                  Aucune réponse du manager trouvée pour ce groupe
+                                </div>
+                              )}
                             </div>
                           </div>
                           
