@@ -464,7 +464,8 @@ const ManagerEvaluation = () => {
         description: "Votre auto-évaluation a été soumise avec succès"
       });
       
-      setCurrentStep(2);
+      // Rediriger vers le dashboard des évaluations
+      navigate('/evaluations');
     } catch (error) {
       console.error("Erreur lors de la soumission de l'auto-évaluation:", error);
       toast.error("Échec de la soumission de l'auto-évaluation", {
