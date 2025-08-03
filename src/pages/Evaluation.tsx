@@ -85,8 +85,15 @@ const Evaluation = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Remove automatic redirection based on user grade
-  // The grade should only influence the "Nouvelle évaluation" button behavior
+  // Check if user should be redirected to manager evaluation
+  useEffect(() => {
+    const managerGrades = ['Manager 1', 'Manager 2', 'Manager 3', 'Senior Manager', 'Directeur'];
+    const userGrade = typeof user?.grade === 'object' ? (user.grade as any)?.nom_grade : user?.grade;
+    if (userGrade && managerGrades.includes(userGrade)) {
+      navigate('/evaluation/managers');
+      return;
+    }
+  }, [user?.grade, navigate]);
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(initialStep as 1 | 2 | 3);
   const [currentGroupId, setCurrentGroupId] = useState<number>(1);
   const [employeeResponses, setEmployeeResponses] = useState<EvaluationResponse[]>([]);

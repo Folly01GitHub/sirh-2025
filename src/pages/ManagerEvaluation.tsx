@@ -890,35 +890,29 @@ const ManagerEvaluation = () => {
                           {/* Partie gauche: Réponses du manager (grisées) */}
                           <div className="space-y-4">
                             <h4 className="text-md font-medium text-muted-foreground">Réponses du manager</h4>
-                             <div className="space-y-4">
-                               {managerResponses?.notes_collaborateur && managerResponses.notes_collaborateur.length > 0 ? (
-                                 managerResponses.notes_collaborateur.map((note: any, index: number) => {
-                                   const evaluationItem = evaluationItems.find(item => item.id === note.item_id);
-                                   const itemTitle = evaluationItem ? evaluationItem.titre : `Question ${note.item_id}`;
-                                   const itemDescription = evaluationItem ? evaluationItem.description : '';
-                                   
-                                   return (
-                                     <div key={note.item_id} className="border rounded-lg bg-muted/50">
-                                       <div className="p-4 border-b bg-muted/20">
-                                         <h3 className="text-base font-medium">{itemTitle}</h3>
-                                         {itemDescription && (
-                                           <p className="text-sm text-muted-foreground mt-1">{itemDescription}</p>
-                                         )}
-                                       </div>
-                                       <div className="p-4">
-                                         <div className="min-h-[100px] p-3 bg-background border rounded-md text-sm text-foreground opacity-75">
-                                           {note.reponse_collaborateur}
-                                         </div>
-                                       </div>
-                                     </div>
-                                   );
-                                 })
-                               ) : (
-                                 <div className="text-center py-8 text-muted-foreground">
-                                   {managerResponsesLoading ? 'Chargement...' : 'Aucune réponse du manager disponible'}
-                                 </div>
-                               )}
-                             </div>
+                            <div className="space-y-4">
+                              {managerResponses.notes_collaborateur?.map((note: any, index: number) => {
+                                const evaluationItem = evaluationItems.find(item => item.id === note.item_id);
+                                const itemTitle = evaluationItem ? evaluationItem.titre : `Question ${note.item_id}`;
+                                const itemDescription = evaluationItem ? evaluationItem.description : '';
+                                
+                                return (
+                                  <div key={note.item_id} className="border rounded-lg bg-muted/50">
+                                    <div className="p-4 border-b bg-muted/20">
+                                      <h3 className="text-base font-medium">{itemTitle}</h3>
+                                      {itemDescription && (
+                                        <p className="text-sm text-muted-foreground mt-1">{itemDescription}</p>
+                                      )}
+                                    </div>
+                                    <div className="p-4">
+                                      <div className="min-h-[100px] p-3 bg-background border rounded-md text-sm text-foreground opacity-75">
+                                        {note.reponse_collaborateur}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
                           
                           {/* Partie droite: Formulaire de l'évaluateur */}
