@@ -734,7 +734,7 @@ const ManagerEvaluation = () => {
             {currentStep === 2 && (
               <div>
                 <p className="text-muted-foreground mb-6">
-                  Évaluez les réponses du manager et complétez votre évaluation.
+                  Consultez les réponses du collaborateur et complétez votre évaluation.
                 </p>
                 
                 {managerResponsesLoading ? (
