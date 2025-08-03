@@ -25,11 +25,13 @@ const fetchEvaluationItems = async (): Promise<EvaluationItem[]> => {
 interface EvaluationItemsProps {
   formData?: Record<number, string>;
   onFormDataChange?: (itemId: number, value: string) => void;
+  hideTitle?: boolean;
 }
 
 const EvaluationItems: React.FC<EvaluationItemsProps> = ({
   formData = {},
-  onFormDataChange
+  onFormDataChange,
+  hideTitle = false
 }) => {
   const { 
     data: items, 
@@ -43,7 +45,7 @@ const EvaluationItems: React.FC<EvaluationItemsProps> = ({
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold mb-4">Évaluation</h2>
+        {!hideTitle && <h2 className="text-xl font-semibold mb-4">Évaluation</h2>}
         {Array.from({ length: 3 }).map((_, index) => (
           <Card key={index}>
             <CardHeader>
@@ -62,7 +64,7 @@ const EvaluationItems: React.FC<EvaluationItemsProps> = ({
   if (error) {
     return (
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold mb-4">Évaluation</h2>
+        {!hideTitle && <h2 className="text-xl font-semibold mb-4">Évaluation</h2>}
         <Card>
           <CardContent className="pt-6">
             <p className="text-destructive">
@@ -76,10 +78,12 @@ const EvaluationItems: React.FC<EvaluationItemsProps> = ({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold mb-4">Évaluation</h2>
-      <p className="text-muted-foreground mb-6">
-        Veuillez remplir vos commentaires pour chaque critère d'évaluation.
-      </p>
+      {!hideTitle && <h2 className="text-xl font-semibold mb-4">Évaluation</h2>}
+      {!hideTitle && (
+        <p className="text-muted-foreground mb-6">
+          Veuillez remplir vos commentaires pour chaque critère d'évaluation.
+        </p>
+      )}
       
       {items?.map((item) => (
         <Card key={item.id}>

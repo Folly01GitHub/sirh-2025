@@ -841,6 +841,7 @@ const ManagerEvaluation = () => {
                             <EvaluationItems 
                               formData={evaluationFormData}
                               onFormDataChange={handleEvaluationFormDataChange}
+                              hideTitle={true}
                             />
                           </div>
                         </div>
