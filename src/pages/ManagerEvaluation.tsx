@@ -517,6 +517,26 @@ const ManagerEvaluation = () => {
   }, []);
   
   const handleSubmitEvaluation = useCallback(async () => {
+    // Validation : Vérifier que tous les champs d'évaluation sont remplis
+    if (!evaluationItems || evaluationItems.length === 0) {
+      toast.error("Erreur de validation", {
+        description: "Les critères d'évaluation ne sont pas chargés"
+      });
+      return;
+    }
+
+    const missingFields = evaluationItems.filter(item => {
+      const value = evaluationFormData[item.id];
+      return !value || value.trim() === '';
+    });
+
+    if (missingFields.length > 0) {
+      toast.error("Champs obligatoires manquants", {
+        description: "Tous les champs d'évaluation doivent être remplis"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -535,7 +555,7 @@ const ManagerEvaluation = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [evaluatorResponses]);
+  }, [evaluationFormData, evaluationItems]);
   
   const handleApprove = useCallback(async (approved: boolean, comment?: string) => {
     if (!approved && (!comment || comment.trim().length < 10)) {
