@@ -80,6 +80,7 @@ const fetchEmployees = async (): Promise<Employee[]> => {
 const ManagerEvaluation = () => {
   const [searchParams] = useSearchParams();
   const stepParam = searchParams.get('step');
+  const evaluationIdParam = searchParams.get('id');
   const initialStep = stepParam ? parseInt(stepParam) : 1;
   
   const { user } = useAuth();
@@ -190,11 +191,12 @@ const ManagerEvaluation = () => {
 
   // Fetch manager responses for step 2
   const fetchManagerResponses = useCallback(async () => {
-    if (!evaluatorId) return;
+    const evaluationId = evaluationIdParam || evaluatorId;
+    if (!evaluationId) return;
     
     setManagerResponsesLoading(true);
     try {
-      const response = await apiClient.get(`/evaluations/${evaluatorId}/manager-reponses`);
+      const response = await apiClient.get(`/evaluations/${evaluationId}/manager-reponses`);
       setManagerResponses(response.data);
     } catch (error) {
       console.error('Error fetching manager responses:', error);
@@ -202,13 +204,13 @@ const ManagerEvaluation = () => {
     } finally {
       setManagerResponsesLoading(false);
     }
-  }, [evaluatorId]);
+  }, [evaluationIdParam, evaluatorId]);
 
   useEffect(() => {
-    if (currentStep === 2 && evaluatorId) {
+    if (currentStep === 2) {
       fetchManagerResponses();
     }
-  }, [currentStep, evaluatorId, fetchManagerResponses]);
+  }, [currentStep, fetchManagerResponses]);
 
   // Handlers for form data updates (no localStorage - only in-memory)
   const handleClientFormDataChange = useCallback((instanceIndex: number, field: string, value: string) => {
