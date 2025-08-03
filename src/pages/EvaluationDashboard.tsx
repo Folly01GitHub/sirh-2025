@@ -77,18 +77,29 @@ const EvaluationDashboard = () => {
     if (activeFilter === 'self') {
       navigate(`/evaluation?id=${id}`);
     } else {
-      // Pour "Mes collaborateurs", on ne gère que les évaluations de managers (mission = "N/A")
+      // Pour "Mes collaborateurs", gérer toutes les redirections selon la mission et le statut
       const evaluation = evaluations?.find(e => e.id === id);
-      if (evaluation && evaluation.mission === "N/A") {
-        if (niveau === 'Evaluateur') {
-          navigate(`/evaluation/managers?id=${id}&step=2`);
-        } else if (niveau === 'Approbateur') {
-          navigate(`/evaluation/managers?id=${id}&step=3`);
+      if (evaluation) {
+        if (evaluation.mission === "N/A") {
+          // Évaluations de managers
+          if (evaluation.statut === "Evaluation en cours") {
+            navigate(`/evaluation/managers?id=${id}&step=2`);
+          } else if (evaluation.statut === "Approbation en cours") {
+            navigate(`/evaluation/managers?id=${id}&step=3`);
+          } else {
+            navigate(`/evaluation/managers?id=${id}`);
+          }
         } else {
-          navigate(`/evaluation/managers?id=${id}`);
+          // Évaluations de collaborateurs (mission !== "N/A")
+          if (evaluation.statut === "Evaluation en cours") {
+            navigate(`/evaluation?id=${id}&step=2`);
+          } else if (evaluation.statut === "Approbation en cours") {
+            navigate(`/evaluation?id=${id}&step=3`);
+          } else {
+            navigate(`/evaluation?id=${id}`);
+          }
         }
       }
-      // Les autres cas (mission !== "N/A") sont gérés directement dans EvaluationTable
     }
   };
   
