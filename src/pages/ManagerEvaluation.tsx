@@ -476,24 +476,25 @@ const ManagerEvaluation = () => {
         }
       });
       
-      // Données d'évaluation
-      Object.entries(evaluationFormData).forEach(([itemId, value]) => {
-        if (value && value.trim() !== '') {
-          responses.push({
-            item_id: parseInt(itemId),
-            value: value
-          });
-        }
-      });
-      
-      const submissionData = {
-        mission_id: "1", // À adapter selon votre logique
-        evaluator_id: evaluatorId.toString(),
-        approver_id: selectedAssociateId.toString(),
-        responses: responses
-      };
-      
-      await apiClient.post('/evaluation-manager', submissionData);
+    // Préparer la structure spécifique pour l'API notes/evaluateur
+    const notes: any[] = [];
+    
+    // Ajouter seulement les données d'évaluation (items 1-11)
+    Object.entries(evaluationFormData).forEach(([itemId, value]) => {
+      const id = parseInt(itemId);
+      if (id >= 1 && id <= 11 && value && value.trim() !== '') {
+        notes.push({
+          item_id: id,
+          value: value
+        });
+      }
+    });
+    
+    const submissionData = {
+      notes: notes
+    };
+    
+    await apiClient.post(`/evaluations/${evaluationIdParam}/notes/evaluateur`, submissionData);
       
       toast.success("Auto-évaluation soumise", {
         description: "Votre auto-évaluation a été soumise avec succès"
