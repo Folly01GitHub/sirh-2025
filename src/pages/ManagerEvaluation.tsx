@@ -733,7 +733,6 @@ const ManagerEvaluation = () => {
             
             {currentStep === 2 && (
               <div>
-                <h2 className="text-xl font-semibold mb-4">Évaluation par le manager</h2>
                 <p className="text-muted-foreground mb-6">
                   Évaluez les réponses du manager et complétez votre évaluation.
                 </p>
