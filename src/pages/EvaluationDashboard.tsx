@@ -77,13 +77,18 @@ const EvaluationDashboard = () => {
     if (activeFilter === 'self') {
       navigate(`/evaluation?id=${id}`);
     } else {
-      if (niveau === 'Evaluateur') {
-        navigate(`/evaluation?id=${id}&step=2`);
-      } else if (niveau === 'Approbateur') {
-        navigate(`/evaluation?id=${id}&step=3`);
-      } else {
-        navigate(`/evaluation?id=${id}`);
+      // Pour "Mes collaborateurs", on ne gère que les évaluations de managers (mission = "N/A")
+      const evaluation = evaluations?.find(e => e.id === id);
+      if (evaluation && evaluation.mission === "N/A") {
+        if (niveau === 'Evaluateur') {
+          navigate(`/evaluation/managers?id=${id}&step=2`);
+        } else if (niveau === 'Approbateur') {
+          navigate(`/evaluation/managers?id=${id}&step=3`);
+        } else {
+          navigate(`/evaluation/managers?id=${id}`);
+        }
       }
+      // Les autres cas (mission !== "N/A") sont gérés directement dans EvaluationTable
     }
   };
   
