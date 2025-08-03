@@ -36,18 +36,24 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
   const [dialogEvaluationId, setDialogEvaluationId] = useState<number | null>(null);
 
   const handleEditClick = (evaluationId: number, niveau: string) => {
-    // Pour les collaborateurs: si mission différente de "N/A", rediriger vers le formulaire d'évaluation normal
+    // Pour les collaborateurs: gérer les redirections selon la mission et le statut
     if (activeFilter === 'team') {
       const evaluation = evaluations.find(e => e.id === evaluationId);
       if (evaluation && evaluation.mission !== "N/A") {
+        // Évaluations de collaborateurs (mission !== "N/A")
         if (evaluation.statut === "Evaluation en cours") {
           navigate(`/evaluation?id=${evaluationId}&step=2`);
           return;
         } else if (evaluation.statut === "Approbation en cours") {
           navigate(`/evaluation?id=${evaluationId}&step=3`);
           return;
+        } else {
+          // Pour tous les autres statuts, rediriger vers l'étape 1
+          navigate(`/evaluation?id=${evaluationId}`);
+          return;
         }
       }
+      // Pour les évaluations de managers (mission === "N/A"), laisser le dashboard gérer
     }
     onActionClick(evaluationId, niveau);
   };
