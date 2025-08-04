@@ -13,7 +13,11 @@ import apiClient from "@/utils/apiClient";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { CriteriaItem } from "@/pages/Evaluation";
+interface EvaluationItem {
+  id: number;
+  titre: string;
+  description: string;
+}
 
 interface EvaluationNote {
   item_id: number;
@@ -53,10 +57,10 @@ interface GroupeItem {
   name: string;
 }
 
-interface CriteriaGroup {
+interface EvaluationGroup {
   group_id: number;
   group_name: string;
-  items: CriteriaItem[];
+  items: EvaluationItem[];
 }
 
 const ManagerEvaluationView = () => {
@@ -86,12 +90,12 @@ const ManagerEvaluationView = () => {
     fetchEvaluationNotes();
   }, [evaluationId]);
 
-  // Fetch criteria items for the evaluation group
-  const { data: criteriaItems, isLoading: itemsLoading } = useQuery({
-    queryKey: ["criteriaItems", evaluationId],
+  // Fetch evaluation items for manager evaluations
+  const { data: evaluationItems, isLoading: itemsLoading } = useQuery({
+    queryKey: ["evaluationItems", evaluationId],
     queryFn: async () => {
-      const response = await apiClient.get("/items");
-      return response.data;
+      const response = await apiClient.get("/item-manager");
+      return response.data.data;
     }
   });
 
@@ -104,26 +108,8 @@ const ManagerEvaluationView = () => {
     }
   });
 
-  // Group criteria items by group
-  const groupedCriteria: CriteriaGroup[] =
-    Array.isArray(criteriaItems) && criteriaItems.length > 0
-      ? criteriaItems.reduce((acc: CriteriaGroup[], item: CriteriaItem) => {
-          let group = acc.find((g) => g.group_id === item.group_id);
-          const groupFromApi = Array.isArray(groupeItems)
-            ? groupeItems.find((g: GroupeItem) => g.id === item.group_id)
-            : undefined;
-          if (!group) {
-            group = {
-              group_id: item.group_id,
-              group_name: groupFromApi?.name || `Groupe ${item.group_id}`,
-              items: []
-            };
-            acc.push(group);
-          }
-          group.items.push(item);
-          return acc;
-        }, [])
-      : [];
+  // Les items d'évaluation des managers sont simples - pas besoin de groupes
+  const evaluationItemsList = Array.isArray(evaluationItems) ? evaluationItems : [];
 
   const getResponseValue = (responses: EvaluationNote[], itemId: number) => {
     const response = responses.find((r) => r.item_id === itemId);
@@ -250,71 +236,59 @@ const ManagerEvaluationView = () => {
                 {/* Partie gauche: Réponses du manager */}
                 <div className="space-y-6">
                   <h4 className="text-lg font-semibold">Réponses du manager à évaluer</h4>
-                  {groupedCriteria
-                    .filter(group => group.group_id === 3) // Groupe d'évaluation
-                    .map(group => 
-                      group.items.map((item: CriteriaItem) => (
-                        <div key={`manager-${item.id}`} className="p-4 border rounded-md bg-gray-50">
-                          <h5 className="font-medium mb-2">{item.label}</h5>
-                          <div className="mt-2">
-                            <Textarea
-                              value={getResponseValue(evaluationData.notes_collaborateur, item.id)}
-                              readOnly
-                              className="bg-gray-100"
-                              placeholder="Aucune réponse fournie"
-                            />
-                          </div>
-                        </div>
-                      ))
-                    )
-                  }
+                  {evaluationItemsList.map((item: EvaluationItem) => (
+                    <div key={`manager-${item.id}`} className="p-4 border rounded-md bg-gray-50">
+                      <h5 className="font-medium mb-2">{item.titre}</h5>
+                      <p className="text-sm text-muted-foreground mb-2">{item.description}</p>
+                      <div className="mt-2">
+                        <Textarea
+                          value={getResponseValue(evaluationData.notes_collaborateur, item.id)}
+                          readOnly
+                          className="bg-gray-100"
+                          placeholder="Aucune réponse fournie"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Partie droite: Réponses de l'évaluateur */}
                 <div className="space-y-6">
                   <h4 className="text-lg font-semibold">Réponses de l'évaluateur</h4>
-                  {groupedCriteria
-                    .filter(group => group.group_id === 3) // Groupe d'évaluation
-                    .map(group => 
-                      group.items.map((item: CriteriaItem) => (
-                        <div key={`evaluator-${item.id}`} className="p-4 border rounded-md bg-blue-50">
-                          <h5 className="font-medium mb-2">{item.label}</h5>
-                          <div className="mt-2">
-                            <Textarea
-                              value={getResponseValue(evaluationData.notes_evaluateur, item.id)}
-                              readOnly
-                              className="bg-blue-100"
-                              placeholder="Aucune réponse fournie"
-                            />
-                          </div>
-                        </div>
-                      ))
-                    )
-                  }
+                  {evaluationItemsList.map((item: EvaluationItem) => (
+                    <div key={`evaluator-${item.id}`} className="p-4 border rounded-md bg-blue-50">
+                      <h5 className="font-medium mb-2">{item.titre}</h5>
+                      <p className="text-sm text-muted-foreground mb-2">{item.description}</p>
+                      <div className="mt-2">
+                        <Textarea
+                          value={getResponseValue(evaluationData.notes_evaluateur, item.id)}
+                          readOnly
+                          className="bg-blue-100"
+                          placeholder="Aucune réponse fournie"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
               {/* Partie du bas: Réponses de l'associé */}
               <div className="space-y-6">
                 <h4 className="text-lg font-semibold">Réponses de l'associé</h4>
-                {groupedCriteria
-                  .filter(group => group.group_id === 3) // Groupe d'évaluation
-                  .map(group => 
-                    group.items.map((item: CriteriaItem) => (
-                      <div key={`associate-${item.id}`} className="p-4 border rounded-md bg-green-50">
-                        <h5 className="font-medium mb-2">{item.label}</h5>
-                        <div className="mt-2">
-                          <Textarea
-                            value={getResponseValue(evaluationData.notes_approbateur, item.id)}
-                            readOnly
-                            className="bg-green-100"
-                            placeholder="Aucune réponse fournie"
-                          />
-                        </div>
-                      </div>
-                    ))
-                  )
-                }
+                {evaluationItemsList.map((item: EvaluationItem) => (
+                  <div key={`associate-${item.id}`} className="p-4 border rounded-md bg-green-50">
+                    <h5 className="font-medium mb-2">{item.titre}</h5>
+                    <p className="text-sm text-muted-foreground mb-2">{item.description}</p>
+                    <div className="mt-2">
+                      <Textarea
+                        value={getResponseValue(evaluationData.notes_approbateur, item.id)}
+                        readOnly
+                        className="bg-green-100"
+                        placeholder="Aucune réponse fournie"
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </TabsContent>
           </Tabs>
