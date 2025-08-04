@@ -973,7 +973,6 @@ const ManagerEvaluation = () => {
             
             {currentStep === 3 && (
               <div>
-                <h2 className="text-xl font-semibold mb-4">Validation finale</h2>
                 <p className="text-muted-foreground mb-6">
                   Consultez les réponses du manager et de l'évaluateur, puis complétez vos propres réponses.
                 </p>
