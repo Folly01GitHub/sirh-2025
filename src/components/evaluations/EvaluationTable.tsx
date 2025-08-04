@@ -59,7 +59,15 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
   };
 
   const handleViewClick = (evaluationId: number) => {
-    navigate(`/evaluation-view?id=${evaluationId}`);
+    // Trouver l'évaluation pour vérifier si la mission est "N/A"
+    const evaluation = evaluations.find(e => e.id === evaluationId);
+    if (evaluation && evaluation.mission === "N/A") {
+      // Rediriger vers la page de visualisation des managers
+      navigate(`/evaluation-view/managers?id=${evaluationId}`);
+    } else {
+      // Rediriger vers la page de visualisation des collaborateurs
+      navigate(`/evaluation-view?id=${evaluationId}`);
+    }
   };
 
   const getNiveauBadgeProps = (niveau: string) => {

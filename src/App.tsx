@@ -29,6 +29,7 @@ import Evaluation from "./pages/Evaluation";
 import ManagerEvaluation from "./pages/ManagerEvaluation";
 import EvaluationDashboard from "./pages/EvaluationDashboard";
 import EvaluationView from "./pages/EvaluationView";
+import ManagerEvaluationView from "./pages/ManagerEvaluationView";
 import UserFeedback from "./pages/admin/UserFeedback";
 
 const queryClient = new QueryClient();
@@ -69,6 +70,7 @@ const App = () => (
               <Route path="/evaluation" element={<Evaluation />} />
               <Route path="/evaluation/managers" element={<ManagerEvaluation />} />
               <Route path="/evaluation-view" element={<EvaluationView />} />
+              <Route path="/evaluation-view/managers" element={<ManagerEvaluationView />} />
               <Route path="/cashout" element={<Home />} />
               <Route path="/certificates" element={<Home />} />
               <Route path="/dashboard" element={<Home />} />
