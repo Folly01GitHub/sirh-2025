@@ -251,7 +251,7 @@ const ManagerEvaluationView = () => {
                 <div className="space-y-6">
                   <h4 className="text-lg font-semibold">Réponses du manager à évaluer</h4>
                   {groupedCriteria
-                    .filter(group => group.group_id === 3) // Groupe d'évaluation
+                    .filter(group => group.group_name.toLowerCase().includes('évaluation') || group.group_id === 3) // Groupe d'évaluation
                     .map(group => 
                       group.items.map((item: CriteriaItem) => (
                         <div key={`manager-${item.id}`} className="p-4 border rounded-md bg-gray-50">
@@ -274,7 +274,7 @@ const ManagerEvaluationView = () => {
                 <div className="space-y-6">
                   <h4 className="text-lg font-semibold">Réponses de l'évaluateur</h4>
                   {groupedCriteria
-                    .filter(group => group.group_id === 3) // Groupe d'évaluation
+                    .filter(group => group.group_name.toLowerCase().includes('évaluation') || group.group_id === 3) // Groupe d'évaluation
                     .map(group => 
                       group.items.map((item: CriteriaItem) => (
                         <div key={`evaluator-${item.id}`} className="p-4 border rounded-md bg-blue-50">
@@ -298,7 +298,7 @@ const ManagerEvaluationView = () => {
               <div className="space-y-6">
                 <h4 className="text-lg font-semibold">Réponses de l'associé</h4>
                 {groupedCriteria
-                  .filter(group => group.group_id === 3) // Groupe d'évaluation
+                  .filter(group => group.group_name.toLowerCase().includes('évaluation') || group.group_id === 3) // Groupe d'évaluation
                   .map(group => 
                     group.items.map((item: CriteriaItem) => (
                       <div key={`associate-${item.id}`} className="p-4 border rounded-md bg-green-50">
