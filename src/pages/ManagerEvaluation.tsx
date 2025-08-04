@@ -986,7 +986,6 @@ const ManagerEvaluation = () => {
                     {/* Groupe 1: Synthèse clients à évaluer */}
                     {currentGroupId === 1 && (
                       <div>
-                        <h3 className="text-lg font-medium mb-4">Synthèse clients à évaluer</h3>
                         <RepeaterField
                           minInstances={evaluationNotes.clients?.length || 1}
                           maxInstances={evaluationNotes.clients?.length || 1}
@@ -1017,7 +1016,6 @@ const ManagerEvaluation = () => {
                     {/* Groupe 2: Récapitulatif feuille de temps */}
                     {currentGroupId === 2 && (
                       <div>
-                        <h3 className="text-lg font-medium mb-4">Récapitulatif feuille de temps</h3>
                         <RepeaterField 
                           minInstances={evaluationNotes.activites?.length || 1}
                           maxInstances={evaluationNotes.activites?.length || 1}
@@ -1044,7 +1042,6 @@ const ManagerEvaluation = () => {
                     {/* Groupe 3: Évaluation - Division en trois parties */}
                     {currentGroupId === 3 && (
                       <div>
-                        <h3 className="text-lg font-medium mb-6">Évaluation</h3>
                         
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                           {/* Partie gauche: Réponses du manager (grisées) */}
