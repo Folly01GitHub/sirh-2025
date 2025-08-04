@@ -577,13 +577,32 @@ const ManagerEvaluation = () => {
     setIsSubmitting(true);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Préparer la structure spécifique pour l'API notes/evaluateur
+      const notes: any[] = [];
       
-      toast.success("Évaluation soumise", {
-        description: "L'approbateur a été notifié"
+      // Ajouter seulement les données d'évaluation (items 1-11)
+      Object.entries(evaluationFormData).forEach(([itemId, value]) => {
+        const id = parseInt(itemId);
+        if (id >= 1 && id <= 11 && value && value.trim() !== '') {
+          notes.push({
+            item_id: id,
+            value: value
+          });
+        }
       });
       
-      setCurrentStep(3);
+      const submissionData = {
+        notes: notes
+      };
+      
+      await apiClient.post(`/evaluations/${evaluationIdParam}/notes/evaluateur`, submissionData);
+      
+      toast.success("Évaluation soumise", {
+        description: "L'évaluation a été soumise avec succès"
+      });
+      
+      // Rediriger vers le dashboard des évaluations
+      navigate('/evaluations');
     } catch (error) {
       console.error("Erreur lors de la soumission de l'évaluation:", error);
       toast.error("Échec de la soumission de l'évaluation", {
@@ -592,7 +611,7 @@ const ManagerEvaluation = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [evaluationFormData, evaluationItems]);
+  }, [evaluationFormData, evaluationItems, evaluationIdParam, navigate]);
   
   const handleSubmitAssociateEvaluation = useCallback(async () => {
     // Validation : Vérifier que tous les champs de l'associé sont remplis
