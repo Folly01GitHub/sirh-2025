@@ -14,6 +14,7 @@ import EvaluationStepThree from '@/components/evaluations/EvaluationStepThree';
 import GroupTabTrigger from '@/components/evaluations/GroupTabTrigger';
 import RepeaterField from '@/components/evaluations/RepeaterField';
 import ClientFields from '@/components/evaluations/ClientFields';
+import ClientEditableTable from '@/components/evaluations/ClientEditableTable';
 import ActiviteFields from '@/components/evaluations/ActiviteFields';
 import EvaluationItems from '@/components/evaluations/EvaluationItems';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
@@ -103,6 +104,13 @@ const ManagerEvaluation = () => {
     Array(5).fill(null).map((_, index) => ({ id: index + 1 }))
   );
   const [clientFormData, setClientFormData] = useState<Record<number, any>>({});
+  
+  // Initialize with one empty row for the table
+  useEffect(() => {
+    if (Object.keys(clientFormData).length === 0) {
+      setClientFormData({ 1: {} });
+    }
+  }, [clientFormData]);
   const [activiteFormData, setActiviteFormData] = useState<Record<number, any>>({});
   const [evaluationFormData, setEvaluationFormData] = useState<Record<number, string>>({});
   const [evaluators, setEvaluators] = useState<Evaluator[]>([]);
@@ -274,6 +282,22 @@ const ManagerEvaluation = () => {
     }));
   }, []);
 
+  const handleAddClientRow = useCallback(() => {
+    const newIndex = Math.max(...Object.keys(clientFormData).map(Number), 0) + 1;
+    setClientFormData(prev => ({
+      ...prev,
+      [newIndex]: {}
+    }));
+  }, [clientFormData]);
+
+  const handleDeleteClientRow = useCallback((rowIndex: number) => {
+    setClientFormData(prev => {
+      const newData = { ...prev };
+      delete newData[rowIndex];
+      return newData;
+    });
+  }, []);
+
   const handleActiviteFormDataChange = useCallback((instanceIndex: number, field: string, value: string) => {
     setActiviteFormData(prev => ({
       ...prev,
@@ -397,6 +421,7 @@ const ManagerEvaluation = () => {
     // Validation du groupe "Synthèse clients à évaluer" (groupId: 1)
     const hasValidClient = Object.values(clientFormData).some((client: any) => {
       return client && 
+             client.mission && client.mission.trim() !== '' &&
              client.client && client.client.trim() !== '' &&
              client.dateDebutIntervention && client.dateDebutIntervention.trim() !== '' &&
              client.dateFinIntervention && client.dateFinIntervention.trim() !== '' &&
@@ -788,14 +813,11 @@ const ManagerEvaluation = () => {
               <div>
                 {currentGroupId === 1 && (
                   <div>                    
-                    <RepeaterField
-                      minInstances={7}
-                      maxInstances={20}
-                      template={<ClientFields onFormDataChange={handleClientFormDataChange} formData={{}} />}
-                      instances={clientInstances}
-                      onInstancesChange={setClientInstances}
-                      formData={clientFormData}
-                      onFormDataChange={handleClientFormDataChange}
+                    <ClientEditableTable
+                      data={clientFormData}
+                      onDataChange={handleClientFormDataChange}
+                      onAddRow={handleAddClientRow}
+                      onDeleteRow={handleDeleteClientRow}
                     />
                   </div>
                 )}
