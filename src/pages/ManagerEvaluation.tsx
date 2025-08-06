@@ -16,6 +16,7 @@ import RepeaterField from '@/components/evaluations/RepeaterField';
 import ClientFields from '@/components/evaluations/ClientFields';
 import ClientEditableTable from '@/components/evaluations/ClientEditableTable';
 import ActiviteFields from '@/components/evaluations/ActiviteFields';
+import ActiviteEditableTable from '@/components/evaluations/ActiviteEditableTable';
 import EvaluationItems from '@/components/evaluations/EvaluationItems';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { toast } from 'sonner';
@@ -112,6 +113,13 @@ const ManagerEvaluation = () => {
     }
   }, [clientFormData]);
   const [activiteFormData, setActiviteFormData] = useState<Record<number, any>>({});
+  
+  // Initialize activite table with one empty row
+  useEffect(() => {
+    if (Object.keys(activiteFormData).length === 0) {
+      setActiviteFormData({ 1: {} });
+    }
+  }, [activiteFormData]);
   const [evaluationFormData, setEvaluationFormData] = useState<Record<number, string>>({});
   const [evaluators, setEvaluators] = useState<Evaluator[]>([]);
   const [evaluatorsLoading, setEvaluatorsLoading] = useState(false);
@@ -306,6 +314,22 @@ const ManagerEvaluation = () => {
         [field]: value
       }
     }));
+  }, []);
+
+  const handleAddActiviteRow = useCallback(() => {
+    const newIndex = Math.max(...Object.keys(activiteFormData).map(Number), 0) + 1;
+    setActiviteFormData(prev => ({
+      ...prev,
+      [newIndex]: {}
+    }));
+  }, [activiteFormData]);
+
+  const handleDeleteActiviteRow = useCallback((rowIndex: number) => {
+    setActiviteFormData(prev => {
+      const newData = { ...prev };
+      delete newData[rowIndex];
+      return newData;
+    });
   }, []);
 
   const handleEvaluationFormDataChange = useCallback((itemId: number, value: string) => {
@@ -823,16 +847,12 @@ const ManagerEvaluation = () => {
                 )}
                 
                 {currentGroupId === 2 && (
-                  <div>
-                    <RepeaterField 
-                      minInstances={5}
-                      maxInstances={50}
-                      template={<ActiviteFields onFormDataChange={handleActiviteFormDataChange} formData={{}} />}
-                      instances={activiteInstances}
-                      onInstancesChange={setActiviteInstances}
-                      itemLabel="Activité"
-                      formData={activiteFormData}
-                      onFormDataChange={handleActiviteFormDataChange}
+                  <div>                    
+                    <ActiviteEditableTable
+                      data={activiteFormData}
+                      onDataChange={handleActiviteFormDataChange}
+                      onAddRow={handleAddActiviteRow}
+                      onDeleteRow={handleDeleteActiviteRow}
                     />
                   </div>
                 )}
