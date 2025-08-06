@@ -497,7 +497,7 @@ const ManagerEvaluation = () => {
       // Préparer les données pour l'API
       const responses: any[] = [];
       
-       // Données des clients
+      // Données des clients
       Object.entries(clientFormData).forEach(([instanceIndex, client]: [string, any]) => {
         if (client) {
           Object.entries(client).forEach(([field, value]) => {
@@ -525,25 +525,27 @@ const ManagerEvaluation = () => {
         }
       });
       
-    // Préparer la structure spécifique pour l'API notes/evaluateur
-    const notes: any[] = [];
-    
-    // Ajouter seulement les données d'évaluation (items 1-11)
-    Object.entries(evaluationFormData).forEach(([itemId, value]) => {
-      const id = parseInt(itemId);
-      if (id >= 1 && id <= 11 && value && value.trim() !== '') {
-        notes.push({
-          item_id: id,
-          value: value
-        });
-      }
-    });
-    
-    const submissionData = {
-      notes: notes
-    };
-    
-    await apiClient.post(`/evaluations/${evaluationIdParam}/notes/evaluateur`, submissionData);
+      // Préparer les notes d'évaluation (items 1-11)
+      const notes: any[] = [];
+      Object.entries(evaluationFormData).forEach(([itemId, value]) => {
+        const id = parseInt(itemId);
+        if (id >= 1 && id <= 11 && value && value.trim() !== '') {
+          notes.push({
+            item_id: id,
+            value: value
+          });
+        }
+      });
+      
+      // Structure globale avec toutes les données
+      const submissionData = {
+        evaluator_id: evaluatorId,
+        approver_id: selectedAssociateId,
+        responses: responses,  // Tables clients + activités
+        notes: notes          // Notes d'évaluation
+      };
+      
+      await apiClient.post(`/evaluations/${evaluationIdParam}/notes/evaluateur`, submissionData);
       
       toast.success("Auto-évaluation soumise", {
         description: "Votre auto-évaluation a été soumise avec succès"
