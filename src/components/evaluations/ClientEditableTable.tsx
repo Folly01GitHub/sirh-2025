@@ -91,10 +91,10 @@ const ClientEditableTable: React.FC<ClientEditableTableProps> = ({
               <TableHead className="min-w-[150px]">Date début</TableHead>
               <TableHead className="min-w-[150px]">Date fin</TableHead>
               <TableHead className="min-w-[130px]">État d'avancement</TableHead>
-              <TableHead className="min-w-[120px]">Temps collaborateur (h)</TableHead>
-              <TableHead className="min-w-[120px]">Temps équipe (h)</TableHead>
-              <TableHead className="min-w-[130px]">Honoraires (F CFA)</TableHead>
-              <TableHead className="min-w-[130px]">Bonis/Malis (F CFA)</TableHead>
+              <TableHead className="min-w-[120px]">Temps collaborateur</TableHead>
+              <TableHead className="min-w-[120px]">Temps équipe</TableHead>
+              <TableHead className="min-w-[130px]">Honoraires</TableHead>
+              <TableHead className="min-w-[130px]">Bonis/Malis</TableHead>
               {!readonly && onDeleteRow && (
                 <TableHead className="w-[50px]">Actions</TableHead>
               )}
