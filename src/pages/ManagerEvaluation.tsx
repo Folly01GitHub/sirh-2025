@@ -545,7 +545,7 @@ const ManagerEvaluation = () => {
         notes: notes          // Notes d'évaluation
       };
       
-      await apiClient.post(`/evaluations/${evaluationIdParam}/manager-reponses`, submissionData);
+      await apiClient.post('/evaluation-manager', submissionData);
       
       toast.success("Auto-évaluation soumise", {
         description: "Votre auto-évaluation a été soumise avec succès"
