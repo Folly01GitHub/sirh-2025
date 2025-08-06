@@ -101,7 +101,7 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
 
   const shouldShowViewButton = (evaluation: EvaluationItem) => {
     if (activeFilter === 'self') {
-      return !(evaluation.statut === 'brouillon' || evaluation.statut === 'Evaluation en cours');
+      return evaluation.statut !== 'brouillon';
     }
     return true;
   };
