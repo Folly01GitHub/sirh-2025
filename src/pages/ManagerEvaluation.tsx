@@ -1398,8 +1398,8 @@ const ManagerEvaluation = () => {
             )}
             </div>
             
-            {/* Boutons de navigation entre groupes - Masqués pour l'étape 3 */}
-            {currentStep !== 3 && (
+            {/* Boutons de navigation entre groupes - Inclus pour l'étape 3 */}
+            {(currentStep === 2 || currentStep === 3) && (
               <div className="flex justify-between mt-4">
                 <button
                   onClick={handlePreviousGroup}
