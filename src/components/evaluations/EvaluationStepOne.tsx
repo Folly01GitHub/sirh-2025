@@ -361,7 +361,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     };
     
     try {
-      const response = await apiClient.post('/submit_auto_evaluation', submissionData);
+      const response = await apiClient.post('/evaluation-manager', submissionData);
       console.log('Auto-evaluation submitted successfully:', response.data);
       toast.success(evaluationId ? "Auto-évaluation mise à jour" : "Auto-évaluation soumise", {
         description: "Votre évaluateur a été notifié"
