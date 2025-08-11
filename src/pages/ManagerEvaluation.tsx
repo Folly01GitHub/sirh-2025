@@ -21,6 +21,7 @@ import EvaluationItems from '@/components/evaluations/EvaluationItems';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
 // Types for our evaluation data
 export interface CriteriaGroup {
@@ -96,6 +97,8 @@ const ManagerEvaluation = () => {
   const [selectedAssociateId, setSelectedAssociateId] = useState<number | null>(null);
   const [showFullGroupName, setShowFullGroupName] = useState<number | null>(null);
   const [groupValidationState, setGroupValidationState] = useState<Record<number, boolean>>({});
+  const [showRejectReason, setShowRejectReason] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
   
   // Group form data (no localStorage persistence - only for group switching)
   const [clientInstances, setClientInstances] = useState<any[]>(
@@ -668,6 +671,41 @@ const ManagerEvaluation = () => {
   const handleAssociateChange = useCallback((id: number) => {
     setSelectedAssociateId(id);
   }, []);
+
+  const handleRejectEvaluation = useCallback(async () => {
+    if (!rejectReason.trim()) {
+      toast.error("Motif requis", {
+        description: "Veuillez renseigner le motif du refus"
+      });
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      
+      const rejectData = {
+        evaluation_id: evaluationIdParam,
+        reason: rejectReason.trim(),
+        step: currentStep
+      };
+      
+      await apiClient.post('/evaluations-manager/refuser', rejectData);
+      
+      toast.success("Évaluation refusée", {
+        description: "L'évaluation a été refusée avec succès"
+      });
+      
+      // Redirect to dashboard or reset form
+      navigate('/evaluation/dashboard');
+    } catch (error) {
+      console.error("Erreur lors du refus de l'évaluation:", error);
+      toast.error("Échec du refus", {
+        description: "Impossible de refuser l'évaluation"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [rejectReason, evaluationIdParam, currentStep, navigate]);
   
   const handleSubmitEvaluation = useCallback(async () => {
     // Validation : Vérifier que tous les champs d'évaluation sont remplis
@@ -1079,14 +1117,66 @@ const ManagerEvaluation = () => {
                   </div>
                 )}
                 
-                <div className="pt-6">
-                  <Button 
-                    onClick={handleSubmitEvaluation}
-                    disabled={isSubmitting || !managerResponses}
-                    className="w-full md:w-auto"
-                  >
-                    {isSubmitting ? 'Soumission...' : 'Soumettre l\'évaluation'}
-                  </Button>
+                <div className="space-y-4">
+                  {showRejectReason && (
+                    <div className="space-y-2">
+                      <label htmlFor="reject-reason" className="text-sm font-medium text-foreground">
+                        Motif du refus
+                      </label>
+                      <Textarea
+                        id="reject-reason"
+                        placeholder="Veuillez indiquer le motif du refus de l'évaluation..."
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        maxHeight={120}
+                        className="min-h-[100px]"
+                      />
+                    </div>
+                  )}
+                  
+                  <div className="flex flex-col md:flex-row gap-4 pt-2">
+                    <Button 
+                      onClick={handleSubmitEvaluation}
+                      disabled={isSubmitting || !managerResponses}
+                      className="w-full md:w-auto"
+                    >
+                      {isSubmitting ? 'Soumission...' : 'Soumettre l\'évaluation'}
+                    </Button>
+                    
+                    {!showRejectReason ? (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        className="w-full md:w-auto"
+                        onClick={() => setShowRejectReason(true)}
+                        disabled={isSubmitting}
+                      >
+                        Refuser l'évaluation
+                      </Button>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          onClick={handleRejectEvaluation}
+                          disabled={isSubmitting || !rejectReason.trim()}
+                        >
+                          {isSubmitting ? 'Refus...' : 'Confirmer le refus'}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setShowRejectReason(false);
+                            setRejectReason('');
+                          }}
+                          disabled={isSubmitting}
+                        >
+                          Annuler
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -1242,14 +1332,66 @@ const ManagerEvaluation = () => {
                 
                 {/* Bouton de soumission uniquement pour le groupe 3 */}
                 {currentGroupId === 3 && evaluationNotes && (
-                  <div className="pt-6">
-                    <Button 
-                      onClick={handleSubmitAssociateEvaluation}
-                      disabled={isSubmitting || !evaluationNotes}
-                      className="w-full md:w-auto"
-                    >
-                      {isSubmitting ? 'Soumission...' : 'Soumettre l\'évaluation'}
-                    </Button>
+                  <div className="space-y-4">
+                    {showRejectReason && (
+                      <div className="space-y-2">
+                        <label htmlFor="reject-reason-step3" className="text-sm font-medium text-foreground">
+                          Motif du refus
+                        </label>
+                        <Textarea
+                          id="reject-reason-step3"
+                          placeholder="Veuillez indiquer le motif du refus de l'évaluation..."
+                          value={rejectReason}
+                          onChange={(e) => setRejectReason(e.target.value)}
+                          maxHeight={120}
+                          className="min-h-[100px]"
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="flex flex-col md:flex-row gap-4 pt-2">
+                      <Button 
+                        onClick={handleSubmitAssociateEvaluation}
+                        disabled={isSubmitting || !evaluationNotes}
+                        className="w-full md:w-auto"
+                      >
+                        {isSubmitting ? 'Soumission...' : 'Soumettre l\'évaluation'}
+                      </Button>
+                      
+                      {!showRejectReason ? (
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          className="w-full md:w-auto"
+                          onClick={() => setShowRejectReason(true)}
+                          disabled={isSubmitting}
+                        >
+                          Refuser l'évaluation
+                        </Button>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={handleRejectEvaluation}
+                            disabled={isSubmitting || !rejectReason.trim()}
+                          >
+                            {isSubmitting ? 'Refus...' : 'Confirmer le refus'}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              setShowRejectReason(false);
+                              setRejectReason('');
+                            }}
+                            disabled={isSubmitting}
+                          >
+                            Annuler
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
