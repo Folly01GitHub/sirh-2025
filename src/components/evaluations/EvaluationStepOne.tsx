@@ -407,7 +407,7 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
     };
     
     try {
-      const response = await apiClient.post('/auto_draft', draftData);
+      const response = await apiClient.post('/evaluations-manager/brouillon', draftData);
       
       toast.success("Brouillon sauvegardé", {
         description: "Votre auto-évaluation a été enregistrée comme brouillon"
