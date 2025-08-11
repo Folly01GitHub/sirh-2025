@@ -210,7 +210,7 @@ const LeaveDetails = () => {
                   <p className="text-gray-800">{leaveDetails.date_debut}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Date de fin</label>
+                  <label className="text-sm font-medium text-gray-600">Date de reprise</label>
                   <p className="text-gray-800">{leaveDetails.date_fin}</p>
                 </div>
                 <div>
