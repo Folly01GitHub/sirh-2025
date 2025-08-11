@@ -1330,9 +1330,9 @@ const ManagerEvaluation = () => {
                   </div>
                 )}
                 
-                {/* Bouton de soumission uniquement pour le groupe 3 */}
-                {currentGroupId === 3 && evaluationNotes && (
-                  <div className="space-y-4">
+                {/* Boutons de soumission et de refus - Visibles pour tous les groupes à l'étape 3 */}
+                {evaluationNotes && (
+                  <div className="space-y-4 mt-8">
                     {showRejectReason && (
                       <div className="space-y-2">
                         <label htmlFor="reject-reason-step3" className="text-sm font-medium text-foreground">
@@ -1394,6 +1394,8 @@ const ManagerEvaluation = () => {
                     </div>
                   </div>
                 )}
+                
+                
               </div>
             )}
             </div>
