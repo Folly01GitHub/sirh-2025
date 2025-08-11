@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import apiClient from "@/utils/apiClient";
 
 interface DebriefItem {
   id: number;
@@ -25,8 +26,6 @@ interface DebriefDialogProps {
   onSuccess?: () => void;
 }
 
-const DEBRIEF_ITEMS_URL = "https://10.172.225.11:8082/api/debriefitems";
-const DEBRIEF_RESPONSES_URL = "https://10.172.225.11:8082/api/debriefresponses";
 
 const DebriefDialog: React.FC<DebriefDialogProps> = ({
   open,
@@ -45,14 +44,9 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
   useEffect(() => {
     if (open && token) {
       setLoading(true);
-      fetch(DEBRIEF_ITEMS_URL, {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        }
-      })
-        .then((r) => r.json())
-        .then((data) => {
-          setItems(Array.isArray(data) ? data : []);
+      apiClient.get('/debriefitems')
+        .then((response) => {
+          setItems(Array.isArray(response.data) ? response.data : []);
           setResponses({});
           setLoading(false);
         })
@@ -93,18 +87,10 @@ const DebriefDialog: React.FC<DebriefDialogProps> = ({
         value: responses[item.id],
       }));
 
-      const res = await fetch(DEBRIEF_RESPONSES_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          evaluation_id: evaluationId,
-          responses: toSend,
-        }),
+      await apiClient.post('/debriefresponses', {
+        evaluation_id: evaluationId,
+        responses: toSend,
       });
-      if (!res.ok) throw new Error("Erreur lors de l'envoi.");
       onOpenChange(false);
       if (onSuccess) onSuccess();
     } catch {
