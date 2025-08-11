@@ -904,6 +904,7 @@ const ManagerEvaluation = () => {
                           onInstancesChange={() => {}}
                           formData={managerResponses.clients?.reduce((acc: any, client: any, index: number) => {
                             acc[index] = {
+                              mission: client.mission,
                               client: client.nom_client,
                               dateDebutIntervention: client.date_debut_intervention,
                               dateFinIntervention: client.date_fin_intervention,
@@ -1041,6 +1042,7 @@ const ManagerEvaluation = () => {
                           onInstancesChange={() => {}}
                           formData={evaluationNotes.clients?.reduce((acc: any, client: any, index: number) => {
                             acc[index] = {
+                              mission: client.mission,
                               client: client.nom_client,
                               dateDebutIntervention: client.date_debut_intervention,
                               dateFinIntervention: client.date_fin_intervention,

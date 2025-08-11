@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 interface ClientFieldsProps {
   instanceIndex?: number;
+  Mission?: string;
   Client?: string;
   DateDebutIntervention?: string;
   DateFinIntervention?: string;
@@ -25,6 +26,7 @@ const ClientFields: React.FC<ClientFieldsProps> = ({
   readonly = false
 }) => {
   const formData = propFormData || {
+    mission: '',
     client: '',
     dateDebutIntervention: '',
     dateFinIntervention: '',
@@ -43,6 +45,17 @@ const ClientFields: React.FC<ClientFieldsProps> = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="space-y-2">
+        <Label htmlFor={`mission-${instanceIndex}`}>Mission</Label>
+        <Input
+          id={`mission-${instanceIndex}`}
+          value={formData.mission}
+          onChange={(e) => handleInputChange('mission', e.target.value)}
+          placeholder="Nom de la mission"
+          disabled={readonly}
+        />
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor={`client-${instanceIndex}`}>Client</Label>
         <Input
