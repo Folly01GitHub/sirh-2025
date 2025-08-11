@@ -562,6 +562,71 @@ const ManagerEvaluation = () => {
       setIsSubmitting(false);
     }
   }, [evaluatorId, selectedAssociateId, clientFormData, activiteFormData, evaluationFormData]);
+
+  const handleSaveAsDraft = useCallback(async () => {
+    try {
+      // Préparer les données pour l'API de brouillon
+      const responses: any[] = [];
+      
+      // Données des clients (partielles autorisées)
+      Object.entries(clientFormData).forEach(([instanceIndex, client]: [string, any]) => {
+        if (client) {
+          Object.entries(client).forEach(([field, value]) => {
+            if (value && typeof value === 'string' && value.trim() !== '') {
+              responses.push({
+                item_id: `client_${instanceIndex}_${field}`,
+                value: value
+              });
+            }
+          });
+        }
+      });
+      
+      // Données des activités (partielles autorisées)
+      Object.entries(activiteFormData).forEach(([instanceIndex, activite]: [string, any]) => {
+        if (activite) {
+          Object.entries(activite).forEach(([field, value]) => {
+            if (value && typeof value === 'string' && value.trim() !== '') {
+              responses.push({
+                item_id: `activite_${instanceIndex}_${field}`,
+                value: value
+              });
+            }
+          });
+        }
+      });
+      
+      // Notes d'évaluation (partielles autorisées)
+      const notes: any[] = [];
+      Object.entries(evaluationFormData).forEach(([itemId, value]) => {
+        const id = parseInt(itemId);
+        if (id >= 1 && id <= 11 && value && value.trim() !== '') {
+          notes.push({
+            item_id: id,
+            value: value
+          });
+        }
+      });
+      
+      const draftData = {
+        evaluator_id: evaluatorId,
+        approver_id: selectedAssociateId,
+        responses: responses,
+        notes: notes
+      };
+      
+      await apiClient.post('/evaluations-manager/brouillon', draftData);
+      
+      toast.success("Brouillon sauvegardé", {
+        description: "Votre auto-évaluation a été enregistrée comme brouillon"
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement du brouillon:", error);
+      toast.error("Échec de la sauvegarde", {
+        description: "Impossible d'enregistrer votre auto-évaluation comme brouillon"
+      });
+    }
+  }, [evaluatorId, selectedAssociateId, clientFormData, activiteFormData, evaluationFormData]);
   
   const handleGroupChange = useCallback((groupId: string) => {
     setCurrentGroupId(parseInt(groupId));
@@ -866,13 +931,23 @@ const ManagerEvaluation = () => {
                   />
                 )}
                 
-                <div className="pt-4">
+                <div className="flex flex-col md:flex-row gap-4 pt-4">
                   <Button
                     onClick={handleSubmitSelfAssessment}
                     disabled={isSubmitting || !evaluatorId || !selectedAssociateId}
                     className="w-full md:w-auto"
                   >
                     {isSubmitting ? 'Soumission...' : 'Soumettre l\'auto-évaluation'}
+                  </Button>
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full md:w-auto"
+                    onClick={handleSaveAsDraft}
+                    disabled={isSubmitting}
+                  >
+                    Enregistrer au brouillon
                   </Button>
                 </div>
               </div>
