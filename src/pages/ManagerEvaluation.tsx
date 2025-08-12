@@ -747,8 +747,9 @@ const ManagerEvaluation = () => {
       setIsSubmitting(true);
       
       const rejectData = {
-        evaluation_id: parseInt(evaluationIdParam!),
-        refusal_reason: rejectReason.trim()
+        evaluation_id: evaluationIdParam,
+        reason: rejectReason.trim(),
+        step: currentStep
       };
       
       await apiClient.post('/evaluations-manager/refuser', rejectData);
@@ -767,7 +768,7 @@ const ManagerEvaluation = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [rejectReason, evaluationIdParam, navigate]);
+  }, [rejectReason, evaluationIdParam, currentStep, navigate]);
   
   const handleSubmitEvaluation = useCallback(async () => {
     // Validation : Vérifier que tous les champs d'évaluation sont remplis

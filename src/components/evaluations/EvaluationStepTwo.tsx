@@ -426,8 +426,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   const handleRefuseRequest = async (data: RefusalFormData) => {
     try {
-      await apiClient.post('/evaluations-manager/refuser', {
-        evaluation_id: parseInt(evaluationId!),
+      await apiClient.post('/refuse_evaluation', {
+        evaluation_id: evaluationId,
         refusal_reason: data.reason
       });
       
