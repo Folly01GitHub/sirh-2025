@@ -26,6 +26,7 @@ interface LeaveItem {
   startDate: string;
   endDate: string;
   days: number;
+  stock?: number;
   status: 'approved' | 'pending' | 'rejected' | 'Niveau responsable' | 'Niveau RH' | 'Annulée' | 'Acceptée' | 'Refusée';
   hasAttachment: boolean;
   requester?: string;
@@ -41,6 +42,7 @@ interface ApiLeaveItem {
   jours_pris: number;
   statut: string;
   isLegal: boolean;
+  stock?: number;
 }
 
 interface ApiTeamLeaveItem {
@@ -128,6 +130,7 @@ const fetchMyLeaves = async (): Promise<LeaveItem[]> => {
       startDate: item.date_debut,
       endDate: item.date_fin,
       days: item.jours_pris,
+      stock: item.stock,
       status: item.statut as LeaveItem['status'],
       hasAttachment: false, // Not provided by API
       isLegal: item.isLegal

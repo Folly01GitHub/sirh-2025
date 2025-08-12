@@ -36,6 +36,7 @@ interface LeaveItem {
   startDate: string;
   endDate: string;
   days: number;
+  stock?: number;
   status: 'approved' | 'pending' | 'rejected' | 'Niveau responsable' | 'Niveau RH' | 'Annulée' | 'Acceptée' | 'Refusée';
   hasAttachment: boolean;
   requester?: string;
@@ -261,6 +262,7 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
             <TableHead>Date de début</TableHead>
             <TableHead>Date de reprise</TableHead>
             <TableHead>Jours pris</TableHead>
+            {activeFilter === 'self' && <TableHead>Solde disponible</TableHead>}
             {activeFilter === 'self' && <TableHead>Statut</TableHead>}
             {activeFilter === 'team' && <TableHead>Statut</TableHead>}
             <TableHead className="text-right">Actions</TableHead>
@@ -274,13 +276,14 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                 <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-[60px]" /></TableCell>
+                {activeFilter === 'self' && <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>}
                 {(activeFilter === 'self' || activeFilter === 'team') && <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>}
                 <TableCell className="text-right"><Skeleton className="h-4 w-[100px]" /></TableCell>
               </TableRow>
             ))
           ) : leaves.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={activeFilter === 'team' ? 6 : 5} className="text-center py-6">
+              <TableCell colSpan={6} className="text-center py-6">
                 Aucune demande de congé trouvée.
               </TableCell>
             </TableRow>
@@ -291,6 +294,7 @@ const LeaveTable = ({ leaves, isLoading, activeFilter, onActionClick }: LeaveTab
                 <TableCell>{leave.startDate}</TableCell>
                 <TableCell>{leave.endDate}</TableCell>
                 <TableCell>{leave.days}</TableCell>
+                {activeFilter === 'self' && <TableCell>{leave.stock ?? '-'}</TableCell>}
                 {activeFilter === 'self' && <TableCell>{renderStatusBadge(leave.status)}</TableCell>}
                 {activeFilter === 'team' && <TableCell>{renderStatusBadge(leave.status)}</TableCell>}
                 <TableCell className="text-right space-x-2">
