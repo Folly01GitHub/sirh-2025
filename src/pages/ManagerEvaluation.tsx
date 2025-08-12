@@ -259,7 +259,7 @@ const ManagerEvaluation = () => {
     }
   }, [currentStep, fetchManagerResponses]);
 
-  // Fetch evaluation notes for step 3
+  // Fetch evaluation notes for step 3 and also for editing existing draft in step 1
   const fetchEvaluationNotes = useCallback(async () => {
     const evaluationId = evaluationIdParam || evaluatorId;
     if (!evaluationId) return;
@@ -267,20 +267,81 @@ const ManagerEvaluation = () => {
     setEvaluationNotesLoading(true);
     try {
       const response = await apiClient.get(`/evaluations/${evaluationId}/notes`);
-      setEvaluationNotes(response.data);
+      const data = response.data;
+      setEvaluationNotes(data);
+      
+      // If we're on step 1 and have data, populate the form with existing data
+      if (currentStep === 1 && data) {
+        // Set evaluator and associate from the response
+        if (data.evaluator_id) {
+          setEvaluatorId(data.evaluator_id);
+        }
+        if (data.approver_id) {
+          setSelectedAssociateId(data.approver_id);
+        }
+        
+        // Populate client data
+        if (data.clients && data.clients.length > 0) {
+          const clientData: Record<number, any> = {};
+          data.clients.forEach((client: any, index: number) => {
+            clientData[index + 1] = {
+              mission: client.mission,
+              client: client.nom_client,
+              dateDebutIntervention: client.date_debut_intervention,
+              dateFinIntervention: client.date_fin_intervention,
+              etatAvancement: client.etat_avancement,
+              tempsCollaborateur: client.temps_collaborateur?.toString(),
+              tempsEquipe: client.temps_equipe?.toString(),
+              honoraires: client.honoraires,
+              bonisMalis: client.bonis_malis
+            };
+          });
+          setClientFormData(clientData);
+        }
+        
+        // Populate activite data
+        if (data.activites && data.activites.length > 0) {
+          const activiteData: Record<number, any> = {};
+          data.activites.forEach((activite: any, index: number) => {
+            activiteData[index + 1] = {
+              libelleActivite: activite.libelle,
+              nombreHeuresPassees: activite.nombre_heures?.toString(),
+              commentaireActivite: activite.commentaire
+            };
+          });
+          setActiviteFormData(activiteData);
+        }
+        
+        // Populate evaluation form data (notes_collaborateur)
+        if (data.notes_collaborateur && data.notes_collaborateur.length > 0) {
+          const evalData: Record<number, string> = {};
+          data.notes_collaborateur.forEach((note: any) => {
+            if (note.reponse) {
+              evalData[note.item_id] = note.reponse;
+            }
+          });
+          setEvaluationFormData(evalData);
+        }
+      }
     } catch (error) {
       console.error('Error fetching evaluation notes:', error);
-      toast.error('Erreur lors du chargement des notes d\'évaluation');
+      if (currentStep === 3) {
+        toast.error('Erreur lors du chargement des notes d\'évaluation');
+      }
     } finally {
       setEvaluationNotesLoading(false);
     }
-  }, [evaluationIdParam, evaluatorId]);
+  }, [evaluationIdParam, evaluatorId, currentStep]);
 
   useEffect(() => {
     if (currentStep === 3) {
       fetchEvaluationNotes();
     }
-  }, [currentStep, fetchEvaluationNotes]);
+    // Also fetch data on step 1 if we have an evaluation ID (editing mode)
+    if (currentStep === 1 && evaluationIdParam) {
+      fetchEvaluationNotes();
+    }
+  }, [currentStep, fetchEvaluationNotes, evaluationIdParam]);
 
   // Handlers for form data updates (no localStorage - only in-memory)
   const handleClientFormDataChange = useCallback((instanceIndex: number, field: string, value: string) => {
