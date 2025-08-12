@@ -54,6 +54,7 @@ interface ApiTeamLeaveItem {
   statut: string;
   isLegal: boolean;
   isValidation: boolean;
+  stock?: number;
 }
 
 interface ApiLeaveStatsResponse {
@@ -145,20 +146,40 @@ const fetchTeamLeaves = async (): Promise<LeaveItem[]> => {
   try {
     const response = await apiClient.get('/demandes-a-valider');
     console.log('API Response for team leaves:', response.data);
-    
-    // Transform API data to match LeaveItem interface
-    return response.data.map((item: ApiTeamLeaveItem) => ({
-      id: item.id,
-      requester: item.demandeur,
-      type: item.isLegal ? 'Congés légaux' : 'Congés sans solde',
-      startDate: item.date_debut,
-      endDate: item.date_fin,
-      days: item.jours_pris,
-      status: item.statut as LeaveItem['status'],
-      hasAttachment: !item.isLegal, // Show attachment for non-legal leaves
-      isLegal: item.isLegal,
-      isValidation: item.isValidation
-    }));
+
+    const list: ApiTeamLeaveItem[] = response.data;
+
+    // Enrichir avec le stock s'il n'est pas fourni par la liste
+    const enriched = await Promise.all(
+      list.map(async (item: ApiTeamLeaveItem) => {
+        let stock = item.stock;
+        if (typeof stock !== 'number') {
+          try {
+            const detail = await apiClient.get(`/demandes-conges/${item.id}`);
+            stock = detail.data?.stock;
+          } catch (e) {
+            // ignore les erreurs de détail pour ne pas bloquer l'affichage
+          }
+        }
+
+        const mapped: LeaveItem = {
+          id: item.id,
+          requester: item.demandeur,
+          type: item.isLegal ? 'Congés légaux' : 'Congés sans solde',
+          startDate: item.date_debut,
+          endDate: item.date_fin,
+          days: item.jours_pris,
+          stock,
+          status: item.statut as LeaveItem['status'],
+          hasAttachment: !item.isLegal, // justificatif pour les congés sans solde
+          isLegal: item.isLegal,
+          isValidation: item.isValidation,
+        };
+        return mapped;
+      })
+    );
+
+    return enriched;
   } catch (error) {
     console.error('Error fetching team leaves:', error);
     return [];
