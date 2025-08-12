@@ -17,6 +17,7 @@ interface LeaveDetailsData {
   date_debut: string;
   date_fin: string;
   jours_pris: number;
+  stock?: number;
   statut: string;
   motif?: string;
   commentaire_rh?: string;
@@ -25,7 +26,7 @@ interface LeaveDetailsData {
 
 const fetchLeaveDetails = async (id: string): Promise<LeaveDetailsData> => {
   try {
-    const response = await apiClient.get(`/demande-conge/${id}`);
+    const response = await apiClient.get(`/demandes-conges/${id}`);
     console.log('API Response for leave details:', response.data);
     return response.data;
   } catch (error) {
@@ -37,6 +38,13 @@ const fetchLeaveDetails = async (id: string): Promise<LeaveDetailsData> => {
 const LeaveDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    document.title = 'Détails de congé - Gestion des Congés';
+    const desc = 'Détails de la demande de congés: période, statut, justificatif et solde disponible.';
+    const meta = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    if (meta) meta.setAttribute('content', desc);
+  }, []);
 
   const {
     data: leaveDetails,
@@ -216,6 +224,10 @@ const LeaveDetails = () => {
                 <div>
                   <label className="text-sm font-medium text-gray-600">Nombre de jours</label>
                   <p className="text-gray-800 font-semibold">{leaveDetails.jours_pris} jours</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Solde disponible</label>
+                  <p className="text-gray-800 font-semibold">{leaveDetails.stock ?? '-'}{typeof leaveDetails.stock === 'number' ? ' jours' : ''}</p>
                 </div>
               </CardContent>
             </Card>
