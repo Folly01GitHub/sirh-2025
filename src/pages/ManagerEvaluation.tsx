@@ -685,10 +685,11 @@ const ManagerEvaluation = () => {
       toast.success("Brouillon sauvegardé", {
         description: "Votre auto-évaluation a été enregistrée comme brouillon"
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de l'enregistrement du brouillon:", error);
+      const errorMessage = error?.response?.data?.message || error?.message || "Impossible d'enregistrer votre auto-évaluation comme brouillon";
       toast.error("Échec de la sauvegarde", {
-        description: "Impossible d'enregistrer votre auto-évaluation comme brouillon"
+        description: errorMessage
       });
     }
   }, [evaluatorId, selectedAssociateId, clientFormData, activiteFormData, evaluationFormData]);
