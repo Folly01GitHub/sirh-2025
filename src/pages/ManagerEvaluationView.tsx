@@ -13,6 +13,7 @@ import apiClient from "@/utils/apiClient";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 interface EvaluationItem {
   id: number;
   titre: string;
@@ -161,72 +162,76 @@ const ManagerEvaluationView = () => {
 
             {/* Groupe 1: Synthèse clients à évaluer */}
             <TabsContent value="1" className="space-y-4">
-              {evaluationData.clients.map((client, index) => (
-                <Card key={client.id} className="p-4">
-                  <CardContent className="space-y-4">
-                    <h4 className="font-medium text-lg mb-4">Client {index + 1}</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label>Nom du client</Label>
-                        <Input value={client.nom_client} readOnly className="bg-gray-50" />
-                      </div>
-                      <div>
-                        <Label>Date début d'intervention</Label>
-                        <Input value={client.date_debut_intervention} readOnly className="bg-gray-50" />
-                      </div>
-                      <div>
-                        <Label>Date fin d'intervention</Label>
-                        <Input value={client.date_fin_intervention} readOnly className="bg-gray-50" />
-                      </div>
-                      <div>
-                        <Label>État d'avancement</Label>
-                        <Input value={client.etat_avancement} readOnly className="bg-gray-50" />
-                      </div>
-                      <div>
-                        <Label>Temps collaborateur</Label>
-                        <Input value={client.temps_collaborateur.toString()} readOnly className="bg-gray-50" />
-                      </div>
-                      <div>
-                        <Label>Temps équipe</Label>
-                        <Input value={client.temps_equipe.toString()} readOnly className="bg-gray-50" />
-                      </div>
-                      <div>
-                        <Label>Honoraires</Label>
-                        <Input value={client.honoraires} readOnly className="bg-gray-50" />
-                      </div>
-                      <div>
-                        <Label>Bonis/Malis</Label>
-                        <Input value={client.bonis_malis} readOnly className="bg-gray-50" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              <div className="overflow-x-auto">
+                <Table className="text-sm [&_th]:py-2 [&_td]:py-2 [&_th]:px-2 [&_td]:px-2">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Client</TableHead>
+                      <TableHead>Date début</TableHead>
+                      <TableHead>Date fin</TableHead>
+                      <TableHead>État d'avancement</TableHead>
+                      <TableHead>Temps collaborateur</TableHead>
+                      <TableHead>Temps équipe</TableHead>
+                      <TableHead>Honoraires</TableHead>
+                      <TableHead>Bonis/Malis</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {evaluationData.clients.length > 0 ? (
+                      evaluationData.clients.map((client) => (
+                        <TableRow key={client.id}>
+                          <TableCell>{client.nom_client || "-"}</TableCell>
+                          <TableCell>{client.date_debut_intervention || "-"}</TableCell>
+                          <TableCell>{client.date_fin_intervention || "-"}</TableCell>
+                          <TableCell>{client.etat_avancement || "-"}</TableCell>
+                          <TableCell>{client.temps_collaborateur ?? "-"}</TableCell>
+                          <TableCell>{client.temps_equipe ?? "-"}</TableCell>
+                          <TableCell>{client.honoraires || "-"}</TableCell>
+                          <TableCell>{client.bonis_malis || "-"}</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center text-muted-foreground">
+                          Aucun client
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </TabsContent>
 
             {/* Groupe 2: Récapitulatif feuille de temps */}
             <TabsContent value="2" className="space-y-4">
-              {evaluationData.activites.map((activite, index) => (
-                <Card key={activite.activite_id} className="p-4">
-                  <CardContent className="space-y-4">
-                    <h4 className="font-medium text-lg mb-4">Activité {index + 1}</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label>Libellé</Label>
-                        <Input value={activite.libelle} readOnly className="bg-gray-50" />
-                      </div>
-                      <div>
-                        <Label>Nombre d'heures</Label>
-                        <Input value={activite.nombre_heures.toString()} readOnly className="bg-gray-50" />
-                      </div>
-                      <div className="md:col-span-2">
-                        <Label>Commentaire</Label>
-                        <Textarea value={activite.commentaire} readOnly className="bg-gray-50" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              <div className="overflow-x-auto">
+                <Table className="text-sm [&_th]:py-2 [&_td]:py-2 [&_th]:px-2 [&_td]:px-2">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Libellé activité</TableHead>
+                      <TableHead>Nombre d'heures passées</TableHead>
+                      <TableHead>Commentaires éventuels</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {evaluationData.activites.length > 0 ? (
+                      evaluationData.activites.map((activite) => (
+                        <TableRow key={activite.activite_id}>
+                          <TableCell>{activite.libelle || "-"}</TableCell>
+                          <TableCell>{activite.nombre_heures ?? "-"}</TableCell>
+                          <TableCell>{activite.commentaire || "-"}</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={3} className="text-center text-muted-foreground">
+                          Aucune activité
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </TabsContent>
 
             {/* Groupe 3: Évaluation */}
