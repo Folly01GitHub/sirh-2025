@@ -673,6 +673,7 @@ const ManagerEvaluation = () => {
       });
       
       const draftData = {
+        evaluation_id: evaluationIdParam,
         evaluator_id: evaluatorId,
         approver_id: selectedAssociateId,
         responses: responses,
