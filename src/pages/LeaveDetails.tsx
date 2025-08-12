@@ -228,7 +228,9 @@ const LeaveDetails = () => {
                 <div>
                   <label className="text-sm font-medium text-gray-600">Solde de congés disponible du demandeur</label>
                   <p className="text-gray-800 font-semibold">
-                    {typeof leaveDetails.stock === 'number' ? `${leaveDetails.stock} jours` : '-'}
+                    {leaveDetails.stock !== undefined && leaveDetails.stock !== null
+                      ? `${Number.isFinite(Number(leaveDetails.stock)) ? Number(leaveDetails.stock) : leaveDetails.stock} jours`
+                      : '-'}
                   </p>
                 </div>
               </CardContent>
