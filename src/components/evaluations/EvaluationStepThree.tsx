@@ -256,9 +256,10 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
     
     setIsSubmitting(true);
     try {
-      await apiClient.post('/evaluations-manager/refuser', {
-        evaluation_id: parseInt(evaluationId),
-        refusal_reason: comment
+      await apiClient.patch(`/evaluations/${evaluationId}/validate`, {
+        statut_eval: "Refusé",
+        niveau_eval: "Terminé",
+        motif_refus: comment
       });
       
       toast.success("Évaluation refusée avec succès");
