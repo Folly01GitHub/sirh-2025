@@ -99,9 +99,9 @@ const ActiviteEditableTable: React.FC<ActiviteEditableTableProps> = ({
           <SelectTrigger className="w-full h-8 text-xs">
             <SelectValue placeholder="Sélectionner une activité" />
           </SelectTrigger>
-          <SelectContent className="text-xs">
+          <SelectContent className="text-xs bg-background z-[100]">
             {activiteOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
+              <SelectItem key={option.value} value={option.value} className="text-xs py-1">
                 {option.label}
               </SelectItem>
             ))}
