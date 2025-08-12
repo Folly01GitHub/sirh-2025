@@ -96,10 +96,10 @@ const ActiviteEditableTable: React.FC<ActiviteEditableTableProps> = ({
           onValueChange={(newValue) => handleCellChange(rowIndex, field, newValue)}
           disabled={readonly}
         >
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full h-8 text-xs">
             <SelectValue placeholder="Sélectionner une activité" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="text-xs">
             {activiteOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
@@ -121,7 +121,7 @@ const ActiviteEditableTable: React.FC<ActiviteEditableTableProps> = ({
           disabled={readonly}
           min="0"
           step="0.5"
-          className="w-full"
+          className="w-full h-8 text-xs px-2"
         />
       );
     }
@@ -135,7 +135,7 @@ const ActiviteEditableTable: React.FC<ActiviteEditableTableProps> = ({
           placeholder="Commentaires éventuels"
           disabled={readonly}
           rows={2}
-          className="w-full min-h-[60px]"
+          className="w-full min-h-[56px] text-xs"
         />
       );
     }
@@ -146,12 +146,12 @@ const ActiviteEditableTable: React.FC<ActiviteEditableTableProps> = ({
   return (
     <div className="space-y-4">
       <div className="overflow-x-auto">
-        <Table>
+        <Table className="text-xs [&_th]:py-2 [&_td]:py-2 [&_th]:px-2 [&_td]:px-2">
           <TableHeader>
             <TableRow>
-              <TableHead className="min-w-[300px]">Libellé activité</TableHead>
-              <TableHead className="min-w-[180px]">Nombre d'heures passées</TableHead>
-              <TableHead className="min-w-[250px]">Commentaires éventuels</TableHead>
+              <TableHead className="min-w-[220px] whitespace-normal break-words">Libellé activité</TableHead>
+              <TableHead className="min-w-[140px] whitespace-normal break-words">Nombre d'heures passées</TableHead>
+              <TableHead className="min-w-[220px] whitespace-normal break-words">Commentaires éventuels</TableHead>
               {!readonly && onDeleteRow && (
                 <TableHead className="w-[50px]">Actions</TableHead>
               )}

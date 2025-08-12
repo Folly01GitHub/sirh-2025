@@ -49,7 +49,7 @@ const ClientEditableTable: React.FC<ClientEditableTableProps> = ({
           onValueChange={(newValue) => handleCellChange(rowIndex, field, newValue)}
           disabled={readonly}
         >
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full h-8 text-xs">
             <SelectValue placeholder="État" />
           </SelectTrigger>
           <SelectContent>
@@ -75,7 +75,7 @@ const ClientEditableTable: React.FC<ClientEditableTableProps> = ({
         min={type === 'number' ? '0' : undefined}
         step={type === 'number' && (field === 'honoraires' || field === 'bonisMalis') ? '0.01' : 
               type === 'number' ? '0.5' : undefined}
-        className="w-full"
+        className="w-full h-8 text-xs px-2"
       />
     );
   };
@@ -83,18 +83,18 @@ const ClientEditableTable: React.FC<ClientEditableTableProps> = ({
   return (
     <div className="space-y-4">
       <div className="overflow-x-auto">
-        <Table>
+        <Table className="text-xs [&_th]:py-2 [&_td]:py-2 [&_th]:px-2 [&_td]:px-2">
           <TableHeader>
             <TableRow>
-              <TableHead className="min-w-[120px]">Mission</TableHead>
-              <TableHead className="min-w-[150px]">Client</TableHead>
-              <TableHead className="min-w-[150px]">Date début</TableHead>
-              <TableHead className="min-w-[150px]">Date fin</TableHead>
-              <TableHead className="min-w-[130px]">État d'avancement</TableHead>
-              <TableHead className="min-w-[120px]">Temps collaborateur</TableHead>
-              <TableHead className="min-w-[120px]">Temps équipe</TableHead>
-              <TableHead className="min-w-[130px]">Honoraires</TableHead>
-              <TableHead className="min-w-[130px]">Bonis/Malis</TableHead>
+              <TableHead className="min-w-[100px] whitespace-normal break-words">Mission</TableHead>
+              <TableHead className="min-w-[120px] whitespace-normal break-words">Client</TableHead>
+              <TableHead className="min-w-[120px] whitespace-normal break-words">Date début</TableHead>
+              <TableHead className="min-w-[120px] whitespace-normal break-words">Date fin</TableHead>
+              <TableHead className="min-w-[120px] whitespace-normal break-words">État d'avancement</TableHead>
+              <TableHead className="min-w-[110px] whitespace-normal break-words">Temps collaborateur</TableHead>
+              <TableHead className="min-w-[110px] whitespace-normal break-words">Temps équipe</TableHead>
+              <TableHead className="min-w-[110px] whitespace-normal break-words">Honoraires</TableHead>
+              <TableHead className="min-w-[110px] whitespace-normal break-words">Bonis/Malis</TableHead>
               {!readonly && onDeleteRow && (
                 <TableHead className="w-[50px]">Actions</TableHead>
               )}
