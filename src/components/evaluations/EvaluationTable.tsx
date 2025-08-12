@@ -36,9 +36,16 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
   const [dialogEvaluationId, setDialogEvaluationId] = useState<number | null>(null);
 
   const handleEditClick = (evaluationId: number, niveau: string) => {
+    const evaluation = evaluations.find(e => e.id === evaluationId);
+    
+    // Pour "Mes évaluations": vérifier si c'est une évaluation de manager avec statut brouillon
+    if (activeFilter === 'self' && evaluation && evaluation.mission === "N/A" && evaluation.statut === "brouillon") {
+      navigate(`/evaluation/managers?id=${evaluationId}&step=1`);
+      return;
+    }
+    
     // Pour les collaborateurs: gérer les redirections selon la mission et le statut
     if (activeFilter === 'team') {
-      const evaluation = evaluations.find(e => e.id === evaluationId);
       if (evaluation && evaluation.mission !== "N/A") {
         // Évaluations de collaborateurs (mission !== "N/A")
         if (evaluation.statut === "Evaluation en cours") {
