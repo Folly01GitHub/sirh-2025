@@ -1068,17 +1068,9 @@ const ManagerEvaluation = () => {
                     {/* Groupe 1: Synthèse clients à évaluer */}
                     {currentGroupId === 1 && (
                       <div>
-                        <RepeaterField
-                          minInstances={managerResponses.clients?.length || 1}
-                          maxInstances={managerResponses.clients?.length || 1}
-                          template={<ClientFields readonly={true} onFormDataChange={() => {}} formData={{}} />}
-                          instances={managerResponses.clients?.map((client: any, index: number) => ({ 
-                            id: index + 1,
-                            ...client 
-                          })) || []}
-                          onInstancesChange={() => {}}
-                          formData={managerResponses.clients?.reduce((acc: any, client: any, index: number) => {
-                            acc[index] = {
+                        <ClientEditableTable
+                          data={managerResponses.clients?.reduce((acc: any, client: any, index: number) => {
+                            acc[index + 1] = {
                               mission: client.mission,
                               client: client.nom_client,
                               dateDebutIntervention: client.date_debut_intervention,
@@ -1090,8 +1082,9 @@ const ManagerEvaluation = () => {
                               bonisMalis: client.bonis_malis
                             };
                             return acc;
-                          }, {}) || {}}
-                          onFormDataChange={() => {}}
+                          }, {} as Record<number, any>) || {}}
+                          onDataChange={() => {}}
+                          readonly
                         />
                       </div>
                     )}
@@ -1099,25 +1092,17 @@ const ManagerEvaluation = () => {
                     {/* Groupe 2: Récapitulatif feuille de temps */}
                     {currentGroupId === 2 && (
                       <div>
-                        <RepeaterField 
-                          minInstances={managerResponses.activites?.length || 1}
-                          maxInstances={managerResponses.activites?.length || 1}
-                          template={<ActiviteFields readonly={true} onFormDataChange={() => {}} formData={{}} />}
-                          instances={managerResponses.activites?.map((activite: any, index: number) => ({ 
-                            id: index + 1,
-                            ...activite 
-                          })) || []}
-                          onInstancesChange={() => {}}
-                          itemLabel="Activité"
-                           formData={managerResponses.activites?.reduce((acc: any, activite: any, index: number) => {
-                             acc[index] = {
-                               libelleActivite: activite.libelle,
-                               nombreHeuresPassees: activite.nombre_heures?.toString(),
-                               commentairesEventuels: activite.commentaire
-                             };
-                             return acc;
-                           }, {}) || {}}
-                          onFormDataChange={() => {}}
+                        <ActiviteEditableTable 
+                          data={managerResponses.activites?.reduce((acc: any, activite: any, index: number) => {
+                            acc[index + 1] = {
+                              libelleActivite: activite.libelle,
+                              nombreHeuresPassees: activite.nombre_heures?.toString(),
+                              commentairesEventuels: activite.commentaire
+                            };
+                            return acc;
+                          }, {} as Record<number, any>) || {}}
+                          onDataChange={() => {}}
+                          readonly
                         />
                       </div>
                     )}
@@ -1258,17 +1243,9 @@ const ManagerEvaluation = () => {
                     {/* Groupe 1: Synthèse clients à évaluer */}
                     {currentGroupId === 1 && (
                       <div>
-                        <RepeaterField
-                          minInstances={evaluationNotes.clients?.length || 1}
-                          maxInstances={evaluationNotes.clients?.length || 1}
-                          template={<ClientFields readonly={true} onFormDataChange={() => {}} formData={{}} />}
-                          instances={evaluationNotes.clients?.map((client: any, index: number) => ({ 
-                            id: index + 1,
-                            ...client 
-                          })) || []}
-                          onInstancesChange={() => {}}
-                          formData={evaluationNotes.clients?.reduce((acc: any, client: any, index: number) => {
-                            acc[index] = {
+                        <ClientEditableTable
+                          data={evaluationNotes.clients?.reduce((acc: any, client: any, index: number) => {
+                            acc[index + 1] = {
                               mission: client.mission,
                               client: client.nom_client,
                               dateDebutIntervention: client.date_debut_intervention,
@@ -1280,8 +1257,9 @@ const ManagerEvaluation = () => {
                               bonisMalis: client.bonis_malis
                             };
                             return acc;
-                          }, {}) || {}}
-                          onFormDataChange={() => {}}
+                          }, {} as Record<number, any>) || {}}
+                          onDataChange={() => {}}
+                          readonly
                         />
                       </div>
                     )}
@@ -1289,25 +1267,17 @@ const ManagerEvaluation = () => {
                     {/* Groupe 2: Récapitulatif feuille de temps */}
                     {currentGroupId === 2 && (
                       <div>
-                        <RepeaterField 
-                          minInstances={evaluationNotes.activites?.length || 1}
-                          maxInstances={evaluationNotes.activites?.length || 1}
-                          template={<ActiviteFields readonly={true} onFormDataChange={() => {}} formData={{}} />}
-                          instances={evaluationNotes.activites?.map((activite: any, index: number) => ({ 
-                            id: index + 1,
-                            ...activite 
-                          })) || []}
-                          onInstancesChange={() => {}}
-                          itemLabel="Activité"
-                           formData={evaluationNotes.activites?.reduce((acc: any, activite: any, index: number) => {
-                             acc[index] = {
-                               libelleActivite: activite.libelle,
-                               nombreHeuresPassees: activite.nombre_heures?.toString(),
-                               commentairesEventuels: activite.commentaire
-                             };
-                             return acc;
-                           }, {}) || {}}
-                          onFormDataChange={() => {}}
+                        <ActiviteEditableTable 
+                          data={evaluationNotes.activites?.reduce((acc: any, activite: any, index: number) => {
+                            acc[index + 1] = {
+                              libelleActivite: activite.libelle,
+                              nombreHeuresPassees: activite.nombre_heures?.toString(),
+                              commentairesEventuels: activite.commentaire
+                            };
+                            return acc;
+                          }, {} as Record<number, any>) || {}}
+                          onDataChange={() => {}}
+                          readonly
                         />
                       </div>
                     )}
