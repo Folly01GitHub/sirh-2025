@@ -757,8 +757,8 @@ const ManagerEvaluation = () => {
         description: "L'évaluation a été refusée avec succès"
       });
       
-      // Redirect to dashboard or reset form
-      navigate('/evaluation/dashboard');
+      // Redirect to evaluations dashboard
+      navigate('/evaluations');
     } catch (error) {
       console.error("Erreur lors du refus de l'évaluation:", error);
       toast.error("Échec du refus", {
