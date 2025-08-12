@@ -306,7 +306,7 @@ const ManagerEvaluation = () => {
             activiteData[index + 1] = {
               libelleActivite: activite.libelle,
               nombreHeuresPassees: activite.nombre_heures?.toString(),
-              commentaireActivite: activite.commentaire
+              commentairesEventuels: activite.commentaire
             };
           });
           setActiviteFormData(activiteData);
