@@ -226,8 +226,10 @@ const LeaveDetails = () => {
                   <p className="text-gray-800 font-semibold">{leaveDetails.jours_pris} jours</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Solde disponible</label>
-                  <p className="text-gray-800 font-semibold">{leaveDetails.stock ?? '-'}{typeof leaveDetails.stock === 'number' ? ' jours' : ''}</p>
+                  <label className="text-sm font-medium text-gray-600">Solde de congés disponible du demandeur</label>
+                  <p className="text-gray-800 font-semibold">
+                    {typeof leaveDetails.stock === 'number' ? `${leaveDetails.stock} jours` : '-'}
+                  </p>
                 </div>
               </CardContent>
             </Card>
