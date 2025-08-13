@@ -82,29 +82,27 @@ const HRISNavbar = () => {
                   </NavigationMenuLink>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger>
+                  <NavigationMenuTrigger className="relative">
                     <Briefcase className="h-4 w-4 mr-1" />
                     <span>Missions</span>
                   </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="w-48 p-2">
-                      <NavigationMenuLink asChild>
-                        <Link
-                          to="/missions"
-                          className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-colors w-full"
-                        >
-                          Création de mission
-                        </Link>
-                      </NavigationMenuLink>
-                      <NavigationMenuLink asChild>
-                        <Link
-                          to="/missions/acceptation"
-                          className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-colors w-full"
-                        >
-                          Acceptation de mission
-                        </Link>
-                      </NavigationMenuLink>
-                    </div>
+                  <NavigationMenuContent className="absolute top-full left-0 z-50 min-w-[12rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+                    <NavigationMenuLink asChild>
+                      <Link
+                        to="/missions"
+                        className="block select-none space-y-1 rounded-sm p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                      >
+                        <div className="text-sm font-medium leading-none">Création de mission</div>
+                      </Link>
+                    </NavigationMenuLink>
+                    <NavigationMenuLink asChild>
+                      <Link
+                        to="/missions/acceptation"
+                        className="block select-none space-y-1 rounded-sm p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                      >
+                        <div className="text-sm font-medium leading-none">Acceptation de mission</div>
+                      </Link>
+                    </NavigationMenuLink>
                   </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
