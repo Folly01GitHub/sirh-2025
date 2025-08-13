@@ -82,12 +82,30 @@ const HRISNavbar = () => {
                   </NavigationMenuLink>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                    <Link to="/missions">
-                      <Briefcase className="h-4 w-4 mr-1" />
-                      <span>Missions</span>
-                    </Link>
-                  </NavigationMenuLink>
+                  <NavigationMenuTrigger>
+                    <Briefcase className="h-4 w-4 mr-1" />
+                    <span>Missions</span>
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="w-48 p-2 bg-white">
+                      <NavigationMenuLink asChild>
+                        <Link
+                          to="/missions"
+                          className="flex items-center px-3 py-2 text-sm text-gray-700 rounded-md hover:bg-gray-100 w-full"
+                        >
+                          Création de mission
+                        </Link>
+                      </NavigationMenuLink>
+                      <NavigationMenuLink asChild>
+                        <Link
+                          to="/missions/acceptation"
+                          className="flex items-center px-3 py-2 text-sm text-gray-700 rounded-md hover:bg-gray-100 w-full"
+                        >
+                          Acceptation de mission
+                        </Link>
+                      </NavigationMenuLink>
+                    </div>
+                  </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
@@ -206,14 +224,28 @@ const HRISNavbar = () => {
                   <Lock className="h-5 w-5 mr-3" />
                   <span>Permissions</span>
                 </Link>
-                <Link
-                  to="/missions"
-                  className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
-                  onClick={toggleMobileMenu}
-                >
-                  <Briefcase className="h-5 w-5 mr-3" />
-                  <span>Missions</span>
-                </Link>
+                <div>
+                  <div className="flex items-center px-3 py-2 text-gray-700 font-medium">
+                    <Briefcase className="h-5 w-5 mr-3" />
+                    <span>Missions</span>
+                  </div>
+                  <div className="ml-8 space-y-1">
+                    <Link
+                      to="/missions"
+                      className="flex items-center px-3 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-100"
+                      onClick={toggleMobileMenu}
+                    >
+                      Création de mission
+                    </Link>
+                    <Link
+                      to="/missions/acceptation"
+                      className="flex items-center px-3 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-100"
+                      onClick={toggleMobileMenu}
+                    >
+                      Acceptation de mission
+                    </Link>
+                  </div>
+                </div>
                 <Link
                   to="/evaluations"
                   className="flex items-center px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100"
