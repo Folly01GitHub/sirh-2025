@@ -144,16 +144,9 @@ const fetchTeamMissions = async (): Promise<MissionItem[]> => {
 const MissionsAcceptation = () => {
   const { user } = useAuth();
   
-  // Determine available tabs based on user role
+  // All users can see both sections
   const getAvailableTabs = () => {
-    if (user?.role === 'comptable' || user?.role === 'qrm') {
-      return ['team']; // Only "Missions à valider"
-    } else if (user?.role === 'collaborateur') {
-      return ['self']; // Only "Mes missions"
-    } else if (user?.role === 'admin') {
-      return ['self', 'team']; // Both sections
-    }
-    return ['self']; // Default fallback
+    return ['self', 'team']; // Both sections for all roles
   };
 
   const availableTabs = getAvailableTabs();
