@@ -87,11 +87,11 @@ const HRISNavbar = () => {
                     <span>Missions</span>
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <div className="w-48 p-2 bg-white">
+                    <div className="w-48 p-2">
                       <NavigationMenuLink asChild>
                         <Link
                           to="/missions"
-                          className="flex items-center px-3 py-2 text-sm text-gray-700 rounded-md hover:bg-gray-100 w-full"
+                          className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-colors w-full"
                         >
                           Création de mission
                         </Link>
@@ -99,7 +99,7 @@ const HRISNavbar = () => {
                       <NavigationMenuLink asChild>
                         <Link
                           to="/missions/acceptation"
-                          className="flex items-center px-3 py-2 text-sm text-gray-700 rounded-md hover:bg-gray-100 w-full"
+                          className="flex items-center px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-colors w-full"
                         >
                           Acceptation de mission
                         </Link>
