@@ -58,7 +58,7 @@ interface ApiTeamMissionStatsResponse {
 const fetchMissionStats = async (filter: string): Promise<MissionStats> => {
   if (filter === 'self') {
     try {
-      const response = await apiClient.get('/mission-stats');
+      const response = await apiClient.get('/acceptation-stats');
       console.log('API Response for mission stats:', response.data);
       
       const apiStats: ApiMissionStatsResponse = response.data;
@@ -78,7 +78,7 @@ const fetchMissionStats = async (filter: string): Promise<MissionStats> => {
     }
   } else {
     try {
-      const response = await apiClient.get('/mission-team-stats');
+      const response = await apiClient.get('/acceptation-team-stats');
       console.log('API Response for team mission stats:', response.data);
       
       const apiTeamStats: ApiTeamMissionStatsResponse = response.data;
@@ -102,7 +102,7 @@ const fetchMissionStats = async (filter: string): Promise<MissionStats> => {
 
 const fetchMyMissions = async (): Promise<MissionItem[]> => {
   try {
-    const response = await apiClient.get('/mes-missions');
+    const response = await apiClient.get('/mes-acceptations');
     console.log('API Response for my missions:', response.data);
     
     return response.data.map((item: ApiMissionItem) => ({
@@ -122,7 +122,7 @@ const fetchMyMissions = async (): Promise<MissionItem[]> => {
 
 const fetchTeamMissions = async (): Promise<MissionItem[]> => {
   try {
-    const response = await apiClient.get('/missions-a-valider');
+    const response = await apiClient.get('/acceptation-a-valider');
     console.log('API Response for team missions:', response.data);
     
     return response.data.map((item: ApiTeamMissionItem) => ({
