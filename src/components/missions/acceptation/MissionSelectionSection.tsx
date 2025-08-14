@@ -34,7 +34,7 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
     loadMissions();
     loadAssocies();
     loadManagers();
-  }, []);
+  }, []); // Tableau de dépendances vide pour n'exécuter qu'au montage
 
   const loadMissions = async () => {
     setLoadingMissions(true);
