@@ -173,7 +173,7 @@ const MissionAcceptationForm = () => {
                   className="flex items-center gap-2"
                 >
                   <Send className="h-4 w-4" />
-                  {isSubmitting ? 'Soumission en cours...' : 'Soumettre l\'acceptation'}
+                  {isSubmitting ? 'Soumission en cours...' : 'Soumettre la demande'}
                 </Button>
               </div>
             </CardContent>
