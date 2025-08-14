@@ -12,6 +12,7 @@ import MissionSelectionSection from '@/components/missions/acceptation/MissionSe
 import BudgetSection from '@/components/missions/acceptation/BudgetSection';
 import IntervenantsSection from '@/components/missions/acceptation/IntervenantsSection';
 import DatesSection from '@/components/missions/acceptation/DatesSection';
+import StatusSection from '@/components/missions/acceptation/StatusSection';
 
 const MissionAcceptationForm = () => {
   const navigate = useNavigate();
@@ -28,6 +29,8 @@ const MissionAcceptationForm = () => {
     interlocuteursFacturer: '',
     dateDebut: undefined as Date | undefined,
     dateEnvoiRapport: undefined as Date | undefined,
+    status: '' as 'approved' | 'rejected' | '',
+    rejectionReason: '',
   });
 
   const handleBack = () => {
@@ -48,6 +51,8 @@ const MissionAcceptationForm = () => {
     if (!formData.interlocuteursFacturer.trim()) errors.push('Interlocuteurs du département à facturer');
     if (!formData.dateDebut) errors.push('Date de démarrage de la mission');
     if (!formData.dateEnvoiRapport) errors.push('Date d\'envoi du projet de rapport');
+    if (!formData.status) errors.push('Statut de la demande');
+    if (formData.status === 'rejected' && !formData.rejectionReason.trim()) errors.push('Motif du refus');
 
     return errors;
   };
@@ -78,6 +83,8 @@ const MissionAcceptationForm = () => {
         interlocuteurs_facturer: formData.interlocuteursFacturer,
         date_debut: formData.dateDebut ? format(formData.dateDebut, 'yyyy-MM-dd') : null,
         date_envoi_rapport: formData.dateEnvoiRapport ? format(formData.dateEnvoiRapport, 'yyyy-MM-dd') : null,
+        status: formData.status,
+        rejection_reason: formData.status === 'rejected' ? formData.rejectionReason : null,
       };
 
       console.log('Soumission de l\'acceptation de mission:', acceptationData);
@@ -153,6 +160,12 @@ const MissionAcceptationForm = () => {
 
           {/* Section Dates */}
           <DatesSection 
+            data={formData}
+            onChange={updateFormData}
+          />
+
+          {/* Section Statut */}
+          <StatusSection 
             data={formData}
             onChange={updateFormData}
           />
