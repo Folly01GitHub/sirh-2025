@@ -82,7 +82,7 @@ const MissionAcceptationForm = () => {
 
       console.log('Soumission de l\'acceptation de mission:', acceptationData);
       
-      const response = await apiClient.post('/acceptation-missions', acceptationData);
+      const response = await apiClient.post('/submit-acceptation', acceptationData);
       
       console.log('Acceptation de mission créée avec succès:', response.data);
       
