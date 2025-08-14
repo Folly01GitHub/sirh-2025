@@ -35,7 +35,7 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
       try {
         const response = await apiClient.get('/liste_missions');
         const options = response.data.map((item: any) => ({
-          label: item.name || item.libelle || item.title || 'Mission sans nom',
+          label: item.nom || item.name || item.libelle || item.title || 'Mission sans nom',
           value: String(item.id || '')
         }));
         setMissionOptions(options);
