@@ -29,150 +29,74 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
   const [loadingAssocies, setLoadingAssocies] = useState(false);
   const [loadingManagers, setLoadingManagers] = useState(false);
 
-  // Load initial data on component mount
   useEffect(() => {
-    loadMissions();
-    loadAssocies();
-    loadManagers();
+    const fetchMissions = async () => {
+      setLoadingMissions(true);
+      try {
+        const response = await apiClient.get('/liste_missions');
+        const options = response.data.map((item: any) => ({
+          label: item.name || item.libelle || item.title,
+          value: item.id
+        }));
+        setMissionOptions(options);
+      } catch (error) {
+        console.error('Error fetching missions:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger la liste des missions",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingMissions(false);
+      }
+    };
+
+    const fetchAssocies = async () => {
+      setLoadingAssocies(true);
+      try {
+        const response = await apiClient.get('/associe_list');
+        const options = response.data.map((item: any) => ({
+          label: `${item.prenom} ${item.nom}` || item.name,
+          value: item.id
+        }));
+        setAssocieOptions(options);
+      } catch (error) {
+        console.error('Error fetching associes:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger la liste des associés",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingAssocies(false);
+      }
+    };
+
+    const fetchManagers = async () => {
+      setLoadingManagers(true);
+      try {
+        const response = await apiClient.get('/approver_list');
+        const options = response.data.map((item: any) => ({
+          label: `${item.prenom} ${item.nom}` || item.name,
+          value: item.id
+        }));
+        setManagerOptions(options);
+      } catch (error) {
+        console.error('Error fetching managers:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger la liste des managers",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingManagers(false);
+      }
+    };
+
+    fetchMissions();
+    fetchAssocies();
+    fetchManagers();
   }, []); // Tableau de dépendances vide pour n'exécuter qu'au montage
-
-  const loadMissions = async () => {
-    setLoadingMissions(true);
-    try {
-      const response = await apiClient.get('/liste_missions');
-      const options = response.data.map((item: any) => ({
-        label: item.name || item.libelle || item.title,
-        value: item.id
-      }));
-      setMissionOptions(options);
-    } catch (error) {
-      console.error('Error fetching missions:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger la liste des missions",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingMissions(false);
-    }
-  };
-
-  const loadAssocies = async () => {
-    setLoadingAssocies(true);
-    try {
-      const response = await apiClient.get('/associe_list');
-      const options = response.data.map((item: any) => ({
-        label: `${item.prenom} ${item.nom}` || item.name,
-        value: item.id
-      }));
-      setAssocieOptions(options);
-    } catch (error) {
-      console.error('Error fetching associes:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger la liste des associés",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingAssocies(false);
-    }
-  };
-
-  const loadManagers = async () => {
-    setLoadingManagers(true);
-    try {
-      const response = await apiClient.get('/approver_list');
-      const options = response.data.map((item: any) => ({
-        label: `${item.prenom} ${item.nom}` || item.name,
-        value: item.id
-      }));
-      setManagerOptions(options);
-    } catch (error) {
-      console.error('Error fetching managers:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger la liste des managers",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingManagers(false);
-    }
-  };
-
-  const searchMissions = async (query: string) => {
-    if (!query.trim()) {
-      loadMissions();
-      return;
-    }
-    setLoadingMissions(true);
-    try {
-      const response = await apiClient.get(`/liste_missions?search=${encodeURIComponent(query)}`);
-      const options = response.data.map((item: any) => ({
-        label: item.name || item.libelle || item.title,
-        value: item.id
-      }));
-      setMissionOptions(options);
-    } catch (error) {
-      console.error('Error fetching missions:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger la liste des missions",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingMissions(false);
-    }
-  };
-
-  const searchAssocies = async (query: string) => {
-    if (!query.trim()) {
-      loadAssocies();
-      return;
-    }
-    setLoadingAssocies(true);
-    try {
-      const response = await apiClient.get(`/associe_list?search=${encodeURIComponent(query)}`);
-      const options = response.data.map((item: any) => ({
-        label: `${item.prenom} ${item.nom}` || item.name,
-        value: item.id
-      }));
-      setAssocieOptions(options);
-    } catch (error) {
-      console.error('Error fetching associes:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger la liste des associés",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingAssocies(false);
-    }
-  };
-
-  const searchManagers = async (query: string) => {
-    if (!query.trim()) {
-      loadManagers();
-      return;
-    }
-    setLoadingManagers(true);
-    try {
-      const response = await apiClient.get(`/approver_list?search=${encodeURIComponent(query)}`);
-      const options = response.data.map((item: any) => ({
-        label: `${item.prenom} ${item.nom}` || item.name,
-        value: item.id
-      }));
-      setManagerOptions(options);
-    } catch (error) {
-      console.error('Error fetching managers:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger la liste des managers",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingManagers(false);
-    }
-  };
 
   return (
     <Card>
@@ -188,10 +112,9 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
               Mission *
             </Label>
             <SearchableSelect
-              placeholder="Rechercher une mission..."
+              placeholder="Sélectionner une mission..."
               value={data.mission}
               onChange={(value) => onChange({ mission: value })}
-              onSearch={searchMissions}
               options={missionOptions}
               loading={loadingMissions}
             />
@@ -202,10 +125,9 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
               Associé en charge *
             </Label>
             <SearchableSelect
-              placeholder="Rechercher un associé..."
+              placeholder="Sélectionner un associé..."
               value={data.associe}
               onChange={(value) => onChange({ associe: value })}
-              onSearch={searchAssocies}
               options={associeOptions}
               loading={loadingAssocies}
             />
@@ -216,10 +138,9 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
               Manager en charge du dossier *
             </Label>
             <SearchableSelect
-              placeholder="Rechercher un manager..."
+              placeholder="Sélectionner un manager..."
               value={data.manager}
               onChange={(value) => onChange({ manager: value })}
-              onSearch={searchManagers}
               options={managerOptions}
               loading={loadingManagers}
             />
