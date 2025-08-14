@@ -24,6 +24,7 @@ import LeaveRequest from "./pages/LeaveRequest";
 import LeaveDetails from "./pages/LeaveDetails";
 import Missions from "./pages/Missions";
 import MissionsAcceptation from "./pages/MissionsAcceptation";
+import MissionAcceptationForm from "./pages/MissionAcceptationForm";
 import MissionCreate from "./pages/MissionCreate";
 import MissionDetails from "./pages/MissionDetails";
 import Evaluation from "./pages/Evaluation";
@@ -65,7 +66,8 @@ const App = () => (
               <Route path="/leave-details/:id" element={<LeaveDetails />} />
               <Route path="/permissions" element={<Permissions />} />
               <Route path="/missions" element={<Missions />} />
-              <Route path="/missions/acceptation" element={<MissionsAcceptation />} />
+              <Route path="/missions-acceptation" element={<MissionsAcceptation />} />
+              <Route path="/missions-acceptation/create" element={<MissionAcceptationForm />} />
               <Route path="/missions/create" element={<MissionCreate />} />
               <Route path="/missions/:id" element={<MissionDetails />} />
               <Route path="/evaluations" element={<EvaluationDashboard />} />

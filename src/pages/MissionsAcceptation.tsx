@@ -192,7 +192,7 @@ const MissionsAcceptation = () => {
   };
   
   const handleNewMission = () => {
-    navigate('/missions/create');
+    navigate('/missions-acceptation/create');
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
