@@ -101,7 +101,7 @@ const HRISNavbar = () => {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/missions/acceptation" className="w-full">
+                      <Link to="/missions-acceptation" className="w-full">
                         Acceptation de mission
                       </Link>
                     </DropdownMenuItem>
@@ -238,7 +238,7 @@ const HRISNavbar = () => {
                       Création de mission
                     </Link>
                     <Link
-                      to="/missions/acceptation"
+                      to="/missions-acceptation"
                       className="flex items-center px-3 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-100"
                       onClick={toggleMobileMenu}
                     >
