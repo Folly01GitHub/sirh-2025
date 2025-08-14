@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { Input } from '@/components/ui/input';
@@ -29,8 +29,81 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
   const [loadingAssocies, setLoadingAssocies] = useState(false);
   const [loadingManagers, setLoadingManagers] = useState(false);
 
+  // Load initial data on component mount
+  useEffect(() => {
+    loadMissions();
+    loadAssocies();
+    loadManagers();
+  }, []);
+
+  const loadMissions = async () => {
+    setLoadingMissions(true);
+    try {
+      const response = await apiClient.get('/liste_missions');
+      const options = response.data.map((item: any) => ({
+        label: item.name || item.libelle || item.title,
+        value: item.id
+      }));
+      setMissionOptions(options);
+    } catch (error) {
+      console.error('Error fetching missions:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger la liste des missions",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingMissions(false);
+    }
+  };
+
+  const loadAssocies = async () => {
+    setLoadingAssocies(true);
+    try {
+      const response = await apiClient.get('/associe_list');
+      const options = response.data.map((item: any) => ({
+        label: `${item.prenom} ${item.nom}` || item.name,
+        value: item.id
+      }));
+      setAssocieOptions(options);
+    } catch (error) {
+      console.error('Error fetching associes:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger la liste des associés",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingAssocies(false);
+    }
+  };
+
+  const loadManagers = async () => {
+    setLoadingManagers(true);
+    try {
+      const response = await apiClient.get('/approver_list');
+      const options = response.data.map((item: any) => ({
+        label: `${item.prenom} ${item.nom}` || item.name,
+        value: item.id
+      }));
+      setManagerOptions(options);
+    } catch (error) {
+      console.error('Error fetching managers:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger la liste des managers",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingManagers(false);
+    }
+  };
+
   const searchMissions = async (query: string) => {
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      loadMissions();
+      return;
+    }
     setLoadingMissions(true);
     try {
       const response = await apiClient.get(`/liste_missions?search=${encodeURIComponent(query)}`);
@@ -52,7 +125,10 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
   };
 
   const searchAssocies = async (query: string) => {
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      loadAssocies();
+      return;
+    }
     setLoadingAssocies(true);
     try {
       const response = await apiClient.get(`/associe_list?search=${encodeURIComponent(query)}`);
@@ -74,7 +150,10 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
   };
 
   const searchManagers = async (query: string) => {
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      loadManagers();
+      return;
+    }
     setLoadingManagers(true);
     try {
       const response = await apiClient.get(`/approver_list?search=${encodeURIComponent(query)}`);
