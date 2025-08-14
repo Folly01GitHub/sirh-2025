@@ -35,8 +35,8 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
       try {
         const response = await apiClient.get('/liste_missions');
         const options = response.data.map((item: any) => ({
-          label: item.name || item.libelle || item.title,
-          value: item.id
+          label: item.name || item.libelle || item.title || 'Mission sans nom',
+          value: String(item.id || '')
         }));
         setMissionOptions(options);
       } catch (error) {
@@ -56,8 +56,8 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
       try {
         const response = await apiClient.get('/associe_list');
         const options = response.data.map((item: any) => ({
-          label: `${item.prenom} ${item.nom}` || item.name,
-          value: item.id
+          label: (item.prenom && item.nom) ? `${item.prenom} ${item.nom}` : (item.name || 'Associé sans nom'),
+          value: String(item.id || '')
         }));
         setAssocieOptions(options);
       } catch (error) {
@@ -77,8 +77,8 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
       try {
         const response = await apiClient.get('/approver_list');
         const options = response.data.map((item: any) => ({
-          label: `${item.prenom} ${item.nom}` || item.name,
-          value: item.id
+          label: (item.prenom && item.nom) ? `${item.prenom} ${item.nom}` : (item.name || 'Manager sans nom'),
+          value: String(item.id || '')
         }));
         setManagerOptions(options);
       } catch (error) {
