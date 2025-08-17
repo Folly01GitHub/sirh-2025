@@ -26,9 +26,10 @@ interface MissionTableProps {
   isLoading: boolean;
   activeFilter: string;
   onActionClick: (id: string, action: string) => void;
+  isAcceptationPage?: boolean;
 }
 
-const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: MissionTableProps) => {
+const MissionTable = ({ missions, isLoading, activeFilter, onActionClick, isAcceptationPage = false }: MissionTableProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
@@ -50,7 +51,8 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
   // Mutation pour valider une mission
   const validateMissionMutation = useMutation({
     mutationFn: async (missionId: string) => {
-      const response = await apiClient.post(`/missions/${missionId}/valider`);
+      const endpoint = isAcceptationPage ? '/acceptation/approuver' : `/missions/${missionId}/valider`;
+      const response = await apiClient.post(endpoint, isAcceptationPage ? { id: missionId } : undefined);
       return response.data;
     },
     onSuccess: () => {
@@ -76,7 +78,8 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
   // Mutation pour refuser une mission
   const rejectMissionMutation = useMutation({
     mutationFn: async (missionId: string) => {
-      const response = await apiClient.post(`/missions/${missionId}/refuser`);
+      const endpoint = isAcceptationPage ? '/acceptation/refuser' : `/missions/${missionId}/refuser`;
+      const response = await apiClient.post(endpoint, isAcceptationPage ? { id: missionId } : undefined);
       return response.data;
     },
     onSuccess: () => {

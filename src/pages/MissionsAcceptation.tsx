@@ -281,6 +281,7 @@ const MissionsAcceptation = () => {
           isLoading={missionsLoading}
           activeFilter={activeFilter}
           onActionClick={handleActionClick}
+          isAcceptationPage={true}
         />
       </div>
     </div>
