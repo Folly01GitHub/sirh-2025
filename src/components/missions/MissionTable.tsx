@@ -50,7 +50,7 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
   // Mutation pour valider une mission
   const validateMissionMutation = useMutation({
     mutationFn: async (missionId: string) => {
-      const response = await apiClient.post(`/missions/${missionId}/valider`);
+      const response = await apiClient.post(`/acceptation/approuver`, { acceptation_id: missionId });
       return response.data;
     },
     onSuccess: () => {
@@ -76,7 +76,7 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick }: Miss
   // Mutation pour refuser une mission
   const rejectMissionMutation = useMutation({
     mutationFn: async (missionId: string) => {
-      const response = await apiClient.post(`/missions/${missionId}/refuser`);
+      const response = await apiClient.post(`/acceptation/refuser`, { acceptation_id: missionId });
       return response.data;
     },
     onSuccess: () => {
