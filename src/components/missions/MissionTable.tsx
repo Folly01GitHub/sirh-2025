@@ -154,6 +154,12 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick, isAcce
 
   // Function to check if mission is pending
   const isMissionPending = (status: string) => {
+    if (isAcceptationPage) {
+      // Pour la page d'acceptation, afficher les boutons pour tous les statuts sauf "Approuvée", "Refusée" et "Annulée"
+      const excludedStatuses = ['Approuvée', 'Refusée', 'Annulée', 'validated', 'validee', 'rejected', 'refusee'];
+      return !excludedStatuses.includes(status);
+    }
+    // Pour les autres pages, logique existante
     return status === 'en_attente' || status === 'En attente' || status === 'pending' || status === 'Niveau QRM' || status === 'Niveau comptable';
   };
 
