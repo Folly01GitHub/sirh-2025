@@ -155,18 +155,16 @@ const MissionAcceptationDetails = () => {
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <Button
-            variant="ghost"
-            size="icon"
             onClick={() => navigate(-1)}
-            className="hover:bg-gray-100"
+            variant="back"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Retour
           </Button>
-          <div className="flex-1">
+          <div>
             <h1 className="text-2xl font-bold text-gray-800">
               Détails de la demande d'acceptation
             </h1>
-            <p className="text-gray-500">Demande d'acceptation ID: {mission.id}</p>
           </div>
           {getStatusBadge(mission.statut)}
         </div>
