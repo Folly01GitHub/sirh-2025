@@ -27,6 +27,7 @@ import MissionsAcceptation from "./pages/MissionsAcceptation";
 import MissionAcceptationForm from "./pages/MissionAcceptationForm";
 import MissionCreate from "./pages/MissionCreate";
 import MissionDetails from "./pages/MissionDetails";
+import MissionAcceptationDetails from "./pages/MissionAcceptationDetails";
 import Evaluation from "./pages/Evaluation";
 import ManagerEvaluation from "./pages/ManagerEvaluation";
 import EvaluationDashboard from "./pages/EvaluationDashboard";
@@ -68,6 +69,7 @@ const App = () => (
               <Route path="/missions" element={<Missions />} />
               <Route path="/missions-acceptation" element={<MissionsAcceptation />} />
               <Route path="/missions-acceptation/create" element={<MissionAcceptationForm />} />
+              <Route path="/missions-acceptation/:id" element={<MissionAcceptationDetails />} />
               <Route path="/missions/create" element={<MissionCreate />} />
               <Route path="/missions/:id" element={<MissionDetails />} />
               <Route path="/evaluations" element={<EvaluationDashboard />} />

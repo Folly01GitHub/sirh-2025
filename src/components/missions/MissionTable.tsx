@@ -149,7 +149,11 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick, isAcce
   };
 
   const handleViewDetails = (missionId: string) => {
-    navigate(`/missions/${missionId}`);
+    if (isAcceptationPage) {
+      navigate(`/missions-acceptation/${missionId}`);
+    } else {
+      navigate(`/missions/${missionId}`);
+    }
   };
 
   // Function to check if mission is pending
