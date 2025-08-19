@@ -12,21 +12,23 @@ import { useToast } from '@/hooks/use-toast';
 
 interface MissionAcceptationDetails {
   id: string;
-  code_mission: string;
-  libelle_mission: string;
-  client: string;
+  mission_id: string;
+  mission?: string; // Nom/libellé de la mission
+  associe_id: string;
+  associe?: string; // Nom de l'associé
+  manager_id: string;
+  manager?: string; // Nom du manager
+  nature_mission: string;
+  budget_heures: number;
+  budget_ht: number;
+  intervenants_factureur: string;
+  interlocuteurs_facturer: string;
   date_debut: string;
-  date_fin: string;
+  date_envoi_rapport: string;
   statut: string;
-  demandeur?: string;
-  description?: string;
-  lieu?: string;
-  budget?: number;
-  devise?: string;
-  intervenants?: string[];
-  commentaires?: string;
   date_creation?: string;
   date_modification?: string;
+  commentaires?: string;
 }
 
 const fetchMissionAcceptationDetails = async (id: string): Promise<MissionAcceptationDetails> => {
@@ -164,7 +166,7 @@ const MissionAcceptationDetails = () => {
             <h1 className="text-2xl font-bold text-gray-800">
               Détails de la demande d'acceptation
             </h1>
-            <p className="text-gray-500">Mission {mission.code_mission}</p>
+            <p className="text-gray-500">Demande d'acceptation ID: {mission.id}</p>
           </div>
           {getStatusBadge(mission.statut)}
         </div>
@@ -181,35 +183,53 @@ const MissionAcceptationDetails = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-500">Code mission</label>
-                <p className="text-gray-900 font-medium">{mission.code_mission}</p>
+                <label className="text-sm font-medium text-gray-500">Mission</label>
+                <p className="text-gray-900 font-medium">{mission.mission || mission.mission_id}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Libellé</label>
-                <p className="text-gray-900">{mission.libelle_mission}</p>
+                <label className="text-sm font-medium text-gray-500">Nature de la mission</label>
+                <p className="text-gray-900">{mission.nature_mission}</p>
               </div>
-              {mission.description && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Description</label>
-                  <p className="text-gray-900">{mission.description}</p>
-                </div>
-              )}
+            </CardContent>
+          </Card>
+
+          {/* Team Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Équipe de gestion
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-500">Client</label>
-                <p className="text-gray-900 flex items-center gap-2">
-                  <Building2 className="h-4 w-4" />
-                  {mission.client}
-                </p>
+                <label className="text-sm font-medium text-gray-500">Associé en charge</label>
+                <p className="text-gray-900">{mission.associe || mission.associe_id}</p>
               </div>
-              {mission.lieu && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Lieu</label>
-                  <p className="text-gray-900 flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    {mission.lieu}
-                  </p>
-                </div>
-              )}
+              <div>
+                <label className="text-sm font-medium text-gray-500">Manager en charge du dossier</label>
+                <p className="text-gray-900">{mission.manager || mission.manager_id}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Budget Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Euro className="h-5 w-5" />
+                Budget
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-500">Budget en heures</label>
+                <p className="text-gray-900 font-medium">{mission.budget_heures.toLocaleString('fr-FR')} h</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Budget HT alloué</label>
+                <p className="text-gray-900 font-medium">{mission.budget_ht.toLocaleString('fr-FR')} €</p>
+              </div>
             </CardContent>
           </Card>
 
@@ -223,12 +243,12 @@ const MissionAcceptationDetails = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-500">Date de début</label>
+                <label className="text-sm font-medium text-gray-500">Date de démarrage</label>
                 <p className="text-gray-900">{formatDate(mission.date_debut)}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Date de fin</label>
-                <p className="text-gray-900">{formatDate(mission.date_fin)}</p>
+                <label className="text-sm font-medium text-gray-500">Date d'envoi du rapport</label>
+                <p className="text-gray-900">{formatDate(mission.date_envoi_rapport)}</p>
               </div>
               {mission.date_creation && (
                 <div>
@@ -245,55 +265,23 @@ const MissionAcceptationDetails = () => {
             </CardContent>
           </Card>
 
-          {/* Budget Information */}
-          {(mission.budget || mission.devise) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Euro className="h-5 w-5" />
-                  Budget
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {mission.budget && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Montant</label>
-                    <p className="text-gray-900 font-medium">
-                      {mission.budget.toLocaleString('fr-FR')} {mission.devise || '€'}
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Team Information */}
-          <Card>
+          {/* Intervenants Information */}
+          <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Équipe et demandeur
+                <Building2 className="h-5 w-5" />
+                Intervenants et interlocuteurs
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {mission.demandeur && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Demandeur</label>
-                  <p className="text-gray-900">{mission.demandeur}</p>
-                </div>
-              )}
-              {mission.intervenants && mission.intervenants.length > 0 && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Intervenants</label>
-                  <div className="flex flex-wrap gap-2">
-                    {mission.intervenants.map((intervenant, index) => (
-                      <Badge key={index} variant="secondary">
-                        {intervenant}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <div>
+                <label className="text-sm font-medium text-gray-500">Intervenants du département factureur</label>
+                <p className="text-gray-900">{mission.intervenants_factureur}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Interlocuteurs du département à facturer</label>
+                <p className="text-gray-900">{mission.interlocuteurs_facturer}</p>
+              </div>
             </CardContent>
           </Card>
         </div>
