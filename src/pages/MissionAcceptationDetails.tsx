@@ -228,7 +228,7 @@ const MissionAcceptationDetails = () => {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-500">Budget HT alloué</label>
-                <p className="text-gray-900 font-medium">{mission.budget_ht.toLocaleString('fr-FR')} €</p>
+                <p className="text-gray-900 font-medium">{mission.budget_ht.toLocaleString('fr-FR')} FCFA</p>
               </div>
             </CardContent>
           </Card>
