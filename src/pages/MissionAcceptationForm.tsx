@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ArrowLeft, Send } from 'lucide-react';
 import HRISNavbar from '@/components/hris/HRISNavbar';
@@ -15,8 +15,12 @@ import DatesSection from '@/components/missions/acceptation/DatesSection';
 
 const MissionAcceptationForm = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const editId = searchParams.get('edit');
+  
   const [formData, setFormData] = useState({
     mission: '',
     associe: '',
@@ -30,6 +34,44 @@ const MissionAcceptationForm = () => {
     dateDebut: undefined as Date | undefined,
     dateEnvoiRapport: undefined as Date | undefined,
   });
+
+  // Effet pour charger les données si c'est une édition
+  useEffect(() => {
+    const loadMissionData = async () => {
+      if (editId) {
+        setIsLoading(true);
+        try {
+          const response = await apiClient.get(`/acceptation/${editId}/afficherBrouillon`);
+          const missionData = response.data;
+          
+          setFormData({
+            mission: missionData.mission_id || '',
+            associe: missionData.associe_id || '',
+            manager: missionData.manager_id || '',
+            responsableDepartementFactureur: missionData.responsable_departement_factureur_id || '',
+            natureMission: missionData.nature_mission || '',
+            budgetHeures: missionData.budget_heures || 0,
+            budgetHT: missionData.budget_ht || 0,
+            intervenantsFactureur: missionData.intervenants_factureur || '',
+            interlocuteursFacturer: missionData.interlocuteurs_facturer || '',
+            dateDebut: missionData.date_debut ? new Date(missionData.date_debut) : undefined,
+            dateEnvoiRapport: missionData.date_envoi_rapport ? new Date(missionData.date_envoi_rapport) : undefined,
+          });
+        } catch (error) {
+          console.error('Erreur lors du chargement des données:', error);
+          toast({
+            title: "Erreur de chargement",
+            description: "Impossible de charger les données de la demande.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadMissionData();
+  }, [editId, toast]);
 
   const handleBack = () => {
     navigate('/missions-acceptation');
@@ -70,6 +112,7 @@ const MissionAcceptationForm = () => {
 
     try {
       const acceptationData = {
+        id: editId || null, // Ajouter l'ID pour les demandes rééditées
         mission_id: formData.mission,
         associe_id: formData.associe,
         manager_id: formData.manager,
@@ -90,8 +133,8 @@ const MissionAcceptationForm = () => {
       console.log('Acceptation de mission créée avec succès:', response.data);
       
       toast({
-        title: "Acceptation de mission créée avec succès",
-        description: "La demande d'acceptation de mission a été soumise.",
+        title: editId ? "Acceptation de mission modifiée avec succès" : "Acceptation de mission créée avec succès",
+        description: editId ? "La demande d'acceptation de mission a été modifiée et soumise." : "La demande d'acceptation de mission a été soumise.",
       });
 
       // Rediriger vers la page des acceptations de mission
@@ -101,8 +144,8 @@ const MissionAcceptationForm = () => {
       console.error('Erreur lors de la création de l\'acceptation de mission:', error);
       
       toast({
-        title: "Erreur lors de la création",
-        description: error.response?.data?.message || "Une erreur est survenue lors de la création de l'acceptation de mission.",
+        title: editId ? "Erreur lors de la modification" : "Erreur lors de la création",
+        description: error.response?.data?.message || `Une erreur est survenue lors de la ${editId ? 'modification' : 'création'} de l'acceptation de mission.`,
         variant: "destructive",
       });
     } finally {
@@ -113,6 +156,20 @@ const MissionAcceptationForm = () => {
   const updateFormData = (data: any) => {
     setFormData(prev => ({ ...prev, ...data }));
   };
+
+  // Afficher un spinner de chargement si on charge les données
+  if (isLoading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#f8f9fc]">
+        <HRISNavbar />
+        <div className="container mx-auto p-4 md:p-6 lg:p-8 max-w-6xl">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f8f9fc]">
@@ -176,7 +233,7 @@ const MissionAcceptationForm = () => {
                   className="flex items-center gap-2"
                 >
                   <Send className="h-4 w-4" />
-                  {isSubmitting ? 'Soumission en cours...' : 'Soumettre la demande'}
+                  {isSubmitting ? 'Soumission en cours...' : (editId ? 'Soumettre les modifications' : 'Soumettre la demande')}
                 </Button>
               </div>
             </CardContent>

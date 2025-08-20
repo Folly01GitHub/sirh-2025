@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, CheckCircle, XCircle } from 'lucide-react';
+import { Eye, CheckCircle, XCircle, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/utils/apiClient';
@@ -17,7 +17,7 @@ interface MissionItem {
   client: string;
   startDate: string;
   endDate: string;
-  status: 'validated' | 'pending' | 'rejected' | 'en_attente' | 'validee' | 'refusee';
+  status: 'validated' | 'pending' | 'rejected' | 'en_attente' | 'validee' | 'refusee' | 'Approuvée' | 'En attente' | 'Refusée';
   requester?: string;
 }
 
@@ -156,6 +156,10 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick, isAcce
     }
   };
 
+  const handleEditMission = (missionId: string) => {
+    navigate(`/missions-acceptation/create?edit=${missionId}`);
+  };
+
   // Function to check if mission is pending
   const isMissionPending = (status: string) => {
     if (isAcceptationPage) {
@@ -242,6 +246,17 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick, isAcce
                              </Button>
                            )}
                         </>
+                      )}
+                      {activeFilter === 'self' && isAcceptationPage && (mission.status === 'rejected' || mission.status === 'refusee' || mission.status === 'Refusée') && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                          onClick={() => handleEditMission(mission.id)}
+                          title="Modifier la demande"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
                       )}
                     </div>
                     <Button

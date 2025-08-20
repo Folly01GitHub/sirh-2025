@@ -25,7 +25,7 @@ interface MissionItem {
   client: string;
   startDate: string;
   endDate: string;
-  status: 'validated' | 'pending' | 'rejected' | 'en_attente' | 'validee' | 'refusee';
+  status: 'validated' | 'pending' | 'rejected' | 'en_attente' | 'validee' | 'refusee' | 'Approuvée' | 'En attente' | 'Refusée';
   requester?: string;
 }
 
