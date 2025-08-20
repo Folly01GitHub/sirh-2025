@@ -11,6 +11,7 @@ interface MissionSelectionSectionProps {
     mission: string;
     associe: string;
     manager: string;
+    responsableDepartementFactureur: string;
     natureMission: string;
   };
   onChange: (data: Partial<any>) => void;
@@ -25,9 +26,11 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
   const [missionOptions, setMissionOptions] = useState<SelectOption[]>([]);
   const [associeOptions, setAssocieOptions] = useState<SelectOption[]>([]);
   const [managerOptions, setManagerOptions] = useState<SelectOption[]>([]);
+  const [responsableOptions, setResponsableOptions] = useState<SelectOption[]>([]);
   const [loadingMissions, setLoadingMissions] = useState(false);
   const [loadingAssocies, setLoadingAssocies] = useState(false);
   const [loadingManagers, setLoadingManagers] = useState(false);
+  const [loadingResponsables, setLoadingResponsables] = useState(false);
 
   useEffect(() => {
     const fetchMissions = async () => {
@@ -93,9 +96,31 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
       }
     };
 
+    const fetchResponsables = async () => {
+      setLoadingResponsables(true);
+      try {
+        const response = await apiClient.get('/approver_list');
+        const options = response.data.map((item: any) => ({
+          label: (item.prenom && item.nom) ? `${item.prenom} ${item.nom}` : (item.name || 'Responsable sans nom'),
+          value: String(item.id || '')
+        }));
+        setResponsableOptions(options);
+      } catch (error) {
+        console.error('Error fetching responsables:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger la liste des responsables",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingResponsables(false);
+      }
+    };
+
     fetchMissions();
     fetchAssocies();
     fetchManagers();
+    fetchResponsables();
   }, []); // Tableau de dépendances vide pour n'exécuter qu'au montage
 
   return (
@@ -147,6 +172,19 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="responsableDepartementFactureur" className="text-sm font-medium text-gray-700">
+              Responsable du département factureur *
+            </Label>
+            <SearchableSelect
+              placeholder="Sélectionner un responsable..."
+              value={data.responsableDepartementFactureur}
+              onChange={(value) => onChange({ responsableDepartementFactureur: value })}
+              options={responsableOptions}
+              loading={loadingResponsables}
+            />
+          </div>
+
+          <div className="space-y-2 md:col-span-2">
             <Label htmlFor="natureMission" className="text-sm font-medium text-gray-700">
               Nature de la mission confiée *
             </Label>
