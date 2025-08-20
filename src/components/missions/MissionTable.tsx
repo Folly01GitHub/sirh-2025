@@ -19,6 +19,7 @@ interface MissionItem {
   endDate: string;
   status: 'validated' | 'pending' | 'rejected' | 'en_attente' | 'validee' | 'refusee' | 'Approuvée' | 'En attente' | 'Refusée';
   requester?: string;
+  isPencil?: boolean;
 }
 
 interface MissionTableProps {
@@ -221,7 +222,7 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick, isAcce
                 <TableCell>
                   <div className="flex justify-between items-center">
                     <div className="flex gap-2">
-                      {activeFilter === 'team' && isMissionPending(mission.status) && (
+                      {activeFilter === 'team' && mission.isPencil && (
                         <>
                           <Button
                             variant="ghost"

@@ -27,6 +27,7 @@ interface MissionItem {
   endDate: string;
   status: 'validated' | 'pending' | 'rejected' | 'en_attente' | 'validee' | 'refusee' | 'Approuvée' | 'En attente' | 'Refusée';
   requester?: string;
+  isPencil?: boolean;
 }
 
 interface ApiMissionItem {
@@ -41,6 +42,7 @@ interface ApiMissionItem {
 
 interface ApiTeamMissionItem extends ApiMissionItem {
   demandeur: string;
+  isPencil: boolean;
 }
 
 interface ApiMissionStatsResponse {
@@ -133,7 +135,8 @@ const fetchTeamMissions = async (): Promise<MissionItem[]> => {
       startDate: item.date_debut,
       endDate: item.date_fin,
       status: item.statut as MissionItem['status'],
-      requester: item.demandeur
+      requester: item.demandeur,
+      isPencil: item.isPencil
     }));
   } catch (error) {
     console.error('Error fetching team missions:', error);
