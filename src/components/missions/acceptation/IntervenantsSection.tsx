@@ -23,7 +23,7 @@ const IntervenantsSection: React.FC<IntervenantsSectionProps> = ({ data, onChang
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="intervenantsFactureur" className="text-sm font-medium text-gray-700">
-              Intervenants du département factureur *
+              Intervenants du département émetteur *
             </Label>
             <Textarea
               id="intervenantsFactureur"

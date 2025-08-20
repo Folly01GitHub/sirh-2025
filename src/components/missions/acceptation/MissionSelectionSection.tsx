@@ -205,7 +205,7 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
 
           <div className="space-y-2">
             <Label htmlFor="responsableDepartementFactureur" className="text-sm font-medium text-gray-700">
-              Responsable du département factureur *
+              Responsable du département émetteur *
             </Label>
             <SearchableSelect
               placeholder="Sélectionner un responsable..."

@@ -84,11 +84,11 @@ const MissionAcceptationForm = () => {
     if (!formData.mission.trim()) errors.push('Mission');
     if (!formData.associe.trim()) errors.push('Associé en charge');
     if (!formData.manager.trim()) errors.push('Manager en charge du dossier');
-    if (!formData.responsableDepartementFactureur.trim()) errors.push('Responsable du département Emetteur');
+    if (!formData.responsableDepartementFactureur.trim()) errors.push('Responsable du département émetteur');
     if (!formData.natureMission.trim()) errors.push('Nature de la mission confiée');
     if (formData.budgetHeures <= 0) errors.push('Budget en heures');
     if (formData.budgetHT <= 0) errors.push('Budget HT alloué');
-    if (!formData.intervenantsFactureur.trim()) errors.push('Intervenants du département factureur');
+    if (!formData.intervenantsFactureur.trim()) errors.push('Intervenants du département émetteur');
     if (!formData.interlocuteursFacturer.trim()) errors.push('Interlocuteurs du département à facturer');
     if (!formData.dateDebut) errors.push('Date de démarrage de la mission');
     if (!formData.dateEnvoiRapport) errors.push('Date d\'envoi du projet de rapport');
