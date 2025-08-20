@@ -45,10 +45,10 @@ const MissionAcceptationForm = () => {
           const missionData = response.data;
           
           setFormData({
-            mission: missionData.mission_id || '',
-            associe: missionData.associe_id || '',
-            manager: missionData.manager_id || '',
-            responsableDepartementFactureur: missionData.responsable_departement_factureur_id || '',
+            mission: String(missionData.mission_id || ''),
+            associe: String(missionData.associe_id || ''),
+            manager: String(missionData.manager_id || ''),
+            responsableDepartementFactureur: String(missionData.responsable_departement_factureur_id || ''),
             natureMission: missionData.nature_mission || '',
             budgetHeures: missionData.budget_heures || 0,
             budgetHT: missionData.budget_ht || 0,

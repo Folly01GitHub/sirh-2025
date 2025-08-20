@@ -247,17 +247,17 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick, isAcce
                            )}
                         </>
                       )}
-                      {activeFilter === 'self' && isAcceptationPage && (mission.status === 'rejected' || mission.status === 'refusee' || mission.status === 'Refusée') && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-                          onClick={() => handleEditMission(mission.id)}
-                          title="Modifier la demande"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      )}
+                       {activeFilter === 'self' && isAcceptationPage && (mission.status === 'rejected' || mission.status === 'refusee' || mission.status === 'Refusée') && (
+                         <Button
+                           variant="ghost"
+                           size="icon"
+                           className="text-black hover:text-gray-800 hover:bg-gray-100"
+                           onClick={() => handleEditMission(mission.id)}
+                           title="Modifier la demande"
+                         >
+                           <Pencil className="h-4 w-4" />
+                         </Button>
+                       )}
                     </div>
                     <Button
                       variant="ghost"

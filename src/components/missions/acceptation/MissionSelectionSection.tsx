@@ -31,6 +31,7 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
   const [loadingAssocies, setLoadingAssocies] = useState(false);
   const [loadingManagers, setLoadingManagers] = useState(false);
   const [loadingResponsables, setLoadingResponsables] = useState(false);
+  const [optionsLoaded, setOptionsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchMissions = async () => {
@@ -117,11 +118,42 @@ const MissionSelectionSection: React.FC<MissionSelectionSectionProps> = ({ data,
       }
     };
 
-    fetchMissions();
-    fetchAssocies();
-    fetchManagers();
-    fetchResponsables();
+    const loadAllOptions = async () => {
+      await Promise.all([
+        fetchMissions(),
+        fetchAssocies(),
+        fetchManagers(),
+        fetchResponsables()
+      ]);
+      setOptionsLoaded(true);
+    };
+
+    loadAllOptions();
   }, []); // Tableau de dépendances vide pour n'exécuter qu'au montage
+
+  // Effect pour s'assurer que les valeurs sélectionnées correspondent aux options une fois chargées
+  useEffect(() => {
+    if (!optionsLoaded) return;
+
+    // Vérifier si les valeurs actuelles correspondent aux options disponibles
+    const missionExists = !data.mission || missionOptions.some(opt => opt.value === data.mission);
+    const associeExists = !data.associe || associeOptions.some(opt => opt.value === data.associe);
+    const managerExists = !data.manager || managerOptions.some(opt => opt.value === data.manager);
+    const responsableExists = !data.responsableDepartementFactureur || responsableOptions.some(opt => opt.value === data.responsableDepartementFactureur);
+
+    if (!missionExists || !associeExists || !managerExists || !responsableExists) {
+      console.log('Some selected values do not match available options:', {
+        mission: data.mission,
+        associe: data.associe,
+        manager: data.manager,
+        responsable: data.responsableDepartementFactureur,
+        missionExists,
+        associeExists,
+        managerExists,
+        responsableExists
+      });
+    }
+  }, [optionsLoaded, data, missionOptions, associeOptions, managerOptions, responsableOptions]);
 
   return (
     <Card>
