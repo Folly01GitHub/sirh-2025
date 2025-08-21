@@ -234,18 +234,16 @@ const MissionTable = ({ missions, isLoading, activeFilter, onActionClick, isAcce
                           >
                             <CheckCircle className="h-4 w-4" />
                           </Button>
-                           {user?.role !== 'comptable' && (
-                             <Button
-                               variant="ghost"
-                               size="icon"
-                               className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                               onClick={() => handleActionClick(mission.id, 'reject', mission.title)}
-                               disabled={validateMissionMutation.isPending || rejectMissionMutation.isPending}
-                               title="Refuser"
-                             >
-                               <XCircle className="h-4 w-4" />
-                             </Button>
-                           )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                            onClick={() => handleActionClick(mission.id, 'reject', mission.title)}
+                            disabled={validateMissionMutation.isPending || rejectMissionMutation.isPending}
+                            title="Refuser"
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
                         </>
                       )}
                        {activeFilter === 'self' && isAcceptationPage && (mission.status === 'rejected' || mission.status === 'refusee' || mission.status === 'Refusée') && (
