@@ -38,9 +38,18 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
   const handleEditClick = (evaluationId: number, niveau: string) => {
     const evaluation = evaluations.find(e => e.id === evaluationId);
     
+    // Créer les paramètres d'URL avec les informations d'évaluation
+    const params = new URLSearchParams({
+      id: evaluationId.toString(),
+      collaborateur: evaluation?.demandeur || '',
+      evaluateur: evaluation?.evaluateur || '',
+      mission: evaluation?.mission || ''
+    });
+    
     // Pour "Mes évaluations": vérifier si c'est une évaluation de manager avec statut brouillon
     if (activeFilter === 'self' && evaluation && evaluation.mission === "N/A" && evaluation.statut === "brouillon") {
-      navigate(`/evaluation/managers?id=${evaluationId}&step=1`);
+      params.append('step', '1');
+      navigate(`/evaluation/managers?${params.toString()}`);
       return;
     }
     
@@ -49,14 +58,16 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
       if (evaluation && evaluation.mission !== "N/A") {
         // Évaluations de collaborateurs (mission !== "N/A")
         if (evaluation.statut === "Evaluation en cours") {
-          navigate(`/evaluation?id=${evaluationId}&step=2`);
+          params.append('step', '2');
+          navigate(`/evaluation?${params.toString()}`);
           return;
         } else if (evaluation.statut === "Approbation en cours") {
-          navigate(`/evaluation?id=${evaluationId}&step=3`);
+          params.append('step', '3');
+          navigate(`/evaluation?${params.toString()}`);
           return;
         } else {
           // Pour tous les autres statuts, rediriger vers l'étape 1
-          navigate(`/evaluation?id=${evaluationId}`);
+          navigate(`/evaluation?${params.toString()}`);
           return;
         }
       }

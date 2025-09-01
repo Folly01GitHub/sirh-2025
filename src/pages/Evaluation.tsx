@@ -98,6 +98,32 @@ const Evaluation = () => {
   const [showFullGroupName, setShowFullGroupName] = useState<number | null>(null);
   const [groupValidationState, setGroupValidationState] = useState<Record<number, boolean>>({});
 
+  // Get evaluation info from URL parameters
+  const [evaluationInfo, setEvaluationInfo] = useState<{
+    collaborateur: string;
+    evaluateur: string;
+    mission: string;
+  }>({
+    collaborateur: '',
+    evaluateur: '',
+    mission: ''
+  });
+
+  useEffect(() => {
+    // Get info from URL parameters first
+    const collaborateurParam = searchParams.get('collaborateur');
+    const evaluateurParam = searchParams.get('evaluateur');
+    const missionParam = searchParams.get('mission');
+
+    if (collaborateurParam || evaluateurParam || missionParam) {
+      setEvaluationInfo({
+        collaborateur: collaborateurParam || '',
+        evaluateur: evaluateurParam || '',
+        mission: missionParam || ''
+      });
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     if (stepParam) {
       const step = parseInt(stepParam);
@@ -584,6 +610,7 @@ const Evaluation = () => {
                     approverId={approverId}
                     selectedMissionId={selectedMissionId}
                     employees={employees}
+                    evaluationInfo={evaluationInfo}
                   />
                 )}
                 
@@ -600,6 +627,7 @@ const Evaluation = () => {
                     approverId={approverId}
                     selectedMissionId={selectedMissionId}
                     employees={employees}
+                    evaluationInfo={evaluationInfo}
                   />
                 )}
               </div>

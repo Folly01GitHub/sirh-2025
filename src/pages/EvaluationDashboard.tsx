@@ -80,23 +80,35 @@ const EvaluationDashboard = () => {
       // Pour "Mes collaborateurs", gérer toutes les redirections selon la mission et le statut
       const evaluation = evaluations?.find(e => e.id === id);
       if (evaluation) {
+        // Créer les paramètres d'URL avec les informations d'évaluation
+        const params = new URLSearchParams({
+          id: id.toString(),
+          collaborateur: evaluation.demandeur || '',
+          evaluateur: evaluation.evaluateur || '',
+          mission: evaluation.mission || ''
+        });
+        
         if (evaluation.mission === "N/A") {
           // Évaluations de managers
           if (evaluation.statut === "Evaluation en cours") {
-            navigate(`/evaluation/managers?id=${id}&step=2`);
+            params.append('step', '2');
+            navigate(`/evaluation/managers?${params.toString()}`);
           } else if (evaluation.statut === "Approbation en cours") {
-            navigate(`/evaluation/managers?id=${id}&step=3`);
+            params.append('step', '3');
+            navigate(`/evaluation/managers?${params.toString()}`);
           } else {
-            navigate(`/evaluation/managers?id=${id}`);
+            navigate(`/evaluation/managers?${params.toString()}`);
           }
         } else {
           // Évaluations de collaborateurs (mission !== "N/A")
           if (evaluation.statut === "Evaluation en cours") {
-            navigate(`/evaluation?id=${id}&step=2`);
+            params.append('step', '2');
+            navigate(`/evaluation?${params.toString()}`);
           } else if (evaluation.statut === "Approbation en cours") {
-            navigate(`/evaluation?id=${id}&step=3`);
+            params.append('step', '3');
+            navigate(`/evaluation?${params.toString()}`);
           } else {
-            navigate(`/evaluation?id=${id}`);
+            navigate(`/evaluation?${params.toString()}`);
           }
         }
       }

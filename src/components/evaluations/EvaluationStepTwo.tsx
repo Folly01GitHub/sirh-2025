@@ -35,6 +35,7 @@ interface EvaluationStepTwoProps {
   approverId?: number | null;
   selectedMissionId?: number | null;
   employees?: Array<{ id: number; name: string; position: string; }>;
+  evaluationInfo?: { collaborateur: string; evaluateur: string; mission: string; };
 }
 
 // Type pour la réponse API de l'évaluateur
@@ -69,7 +70,8 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   evaluatorId,
   approverId,
   selectedMissionId,
-  employees = []
+  employees = [],
+  evaluationInfo
 }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -495,16 +497,19 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
   
   // Get evaluator and employee info
   const getEvaluatorInfo = () => {
+    if (evaluationInfo?.evaluateur) return evaluationInfo.evaluateur;
     const evaluator = employees.find(emp => emp.id === evaluatorId);
     return evaluator ? `${evaluator.name} - ${evaluator.position}` : 'Non défini';
   };
 
   const getCollaboratorInfo = () => {
+    if (evaluationInfo?.collaborateur) return evaluationInfo.collaborateur;
     const collaborator = employees.find(emp => emp.id === approverId);
     return collaborator ? `${collaborator.name} - ${collaborator.position}` : 'Non défini';
   };
 
   const getMissionInfo = () => {
+    if (evaluationInfo?.mission) return evaluationInfo.mission;
     return selectedMissionId ? `Mission ${selectedMissionId}` : 'Non définie';
   };
 

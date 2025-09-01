@@ -142,6 +142,32 @@ const ManagerEvaluation = () => {
   const [evaluationItems, setEvaluationItems] = useState<any[]>([]);
   const [evaluationItemsLoading, setEvaluationItemsLoading] = useState(false);
 
+  // Get evaluation info from URL parameters
+  const [evaluationInfo, setEvaluationInfo] = useState<{
+    collaborateur: string;
+    evaluateur: string;
+    mission: string;
+  }>({
+    collaborateur: '',
+    evaluateur: '',
+    mission: ''
+  });
+
+  useEffect(() => {
+    // Get info from URL parameters first
+    const collaborateurParam = searchParams.get('collaborateur');
+    const evaluateurParam = searchParams.get('evaluateur');
+    const missionParam = searchParams.get('mission');
+
+    if (collaborateurParam || evaluateurParam || missionParam) {
+      setEvaluationInfo({
+        collaborateur: collaborateurParam || '',
+        evaluateur: evaluateurParam || '',
+        mission: missionParam || ''
+      });
+    }
+  }, [searchParams]);
+
   // Fetch evaluation items from API
   const fetchEvaluationItems = useCallback(async () => {
     setEvaluationItemsLoading(true);
@@ -1062,23 +1088,27 @@ const ManagerEvaluation = () => {
                     <div>
                       <span className="font-medium text-blue-800">Collaborateur évalué:</span>
                       <div className="text-blue-700">
-                        {associates.find(a => a.id === selectedAssociateId)?.name || 'Non défini'}
-                        {associates.find(a => a.id === selectedAssociateId)?.position && 
-                          ` - ${associates.find(a => a.id === selectedAssociateId)?.position}`}
+                        {evaluationInfo.collaborateur || 
+                         (associates.find(a => a.id === selectedAssociateId)?.name && 
+                          associates.find(a => a.id === selectedAssociateId)?.position ? 
+                          `${associates.find(a => a.id === selectedAssociateId)?.name} - ${associates.find(a => a.id === selectedAssociateId)?.position}` : 
+                          'Non défini')}
                       </div>
                     </div>
                     <div>
                       <span className="font-medium text-blue-800">Evaluateur:</span>
                       <div className="text-blue-700">
-                        {evaluators.find(e => e.id === evaluatorId)?.name || 'Non défini'}
-                        {evaluators.find(e => e.id === evaluatorId)?.position && 
-                          ` - ${evaluators.find(e => e.id === evaluatorId)?.position}`}
+                        {evaluationInfo.evaluateur || 
+                         (evaluators.find(e => e.id === evaluatorId)?.name && 
+                          evaluators.find(e => e.id === evaluatorId)?.position ? 
+                          `${evaluators.find(e => e.id === evaluatorId)?.name} - ${evaluators.find(e => e.id === evaluatorId)?.position}` : 
+                          'Non défini')}
                       </div>
                     </div>
                     <div>
                       <span className="font-medium text-blue-800">Mission:</span>
                       <div className="text-blue-700">
-                        {managerResponses?.mission || 'Non définie'}
+                        {evaluationInfo.mission || managerResponses?.mission || 'Non définie'}
                       </div>
                     </div>
                   </div>
@@ -1266,23 +1296,27 @@ const ManagerEvaluation = () => {
                     <div>
                       <span className="font-medium text-blue-800">Collaborateur évalué:</span>
                       <div className="text-blue-700">
-                        {associates.find(a => a.id === selectedAssociateId)?.name || 'Non défini'}
-                        {associates.find(a => a.id === selectedAssociateId)?.position && 
-                          ` - ${associates.find(a => a.id === selectedAssociateId)?.position}`}
+                        {evaluationInfo.collaborateur || 
+                         (associates.find(a => a.id === selectedAssociateId)?.name && 
+                          associates.find(a => a.id === selectedAssociateId)?.position ? 
+                          `${associates.find(a => a.id === selectedAssociateId)?.name} - ${associates.find(a => a.id === selectedAssociateId)?.position}` : 
+                          'Non défini')}
                       </div>
                     </div>
                     <div>
                       <span className="font-medium text-blue-800">Evaluateur:</span>
                       <div className="text-blue-700">
-                        {evaluators.find(e => e.id === evaluatorId)?.name || 'Non défini'}
-                        {evaluators.find(e => e.id === evaluatorId)?.position && 
-                          ` - ${evaluators.find(e => e.id === evaluatorId)?.position}`}
+                        {evaluationInfo.evaluateur || 
+                         (evaluators.find(e => e.id === evaluatorId)?.name && 
+                          evaluators.find(e => e.id === evaluatorId)?.position ? 
+                          `${evaluators.find(e => e.id === evaluatorId)?.name} - ${evaluators.find(e => e.id === evaluatorId)?.position}` : 
+                          'Non défini')}
                       </div>
                     </div>
                     <div>
                       <span className="font-medium text-blue-800">Mission:</span>
                       <div className="text-blue-700">
-                        {evaluationNotes?.mission || 'Non définie'}
+                        {evaluationInfo.mission || evaluationNotes?.mission || 'Non définie'}
                       </div>
                     </div>
                   </div>

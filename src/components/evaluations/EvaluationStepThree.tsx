@@ -40,6 +40,7 @@ interface EvaluationStepThreeProps {
   approverId?: number | null;
   selectedMissionId?: number | null;
   employees?: Array<{ id: number; name: string; position: string; }>;
+  evaluationInfo?: { collaborateur: string; evaluateur: string; mission: string; };
 }
 
 const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
@@ -53,7 +54,8 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   evaluatorId,
   approverId,
   selectedMissionId,
-  employees = []
+  employees = [],
+  evaluationInfo
 }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -308,16 +310,19 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
 
   // Get evaluator and employee info
   const getEvaluatorInfo = () => {
+    if (evaluationInfo?.evaluateur) return evaluationInfo.evaluateur;
     const evaluator = employees.find(emp => emp.id === evaluatorId);
     return evaluator ? `${evaluator.name} - ${evaluator.position}` : 'Non défini';
   };
 
   const getCollaboratorInfo = () => {
+    if (evaluationInfo?.collaborateur) return evaluationInfo.collaborateur;
     const collaborator = employees.find(emp => emp.id === approverId);
     return collaborator ? `${collaborator.name} - ${collaborator.position}` : 'Non défini';
   };
 
   const getMissionInfo = () => {
+    if (evaluationInfo?.mission) return evaluationInfo.mission;
     return selectedMissionId ? `Mission ${selectedMissionId}` : 'Non définie';
   };
 
