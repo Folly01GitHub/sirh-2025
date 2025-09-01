@@ -36,6 +36,10 @@ interface EvaluationStepThreeProps {
   onNextGroup?: () => void;
   isFirstGroup?: boolean;
   isLastGroup?: boolean;
+  evaluatorId?: number | null;
+  approverId?: number | null;
+  selectedMissionId?: number | null;
+  employees?: Array<{ id: number; name: string; position: string; }>;
 }
 
 const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
@@ -45,7 +49,11 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
   onPreviousGroup,
   onNextGroup,
   isFirstGroup = false,
-  isLastGroup = false
+  isLastGroup = false,
+  evaluatorId,
+  approverId,
+  selectedMissionId,
+  employees = []
 }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -298,8 +306,41 @@ const EvaluationStepThree: React.FC<EvaluationStepThreeProps> = ({
     );
   }
 
+  // Get evaluator and employee info
+  const getEvaluatorInfo = () => {
+    const evaluator = employees.find(emp => emp.id === evaluatorId);
+    return evaluator ? `${evaluator.name} - ${evaluator.position}` : 'Non défini';
+  };
+
+  const getCollaboratorInfo = () => {
+    const collaborator = employees.find(emp => emp.id === approverId);
+    return collaborator ? `${collaborator.name} - ${collaborator.position}` : 'Non défini';
+  };
+
+  const getMissionInfo = () => {
+    return selectedMissionId ? `Mission ${selectedMissionId}` : 'Non définie';
+  };
+
   return (
     <div className="space-y-8">
+      {/* Information Section */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <h3 className="text-lg font-medium text-blue-900 mb-3">Informations sur l'évaluation</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div>
+            <span className="font-medium text-blue-800">Collaborateur évalué:</span>
+            <div className="text-blue-700">{getCollaboratorInfo()}</div>
+          </div>
+          <div>
+            <span className="font-medium text-blue-800">Evaluateur:</span>
+            <div className="text-blue-700">{getEvaluatorInfo()}</div>
+          </div>
+          <div>
+            <span className="font-medium text-blue-800">Mission:</span>
+            <div className="text-blue-700">{getMissionInfo()}</div>
+          </div>
+        </div>
+      </div>
       <div className="bg-white p-6 rounded-lg border shadow-sm">
         <h3 className="text-xl font-medium mb-4">
           {isFirstGroup ? "Résumé global de l'évaluation" : "Résumé de l'évaluation par groupe"}

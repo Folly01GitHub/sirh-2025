@@ -1055,6 +1055,35 @@ const ManagerEvaluation = () => {
             
             {currentStep === 2 && (
               <div>
+                {/* Information Section */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <h3 className="text-lg font-medium text-blue-900 mb-3">Informations sur l'évaluation</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium text-blue-800">Collaborateur évalué:</span>
+                      <div className="text-blue-700">
+                        {associates.find(a => a.id === selectedAssociateId)?.name || 'Non défini'}
+                        {associates.find(a => a.id === selectedAssociateId)?.position && 
+                          ` - ${associates.find(a => a.id === selectedAssociateId)?.position}`}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="font-medium text-blue-800">Evaluateur:</span>
+                      <div className="text-blue-700">
+                        {evaluators.find(e => e.id === evaluatorId)?.name || 'Non défini'}
+                        {evaluators.find(e => e.id === evaluatorId)?.position && 
+                          ` - ${evaluators.find(e => e.id === evaluatorId)?.position}`}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="font-medium text-blue-800">Mission:</span>
+                      <div className="text-blue-700">
+                        {managerResponses?.mission || 'Non définie'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
                 <p className="text-muted-foreground mb-6">
                   Consultez les réponses du collaborateur et complétez votre évaluation.
                 </p>
@@ -1230,6 +1259,35 @@ const ManagerEvaluation = () => {
             
             {currentStep === 3 && (
               <div>
+                {/* Information Section */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <h3 className="text-lg font-medium text-blue-900 mb-3">Informations sur l'évaluation</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium text-blue-800">Collaborateur évalué:</span>
+                      <div className="text-blue-700">
+                        {associates.find(a => a.id === selectedAssociateId)?.name || 'Non défini'}
+                        {associates.find(a => a.id === selectedAssociateId)?.position && 
+                          ` - ${associates.find(a => a.id === selectedAssociateId)?.position}`}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="font-medium text-blue-800">Evaluateur:</span>
+                      <div className="text-blue-700">
+                        {evaluators.find(e => e.id === evaluatorId)?.name || 'Non défini'}
+                        {evaluators.find(e => e.id === evaluatorId)?.position && 
+                          ` - ${evaluators.find(e => e.id === evaluatorId)?.position}`}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="font-medium text-blue-800">Mission:</span>
+                      <div className="text-blue-700">
+                        {evaluationNotes?.mission || 'Non définie'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
                 <p className="text-muted-foreground mb-6">
                   Consultez les réponses du manager et de l'évaluateur, puis complétez vos propres réponses.
                 </p>

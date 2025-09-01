@@ -580,6 +580,10 @@ const Evaluation = () => {
                     employeeResponses={employeeResponses}
                     isLoading={getCurrentItemsLoading() || isSubmitting}
                     onSubmit={handleSubmitEvaluation}
+                    evaluatorId={evaluatorId}
+                    approverId={approverId}
+                    selectedMissionId={selectedMissionId}
+                    employees={employees}
                   />
                 )}
                 
@@ -592,6 +596,10 @@ const Evaluation = () => {
                     onNextGroup={handleNextGroup}
                     isFirstGroup={!criteriaGroups || criteriaGroups.findIndex(g => g.id === currentGroupId) === 0}
                     isLastGroup={!criteriaGroups || criteriaGroups.findIndex(g => g.id === currentGroupId) === (criteriaGroups.length - 1)}
+                    evaluatorId={evaluatorId}
+                    approverId={approverId}
+                    selectedMissionId={selectedMissionId}
+                    employees={employees}
                   />
                 )}
               </div>
