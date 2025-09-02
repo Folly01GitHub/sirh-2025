@@ -43,7 +43,8 @@ const EvaluationTable = ({ evaluations, isLoading, activeFilter, onActionClick }
       id: evaluationId.toString(),
       collaborateur: evaluation?.demandeur || '',
       evaluateur: evaluation?.evaluateur || '',
-      mission: evaluation?.mission || ''
+      mission: evaluation?.mission || '',
+      client: evaluation?.client || ''
     });
     
     // Pour "Mes évaluations": vérifier si c'est une évaluation de manager avec statut brouillon

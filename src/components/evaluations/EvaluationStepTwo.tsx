@@ -518,7 +518,7 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       {/* Information Section */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-medium text-blue-900 mb-3">Informations sur l'évaluation</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
           <div>
             <span className="font-medium text-blue-800">Collaborateur évalué:</span>
             <div className="text-blue-700">{getCollaboratorInfo()}</div>
@@ -530,6 +530,10 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
           <div>
             <span className="font-medium text-blue-800">Mission:</span>
             <div className="text-blue-700">{getMissionInfo()}</div>
+          </div>
+          <div>
+            <span className="font-medium text-blue-800">Client:</span>
+            <div className="text-blue-700">{searchParams.get('client') || '-'}</div>
           </div>
         </div>
       </div>
