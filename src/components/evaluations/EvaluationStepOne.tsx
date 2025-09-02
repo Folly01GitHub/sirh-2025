@@ -413,9 +413,8 @@ const EvaluationStepOne: React.FC<EvaluationStepOneProps> = ({
         description: "Votre auto-évaluation a été enregistrée comme brouillon"
       });
       
-      if (response.data.evaluation_id && !evaluationId) {
-        navigate(`/evaluation?id=${response.data.evaluation_id}&step=1`);
-      }
+      // Redirect to evaluations dashboard after successful save
+      navigate('/evaluations');
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du brouillon:", error);
       

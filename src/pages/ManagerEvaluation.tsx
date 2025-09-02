@@ -715,6 +715,9 @@ const ManagerEvaluation = () => {
       toast.success("Brouillon sauvegardé", {
         description: "Votre auto-évaluation a été enregistrée comme brouillon"
       });
+      
+      // Redirect to evaluations dashboard after successful save
+      navigate('/evaluations');
     } catch (error: any) {
       console.error("Erreur lors de l'enregistrement du brouillon:", error);
       const errorMessage = error?.response?.data?.message || error?.message || "Impossible d'enregistrer votre auto-évaluation comme brouillon";
