@@ -147,10 +147,12 @@ const ManagerEvaluation = () => {
     collaborateur: string;
     evaluateur: string;
     mission: string;
+    client: string;
   }>({
     collaborateur: '',
     evaluateur: '',
-    mission: ''
+    mission: '',
+    client: ''
   });
 
   useEffect(() => {
@@ -158,12 +160,14 @@ const ManagerEvaluation = () => {
     const collaborateurParam = searchParams.get('collaborateur');
     const evaluateurParam = searchParams.get('evaluateur');
     const missionParam = searchParams.get('mission');
+    const clientParam = searchParams.get('client');
 
-    if (collaborateurParam || evaluateurParam || missionParam) {
+    if (collaborateurParam || evaluateurParam || missionParam || clientParam) {
       setEvaluationInfo({
         collaborateur: collaborateurParam || '',
         evaluateur: evaluateurParam || '',
-        mission: missionParam || ''
+        mission: missionParam || '',
+        client: clientParam || ''
       });
     }
   }, [searchParams]);
@@ -711,9 +715,6 @@ const ManagerEvaluation = () => {
       toast.success("Brouillon sauvegardé", {
         description: "Votre auto-évaluation a été enregistrée comme brouillon"
       });
-      
-      // Rediriger vers le dashboard des évaluations
-      navigate('/evaluations');
     } catch (error: any) {
       console.error("Erreur lors de l'enregistrement du brouillon:", error);
       const errorMessage = error?.response?.data?.message || error?.message || "Impossible d'enregistrer votre auto-évaluation comme brouillon";
@@ -1087,7 +1088,7 @@ const ManagerEvaluation = () => {
                 {/* Information Section */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                   <h3 className="text-lg font-medium text-blue-900 mb-3">Informations sur l'évaluation</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                     <div>
                       <span className="font-medium text-blue-800">Collaborateur évalué:</span>
                       <div className="text-blue-700">
@@ -1112,6 +1113,12 @@ const ManagerEvaluation = () => {
                       <span className="font-medium text-blue-800">Mission:</span>
                       <div className="text-blue-700">
                         {evaluationInfo.mission || managerResponses?.mission || 'Non définie'}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="font-medium text-blue-800">Client:</span>
+                      <div className="text-blue-700">
+                        {evaluationInfo.client || '-'}
                       </div>
                     </div>
                   </div>
@@ -1295,7 +1302,7 @@ const ManagerEvaluation = () => {
                 {/* Information Section */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                   <h3 className="text-lg font-medium text-blue-900 mb-3">Informations sur l'évaluation</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                     <div>
                       <span className="font-medium text-blue-800">Collaborateur évalué:</span>
                       <div className="text-blue-700">
@@ -1320,6 +1327,12 @@ const ManagerEvaluation = () => {
                       <span className="font-medium text-blue-800">Mission:</span>
                       <div className="text-blue-700">
                         {evaluationInfo.mission || evaluationNotes?.mission || 'Non définie'}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="font-medium text-blue-800">Client:</span>
+                      <div className="text-blue-700">
+                        {evaluationInfo.client || '-'}
                       </div>
                     </div>
                   </div>

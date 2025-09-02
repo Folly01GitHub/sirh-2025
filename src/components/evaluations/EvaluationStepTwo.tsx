@@ -474,9 +474,6 @@ const EvaluationStepTwo: React.FC<EvaluationStepTwoProps> = ({
       toast.success("Brouillon sauvegardé", {
         description: "Votre évaluation a été enregistrée comme brouillon"
       });
-      
-      // Rediriger vers le dashboard des évaluations
-      navigate('/evaluations');
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du brouillon:", error);
       toast.error("Échec de la sauvegarde", {
